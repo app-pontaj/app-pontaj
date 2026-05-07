@@ -76,6 +76,14 @@
             background: red;
         }
 
+        .user-info {
+            color: #d4af37;
+            font-size: 16px;
+            text-align: center;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
     </style>
 
 </head>
@@ -131,6 +139,12 @@
                     id="main-menu"
                     style="display:none;"
                 >
+
+                    <div
+                        class="user-info"
+                        id="user-info"
+                    >
+                    </div>
 
                     <div class="menu-card">
                         Angajati
@@ -241,6 +255,42 @@
 
         }
 
+        // ===== AFISARE MENIU PRINCIPAL =====
+        function showMainMenu(userData) {
+
+            document.getElementById("login-box").style.display = "none";
+
+            document.getElementById("main-menu").style.display = "flex";
+
+            document.getElementById("user-info").innerHTML =
+                userData.nume + "<br>" + userData.acces;
+
+        }
+
+        // ===== CITIRE UTILIZATOR DIN TABEL =====
+        async function loadUserData(email) {
+
+            const { data, error } = await supabaseClient
+                .from("utilizatori")
+                .select("nume, acces")
+                .eq("email", email)
+                .single();
+
+            if (error || !data) {
+
+                showMessage(
+                    "Utilizator fara drepturi setate",
+                    "error"
+                );
+
+                return null;
+
+            }
+
+            return data;
+
+        }
+
         // ===== LOGIN USER =====
         async function loginUser() {
 
@@ -264,9 +314,15 @@
 
             }
 
-            document.getElementById("login-box").style.display = "none";
+            const userData = await loadUserData(email);
 
-            document.getElementById("main-menu").style.display = "flex";
+            if (!userData) {
+
+                return;
+
+            }
+
+            showMainMenu(userData);
 
             showMessage(
                 "Login reusit",
@@ -284,9 +340,15 @@
 
             if (data.session) {
 
-                document.getElementById("login-box").style.display = "none";
+                const email = data.session.user.email;
 
-                document.getElementById("main-menu").style.display = "flex";
+                const userData = await loadUserData(email);
+
+                if (userData) {
+
+                    showMainMenu(userData);
+
+                }
 
             }
 
