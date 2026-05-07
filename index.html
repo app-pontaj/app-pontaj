@@ -166,6 +166,23 @@
                         Rapoarte
                     </div>
 
+                    <!-- ===== IMPORT PONTAJ ===== -->
+                    <div
+                        class="menu-card"
+                        onclick="document.getElementById('fisier-pontaj').click()"
+                    >
+                        Import pontaj
+                    </div>
+
+                    <!-- ===== SELECTOR FISIER PONTAJ ===== -->
+                    <input
+                        type="file"
+                        id="fisier-pontaj"
+                        accept=".xls,.xlsx"
+                        style="display:none;"
+                        onchange="selecteazaFisier()"
+                    >
+
                     <button
                         class="menu-card"
                         onclick="logoutUser()"
