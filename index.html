@@ -111,9 +111,9 @@
                 >
 
                     <input
-                        type="email"
-                        id="email"
-                        placeholder="Email"
+                        type="text"
+                        id="nume"
+                        placeholder="Nume utilizator"
                         class="login-input"
                     >
 
@@ -122,6 +122,14 @@
                         id="password"
                         placeholder="Parola"
                         class="login-input"
+                    >
+
+                    <input
+                        type="password"
+                        id="password2"
+                        placeholder="Repeta parola"
+                        class="login-input"
+                        style="display:none;"
                     >
 
                     <button
@@ -214,24 +222,7 @@
         );
 
         // ===== DATE UTILIZATOR LOGAT =====
-        // Salvam aici utilizatorul logat, ca sa stim ce drepturi are.
         let utilizatorLogat = null;
-
-        // ===== VERIFICARE FULL ACCESS =====
-        // FULL ACCESS poate vedea si modifica tot.
-        function esteFullAccess() {
-
-            return utilizatorLogat && utilizatorLogat.acces === "FULL ACCESS";
-
-        }
-
-        // ===== VERIFICARE ONLY VIEW =====
-        // ONLY VIEW poate doar sa vada datele proprii.
-        function esteOnlyView() {
-
-            return utilizatorLogat && utilizatorLogat.acces === "ONLY VIEW";
-
-        }
 
         // ===== AFISARE MESAJ =====
         function showMessage(text, type) {
@@ -280,6 +271,11 @@
 
             utilizatorLogat = userData;
 
+            localStorage.setItem(
+                "utilizatorLogat",
+                JSON.stringify(userData)
+            );
+
             document.getElementById("login-box").style.display = "none";
 
             document.getElementById("main-menu").style.display = "flex";
@@ -289,46 +285,93 @@
 
         }
 
-        // ===== CITIRE UTILIZATOR DIN TABEL =====
-        async function loadUserData(email) {
+        // ===== LOGIN USER =====
+        async function loginUser() {
+
+            const nume = document.getElementById("nume").value;
+
+            const password = document.getElementById("password").value;
+
+            const password2 = document.getElementById("password2").value;
 
             const { data, error } = await supabaseClient
                 .from("utilizatori")
-                .select("nume, acces, email")
-                .eq("email", email)
+                .select("*")
+                .eq("nume", nume)
                 .single();
 
             if (error || !data) {
 
                 showMessage(
-                    "Utilizator fara drepturi setate",
+                    "Utilizator inexistent",
                     "error"
                 );
 
-                return null;
+                return;
 
             }
 
-            return data;
+            // ===== PRIMA LOGARE =====
+            if (!data.parola || data.parola === "") {
 
-        }
+                document.getElementById("password2").style.display = "block";
 
-        // ===== LOGIN USER =====
-        async function loginUser() {
+                if (password2 === "") {
 
-            const email = document.getElementById("email").value;
+                    showMessage(
+                        "Repeta parola",
+                        "error"
+                    );
 
-            const password = document.getElementById("password").value;
+                    return;
 
-            const { error } = await supabaseClient.auth.signInWithPassword({
-                email: email,
-                password: password
-            });
+                }
 
-            if (error) {
+                if (password !== password2) {
+
+                    showMessage(
+                        "Parole diferite",
+                        "error"
+                    );
+
+                    return;
+
+                }
+
+                const { error: saveError } = await supabaseClient
+                    .from("utilizatori")
+                    .update({
+                        parola: password
+                    })
+                    .eq("id", data.id);
+
+                if (saveError) {
+
+                    showMessage(
+                        "Eroare salvare parola",
+                        "error"
+                    );
+
+                    return;
+
+                }
+
+                showMainMenu(data);
 
                 showMessage(
-                    "Email sau parola gresita",
+                    "Parola salvata",
+                    "success"
+                );
+
+                return;
+
+            }
+
+            // ===== LOGIN NORMAL =====
+            if (data.parola !== password) {
+
+                showMessage(
+                    "Parola gresita",
                     "error"
                 );
 
@@ -336,15 +379,7 @@
 
             }
 
-            const userData = await loadUserData(email);
-
-            if (!userData) {
-
-                return;
-
-            }
-
-            showMainMenu(userData);
+            showMainMenu(data);
 
             showMessage(
                 "Login reusit",
@@ -354,34 +389,26 @@
         }
 
         // ===== VERIFICARE SESIUNE =====
-        async function checkSession() {
+        function checkSession() {
 
-            const {
-                data
-            } = await supabaseClient.auth.getSession();
+            const userSalvat = localStorage.getItem("utilizatorLogat");
 
-            if (data.session) {
+            if (userSalvat) {
 
-                const email = data.session.user.email;
+                const userData = JSON.parse(userSalvat);
 
-                const userData = await loadUserData(email);
-
-                if (userData) {
-
-                    showMainMenu(userData);
-
-                }
+                showMainMenu(userData);
 
             }
 
         }
 
         // ===== LOGOUT =====
-        async function logoutUser() {
+        function logoutUser() {
 
             utilizatorLogat = null;
 
-            await supabaseClient.auth.signOut();
+            localStorage.removeItem("utilizatorLogat");
 
             location.reload();
 
