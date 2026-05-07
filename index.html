@@ -166,11 +166,6 @@
                         Rapoarte
                     </div>
 
-                    <!-- ===== IMPORT PONTAJ ===== -->
-                    <div class="menu-card">
-                        Import pontaj
-                    </div>
-
                     <button
                         class="menu-card"
                         onclick="logoutUser()"
@@ -416,6 +411,24 @@
             localStorage.removeItem("utilizatorLogat");
 
             location.reload();
+
+        }
+
+        // ===== SELECTARE FISIER PONTAJ =====
+        function selecteazaFisier() {
+
+            const fisier = document.getElementById("fisier-pontaj").files[0];
+
+            if (!fisier) {
+
+                return;
+
+            }
+
+            showMessage(
+                "Fisier selectat: " + fisier.name,
+                "success"
+            );
 
         }
 
