@@ -36,13 +36,13 @@ body{
 }
 
 
-/* ===== SIMULARE TELEFON ===== */
+/* ===== SIMULARE TELEFON - SCALARE AUTOMATA PE MONITOR ===== */
 
 .phone-frame{
 
-    width:min(390px, 95vw);
+    width:min(390px, 95vw, calc((100vh - 30px) * 390 / 844));
 
-    aspect-ratio:390 / 844;
+    height:calc(min(390px, 95vw, calc((100vh - 30px) * 390 / 844)) * 844 / 390);
 
     background:#000000;
 
@@ -153,8 +153,6 @@ body{
 
         width:100%;
         height:100vh;
-
-        aspect-ratio:auto;
 
         border:none;
         border-radius:0;
