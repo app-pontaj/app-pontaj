@@ -22,6 +22,9 @@
     <!-- ===== SUPABASE LIBRARY ===== -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
+    <!-- ===== CITIRE FISIERE EXCEL ===== -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
     <!-- ===== GRAFICA MESAJE ===== -->
     <style>
 
@@ -82,6 +85,37 @@
             text-align: center;
             margin-bottom: 10px;
             font-weight: bold;
+        }
+
+        .excel-preview {
+            width: 92%;
+            max-height: 180px;
+            overflow: auto;
+            background: #ffffff;
+            color: #111111;
+            border-radius: 12px;
+            padding: 8px;
+            font-size: 11px;
+            display: none;
+        }
+
+        .excel-preview table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        .excel-preview td {
+            border: 1px solid #cccccc;
+            padding: 4px;
+            white-space: nowrap;
+        }
+
+        .excel-preview-title {
+            color: #d4af37;
+            font-size: 14px;
+            font-weight: bold;
+            display: none;
+            margin-top: 8px;
         }
 
     </style>
@@ -182,6 +216,20 @@
                         style="display:none;"
                         onchange="selecteazaFisier()"
                     >
+
+                    <!-- ===== PREVIZUALIZARE FISIER EXCEL ===== -->
+                    <div
+                        class="excel-preview-title"
+                        id="excel-preview-title"
+                    >
+                        Primele randuri citite
+                    </div>
+
+                    <div
+                        class="excel-preview"
+                        id="excel-preview"
+                    >
+                    </div>
 
                     <button
                         class="menu-card"
@@ -431,7 +479,7 @@
 
         }
 
-        // ===== SELECTARE FISIER PONTAJ =====
+        // ===== SELECTARE SI CITIRE FISIER PONTAJ =====
         function selecteazaFisier() {
 
             const fisier = document.getElementById("fisier-pontaj").files[0];
@@ -442,10 +490,81 @@
 
             }
 
-            showMessage(
-                "Fisier selectat: " + fisier.name,
-                "success"
-            );
+            const reader = new FileReader();
+
+            reader.onload = function(event) {
+
+                try {
+
+                    const dateFisier = new Uint8Array(event.target.result);
+
+                    const workbook = XLSX.read(dateFisier, {
+                        type: "array"
+                    });
+
+                    const primaFoaie = workbook.SheetNames[0];
+
+                    const worksheet = workbook.Sheets[primaFoaie];
+
+                    const randuri = XLSX.utils.sheet_to_json(worksheet, {
+                        header: 1,
+                        defval: ""
+                    });
+
+                    afiseazaPrimeleRanduri(randuri);
+
+                    showMessage(
+                        "Fisier citit: " + fisier.name,
+                        "success"
+                    );
+
+                } catch (error) {
+
+                    showMessage(
+                        "Fisierul nu a putut fi citit",
+                        "error"
+                    );
+
+                }
+
+            };
+
+            reader.readAsArrayBuffer(fisier);
+
+        }
+
+        // ===== AFISARE PRIMELE RANDURI DIN EXCEL =====
+        function afiseazaPrimeleRanduri(randuri) {
+
+            const preview = document.getElementById("excel-preview");
+
+            const titlu = document.getElementById("excel-preview-title");
+
+            const primeleRanduri = randuri.slice(0, 10);
+
+            let tabel = "<table>";
+
+            primeleRanduri.forEach(function(rand) {
+
+                tabel += "<tr>";
+
+                rand.forEach(function(celula) {
+
+                    tabel += "<td>" + celula + "</td>";
+
+                });
+
+                tabel += "</tr>";
+
+            });
+
+            tabel += "</table>";
+
+            preview.innerHTML = tabel;
+
+            preview.style.display = "block";
+
+            titlu.style.display = "block";
 
         }
 
