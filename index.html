@@ -41,7 +41,10 @@
                 </div>
 
                 <!-- ===== LOGIN ===== -->
-                <div class="main-menu">
+                <div
+                    class="main-menu"
+                    id="login-box"
+                >
 
                     <input
                         type="email"
@@ -62,6 +65,34 @@
                         onclick="loginUser()"
                     >
                         LOGIN
+                    </button>
+
+                </div>
+
+                <!-- ===== MENIU PRINCIPAL ===== -->
+                <div
+                    class="main-menu"
+                    id="main-menu"
+                    style="display:none;"
+                >
+
+                    <div class="menu-card">
+                        Angajati
+                    </div>
+
+                    <div class="menu-card">
+                        Raport luna curenta
+                    </div>
+
+                    <div class="menu-card">
+                        Rapoarte
+                    </div>
+
+                    <button
+                        class="menu-card"
+                        onclick="logoutUser()"
+                    >
+                        LOGOUT
                     </button>
 
                 </div>
@@ -104,9 +135,41 @@
 
             }
 
+            document.getElementById("login-box").style.display = "none";
+
+            document.getElementById("main-menu").style.display = "flex";
+
             alert("Login reusit");
 
         }
+
+        // ===== VERIFICARE SESIUNE =====
+        async function checkSession() {
+
+            const {
+                data
+            } = await supabaseClient.auth.getSession();
+
+            if (data.session) {
+
+                document.getElementById("login-box").style.display = "none";
+
+                document.getElementById("main-menu").style.display = "flex";
+
+            }
+
+        }
+
+        // ===== LOGOUT =====
+        async function logoutUser() {
+
+            await supabaseClient.auth.signOut();
+
+            location.reload();
+
+        }
+
+        checkSession();
 
     </script>
 
