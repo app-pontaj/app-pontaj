@@ -16,6 +16,8 @@ body{
     font-family:Arial, Helvetica, sans-serif;
 
     min-height:100vh;
+
+    overflow:hidden;
 }
 
 
@@ -24,13 +26,13 @@ body{
 .desktop-wrapper{
 
     width:100%;
-    min-height:100vh;
+    height:100vh;
 
     display:flex;
     justify-content:center;
     align-items:center;
 
-    padding:20px;
+    padding:15px;
 }
 
 
@@ -38,8 +40,9 @@ body{
 
 .phone-frame{
 
-    width:390px;
-    height:844px;
+    width:min(390px, 95vw);
+
+    aspect-ratio:390 / 844;
 
     background:#000000;
 
@@ -137,6 +140,10 @@ body{
 
 @media(max-width:700px){
 
+    body{
+        overflow:auto;
+    }
+
     .desktop-wrapper{
 
         padding:0;
@@ -146,6 +153,8 @@ body{
 
         width:100%;
         height:100vh;
+
+        aspect-ratio:auto;
 
         border:none;
         border-radius:0;
