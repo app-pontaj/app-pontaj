@@ -19,6 +19,9 @@
     <!-- ===== FISIER CSS ===== -->
     <link rel="stylesheet" href="style.css">
 
+    <!-- ===== SUPABASE LIBRARY ===== -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 </head>
 
 <body>
@@ -59,6 +62,22 @@
         </div>
 
     </div>
+
+    <!-- ===== CONECTARE SUPABASE ===== -->
+    <script>
+
+        const SUPABASE_URL = "https://xnkvrbccegzpzkbmbnwq.supabase.co";
+
+        const SUPABASE_KEY = "sb_publishable_K9GYHHRPeKadCipve58aKA_JGoPzTy_";
+
+        const supabaseClient = supabase.createClient(
+            SUPABASE_URL,
+            SUPABASE_KEY
+        );
+
+        console.log("Supabase conectat");
+
+    </script>
 
 </body>
 
