@@ -213,6 +213,26 @@
             SUPABASE_KEY
         );
 
+        // ===== DATE UTILIZATOR LOGAT =====
+        // Salvam aici utilizatorul logat, ca sa stim ce drepturi are.
+        let utilizatorLogat = null;
+
+        // ===== VERIFICARE FULL ACCESS =====
+        // FULL ACCESS poate vedea si modifica tot.
+        function esteFullAccess() {
+
+            return utilizatorLogat && utilizatorLogat.acces === "FULL ACCESS";
+
+        }
+
+        // ===== VERIFICARE ONLY VIEW =====
+        // ONLY VIEW poate doar sa vada datele proprii.
+        function esteOnlyView() {
+
+            return utilizatorLogat && utilizatorLogat.acces === "ONLY VIEW";
+
+        }
+
         // ===== AFISARE MESAJ =====
         function showMessage(text, type) {
 
@@ -258,6 +278,8 @@
         // ===== AFISARE MENIU PRINCIPAL =====
         function showMainMenu(userData) {
 
+            utilizatorLogat = userData;
+
             document.getElementById("login-box").style.display = "none";
 
             document.getElementById("main-menu").style.display = "flex";
@@ -272,7 +294,7 @@
 
             const { data, error } = await supabaseClient
                 .from("utilizatori")
-                .select("nume, acces")
+                .select("nume, acces, email")
                 .eq("email", email)
                 .single();
 
@@ -356,6 +378,8 @@
 
         // ===== LOGOUT =====
         async function logoutUser() {
+
+            utilizatorLogat = null;
 
             await supabaseClient.auth.signOut();
 
