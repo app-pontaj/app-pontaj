@@ -40,20 +40,29 @@
                     PONTAJ
                 </div>
 
-                <!-- ===== MENIU PRINCIPAL ===== -->
+                <!-- ===== LOGIN ===== -->
                 <div class="main-menu">
 
-                    <div class="menu-card">
-                        Angajati
-                    </div>
+                    <input
+                        type="email"
+                        id="email"
+                        placeholder="Email"
+                        class="login-input"
+                    >
 
-                    <div class="menu-card">
-                        Raport luna curenta
-                    </div>
+                    <input
+                        type="password"
+                        id="password"
+                        placeholder="Parola"
+                        class="login-input"
+                    >
 
-                    <div class="menu-card">
-                        Rapoarte
-                    </div>
+                    <button
+                        class="menu-card"
+                        onclick="loginUser()"
+                    >
+                        LOGIN
+                    </button>
 
                 </div>
 
@@ -75,7 +84,29 @@
             SUPABASE_KEY
         );
 
-        console.log("Supabase conectat");
+        // ===== LOGIN USER =====
+        async function loginUser() {
+
+            const email = document.getElementById("email").value;
+
+            const password = document.getElementById("password").value;
+
+            const { error } = await supabaseClient.auth.signInWithPassword({
+                email: email,
+                password: password
+            });
+
+            if (error) {
+
+                alert("Email sau parola gresita");
+
+                return;
+
+            }
+
+            alert("Login reusit");
+
+        }
 
     </script>
 
