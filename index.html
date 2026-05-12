@@ -118,6 +118,27 @@
             margin-top: 8px;
         }
 
+        .password-wrap {
+            position: relative;
+            width: 100%;
+        }
+
+        .password-wrap .login-input {
+            width: 100%;
+            padding-right: 48px;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            font-size: 20px;
+            color: #d4af37;
+            user-select: none;
+        }
+
     </style>
 
 </head>
@@ -155,20 +176,35 @@
                         class="login-input"
                     >
 
-                    <input
-                        type="password"
-                        id="password"
-                        placeholder="Parola"
-                        class="login-input"
-                    >
+                    <div class="password-wrap">
+                        <input
+                            type="password"
+                            id="password"
+                            placeholder="Parola"
+                            class="login-input"
+                        >
+                        <span
+                            class="password-toggle"
+                            onclick="togglePassword('password', this)"
+                        >👁</span>
+                    </div>
 
-                    <input
-                        type="password"
-                        id="password2"
-                        placeholder="Repeta parola"
-                        class="login-input"
+                    <div
+                        class="password-wrap"
+                        id="password2-wrap"
                         style="display:none;"
                     >
+                        <input
+                            type="password"
+                            id="password2"
+                            placeholder="Repeta parola"
+                            class="login-input"
+                        >
+                        <span
+                            class="password-toggle"
+                            onclick="togglePassword('password2', this)"
+                        >👁</span>
+                    </div>
 
                     <button
                         class="menu-card"
@@ -382,6 +418,28 @@
 
         }
 
+
+        // ===== AFISARE / ASCUNDERE PAROLA =====
+        function togglePassword(inputId, icon) {
+
+            const input = document.getElementById(inputId);
+
+            if (input.type === "password") {
+
+                input.type = "text";
+
+                icon.innerHTML = "🙈";
+
+            } else {
+
+                input.type = "password";
+
+                icon.innerHTML = "👁";
+
+            }
+
+        }
+
         // ===== LOGIN USER =====
         async function loginUser() {
 
@@ -411,7 +469,7 @@
             // ===== PRIMA LOGARE =====
             if (!data.parola || data.parola === "") {
 
-                document.getElementById("password2").style.display = "block";
+                document.getElementById("password2-wrap").style.display = "block";
 
                 if (password2 === "") {
 
@@ -524,7 +582,7 @@
 
             const reader = new FileReader();
 
-            reader.onload = function(event) {
+            reader.onload = async function(event) {
 
                 try {
 
@@ -544,8 +602,6 @@
                     });
 
                     afiseazaPrimeleRanduri(randuri);
-
-                    await salveazaPontajZilnic(randuri);
 
                     showMessage(
                         "Fisier citit: " + fisier.name,
@@ -601,86 +657,6 @@
             titlu.style.display = "block";
 
         }
-
-
-        // ===== SALVARE PONTAJ ZILNIC IN SUPABASE =====
-        async function salveazaPontajZilnic(randuri) {
-
-            const grupare = {};
-
-            for (let i = 1; i < randuri.length; i++) {
-
-                const rand = randuri[i];
-
-                const nume = String(rand[3] || "").trim();
-                const departament = String(rand[4] || "").trim();
-                const dataOra = String(rand[5] || "").trim();
-
-                if (!nume || !dataOra) {
-                    continue;
-                }
-
-                const dataSplit = dataOra.split(" ");
-
-                const data = dataSplit[0];
-
-                const ora = dataSplit[1] || "";
-
-                const cheie = nume + "|" + data;
-
-                if (!grupare[cheie]) {
-
-                    grupare[cheie] = {
-                        nume: nume,
-                        departament: departament,
-                        data: data,
-                        ora_intrare: ora,
-                        ora_iesire: ora,
-                        nr_pontari: 1
-                    };
-
-                } else {
-
-                    grupare[cheie].ora_iesire = ora;
-
-                    grupare[cheie].nr_pontari++;
-
-                }
-
-            }
-
-            const rezultate = Object.values(grupare);
-
-            for (const pontaj of rezultate) {
-
-                const cheieUnica =
-                    pontaj.nume + "|" +
-                    pontaj.data;
-
-                await supabaseClient
-                    .from("pontaj_zilnic")
-                    .upsert([{
-                        nume: pontaj.nume,
-                        departament: pontaj.departament,
-                        data: pontaj.data,
-                        ora_intrare: pontaj.ora_intrare,
-                        ora_iesire: pontaj.ora_iesire,
-                        nr_pontari: pontaj.nr_pontari,
-                        importat_de: utilizatorLogat?.nume || "",
-                        cheie_unica: cheieUnica
-                    }], {
-                        onConflict: "cheie_unica"
-                    });
-
-            }
-
-            showMessage(
-                "Import salvat in Supabase",
-                "success"
-            );
-
-        }
-
 
         checkSession();
 
