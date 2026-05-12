@@ -603,6 +603,8 @@
 
                     afiseazaPrimeleRanduri(randuri);
 
+                    await salveazaPontajZilnic(randuri);
+
                     showMessage(
                         "Fisier citit: " + fisier.name,
                         "success"
@@ -657,6 +659,119 @@
             titlu.style.display = "block";
 
         }
+
+
+        // ===== SALVARE PONTAJ ZILNIC IN SUPABASE =====
+        async function salveazaPontajZilnic(randuri) {
+
+            try {
+
+                const grupare = {};
+
+                for (let i = 1; i < randuri.length; i++) {
+
+                    const rand = randuri[i];
+
+                    const nume = String(rand[3] || "").trim();
+                    const departament = String(rand[4] || "").trim();
+                    const dataOra = String(rand[5] || "").trim();
+
+                    if (!nume || !dataOra) {
+                        continue;
+                    }
+
+                    const parti = dataOra.split(" ");
+
+                    const data = parti[0] || "";
+                    const ora = parti[1] || "";
+
+                    const cheie = nume + "|" + data;
+
+                    if (!grupare[cheie]) {
+
+                        grupare[cheie] = {
+                            nume: nume,
+                            departament: departament,
+                            data: data,
+                            ora_intrare: ora,
+                            ora_iesire: ora,
+                            nr_pontari: 1
+                        };
+
+                    } else {
+
+                        grupare[cheie].ora_iesire = ora;
+                        grupare[cheie].nr_pontari++;
+
+                    }
+
+                }
+
+                const rezultate = Object.values(grupare);
+
+                console.log("REZULTATE:", rezultate);
+
+                const { data, error } = await supabaseClient
+                    .from("pontaj_zilnic")
+                    .upsert(
+
+                        rezultate.map(function(pontaj) {
+
+                            return {
+
+                                nume: pontaj.nume,
+                                departament: pontaj.departament,
+                                data: pontaj.data,
+                                ora_intrare: pontaj.ora_intrare,
+                                ora_iesire: pontaj.ora_iesire,
+                                nr_pontari: pontaj.nr_pontari,
+                                importat_de: utilizatorLogat?.nume || "",
+                                cheie_unica:
+                                    pontaj.nume + "|" + pontaj.data
+
+                            };
+
+                        }),
+
+                        {
+                            onConflict: "cheie_unica"
+                        }
+
+                    );
+
+                console.log("SUPABASE DATA:", data);
+                console.log("SUPABASE ERROR:", error);
+
+                if (error) {
+
+                    showMessage(
+                        "Eroare salvare Supabase",
+                        "error"
+                    );
+
+                    return;
+
+                }
+
+                showMessage(
+                    "Import salvat in Supabase",
+                    "success"
+                );
+
+            } catch(err) {
+
+                console.log(err);
+
+                showMessage(
+                    "Eroare import",
+                    "error"
+                );
+
+            }
+
+        }
+
+
 
         checkSession();
 
