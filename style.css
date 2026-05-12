@@ -10,9 +10,13 @@
 /* ===== FUNDAL PAGINA ===== */
 
 body{
-    background:radial-gradient(circle at top, #262626 0%, #111111 45%, #050505 100%);
+
+    background:#161616;
+
     font-family:Arial, Helvetica, sans-serif;
+
     min-height:100vh;
+
     overflow:hidden;
 }
 
@@ -20,296 +24,231 @@ body{
 /* ===== CENTRARE DESKTOP ===== */
 
 .desktop-wrapper{
+
     width:100%;
     height:100vh;
+
     display:flex;
     justify-content:center;
     align-items:center;
-    padding:14px;
+
+    padding:10px;
 }
 
 
-/* ===== SIMULARE TELEFON - SCALARE AUTOMATA PE MONITOR ===== */
+/* ===== SIMULARE TELEFON ===== */
 
 .phone-frame{
-    width:min(420px, 96vw, calc((100vh - 28px) * 420 / 860));
-    height:calc(min(420px, 96vw, calc((100vh - 28px) * 420 / 860)) * 860 / 420);
-    background:linear-gradient(145deg, #050505, #151515);
-    border:4px solid #9c9c9c;
-    border-radius:48px;
+
+    width:min(390px, 95vw, calc((100vh - 20px) * 390 / 844));
+
+    height:calc(min(390px, 95vw, calc((100vh - 20px) * 390 / 844)) * 844 / 390);
+
+    background:#000000;
+
+    border:4px solid #9b9b9b;
+
+    border-radius:44px;
+
     overflow:hidden;
-    box-shadow:0 0 44px rgba(0,0,0,0.85), inset 0 0 18px rgba(255,255,255,0.08);
-    position:relative;
-}
 
-.phone-frame:after{
-    content:"";
-    position:absolute;
-    top:34px;
-    right:8px;
-    width:8px;
-    height:calc(100% - 68px);
-    border-radius:10px;
-    background:linear-gradient(to bottom, #ffffff, #9d9d9d, #ffffff);
-    opacity:0.9;
+    box-shadow:
+        0 0 40px rgba(0,0,0,0.7),
+        0 0 25px rgba(212,175,55,0.10);
 }
 
 
-/* ===== ECRAN APLICATIE ===== */
+/* ===== ECRAN ===== */
 
 .app-screen{
+
     width:100%;
     height:100%;
-    background:linear-gradient(160deg, #080808 0%, #151515 45%, #090909 100%);
-    padding:34px 24px 18px 24px;
+
+    background:
+        radial-gradient(circle at top, rgba(212,175,55,0.08), transparent 35%),
+        #050505;
+
+    padding:20px 16px;
+
     overflow-y:auto;
-    scrollbar-width:thin;
-    scrollbar-color:#d4af37 #151515;
+
+    scrollbar-width:none;
 }
 
 .app-screen::-webkit-scrollbar{
-    width:5px;
-}
-
-.app-screen::-webkit-scrollbar-thumb{
-    background:#d4af37;
-    border-radius:10px;
+    display:none;
 }
 
 
-/* ===== HEADER PREMIUM ===== */
-
-.premium-header{
-    width:100%;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    gap:12px;
-}
-
-.premium-header-icon{
-    width:50px;
-    height:50px;
-    border:2px solid #d4af37;
-    border-radius:50%;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    color:#d4af37;
-    font-size:24px;
-    background:rgba(212,175,55,0.08);
-    box-shadow:0 0 16px rgba(212,175,55,0.18);
-}
+/* ===== TITLU ===== */
 
 .header-title{
-    flex:1;
-    text-align:center;
-    color:#ffffff;
-    font-size:36px;
-    font-weight:900;
-    letter-spacing:3px;
-    text-shadow:0 0 18px rgba(255,255,255,0.18);
-}
 
-.premium-line{
     width:100%;
-    height:2px;
-    background:linear-gradient(to right, transparent, #d4af37, transparent);
-    margin:28px 0 24px 0;
+
+    text-align:center;
+
+    color:#ffffff;
+
+    font-size:24px;
+
+    font-weight:bold;
+
+    letter-spacing:2px;
+
+    margin-top:6px;
+
+    margin-bottom:20px;
 }
 
 
 /* ===== MENIU ===== */
 
 .main-menu{
+
     width:100%;
-    margin-top:0;
+
     display:flex;
+
     flex-direction:column;
-    gap:18px;
+
+    gap:14px;
 }
 
 
-/* ===== LOGIN ===== */
-
-.login-input{
-    width:100%;
-    min-height:58px;
-    border:1px solid rgba(212,175,55,0.45);
-    border-radius:18px;
-    background:linear-gradient(145deg, #171717, #0d0d0d);
-    color:#ffffff;
-    padding:0 18px;
-    font-size:18px;
-    font-weight:bold;
-    outline:none;
-    box-shadow:inset 0 0 12px rgba(255,255,255,0.04);
-}
-
-.login-input::placeholder{
-    color:rgba(255,255,255,0.48);
-}
-
-
-/* ===== CARD UTILIZATOR ===== */
-
-.user-card{
-    width:100%;
-    min-height:118px;
-    border:1px solid rgba(212,175,55,0.38);
-    border-radius:22px;
-    background:linear-gradient(145deg, rgba(255,255,255,0.08), rgba(0,0,0,0.45));
-    display:flex;
-    align-items:center;
-    padding:18px;
-    box-shadow:0 10px 24px rgba(0,0,0,0.45), inset 0 0 18px rgba(255,255,255,0.04);
-}
-
-.user-avatar{
-    width:76px;
-    height:76px;
-    border:2px solid #d4af37;
-    border-radius:50%;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    color:#d4af37;
-    font-size:30px;
-    font-weight:900;
-    background:#111111;
-    box-shadow:0 0 22px rgba(212,175,55,0.16);
-    flex-shrink:0;
-}
-
-.user-separator{
-    width:2px;
-    height:60px;
-    background:#d4af37;
-    margin:0 18px;
-    opacity:0.8;
-}
+/* ===== USER ===== */
 
 .user-info{
-    color:#ffffff;
-    font-size:21px;
-    line-height:1.3;
-    text-align:left;
-    font-weight:900;
+
+    width:100%;
+
+    min-height:88px;
+
+    border-radius:24px;
+
+    border:1px solid rgba(212,175,55,0.5);
+
+    background:
+        linear-gradient(90deg,
+        rgba(255,255,255,0.08),
+        rgba(0,0,0,0.95));
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    text-align:center;
+
+    color:#d4af37 !important;
+
+    font-size:15px !important;
+
+    font-weight:bold;
+
+    line-height:1.4;
+
+    padding:12px;
+
+    box-shadow:0 0 18px rgba(0,0,0,0.5);
 }
 
-.user-info br + *{
-    color:#d4af37;
-}
 
-
-/* ===== CASETE MENIU ===== */
+/* ===== BUTOANE ===== */
 
 .menu-card{
+
     width:100%;
-    min-height:86px;
-    border:1px solid rgba(255,255,255,0.16);
-    border-radius:20px;
-    background:linear-gradient(145deg, rgba(255,255,255,0.10), rgba(0,0,0,0.42));
+
+    min-height:64px;
+
+    border-radius:22px;
+
+    border:1px solid rgba(255,255,255,0.10);
+
+    background:
+        linear-gradient(90deg,
+        rgba(255,255,255,0.12),
+        rgba(0,0,0,0.96));
+
     color:#ffffff;
-    display:grid;
-    grid-template-columns:84px 1fr 34px;
-    align-items:center;
-    text-align:left;
-    padding:0;
-    font-size:23px;
-    font-weight:900;
-    box-shadow:0 9px 22px rgba(0,0,0,0.45), inset 0 0 18px rgba(255,255,255,0.04);
-    cursor:pointer;
-    overflow:hidden;
-}
 
-.menu-icon{
-    width:84px;
-    height:86px;
     display:flex;
+
     justify-content:center;
+
     align-items:center;
-    color:#d4af37;
-    font-size:31px;
-    border-right:1px solid rgba(255,255,255,0.12);
-    background:rgba(212,175,55,0.04);
-}
 
-.menu-text{
-    padding-left:20px;
-    text-shadow:0 0 12px rgba(255,255,255,0.12);
-}
-
-.menu-arrow{
-    color:#d4af37;
-    font-size:42px;
-    line-height:1;
-    padding-right:10px;
-}
-
-.logout-card{
-    border-color:rgba(255,80,90,0.75);
-    background:linear-gradient(145deg, rgba(90,20,24,0.45), rgba(0,0,0,0.55));
-    color:#ff5c66;
-    letter-spacing:2px;
-}
-
-.logout-card .menu-icon,
-.logout-card .menu-arrow{
-    color:#ff5c66;
-    border-right-color:rgba(255,80,90,0.24);
-}
-
-.secure-footer{
-    width:100%;
     text-align:center;
-    color:rgba(255,255,255,0.68);
-    font-size:15px;
-    padding:4px 0 8px 0;
-}
 
+    padding:10px 16px;
 
-/* ===== PREVIZUALIZARE EXCEL ===== */
+    font-size:16px;
 
-.excel-preview-title{
-    color:#d4af37;
-    font-size:14px;
     font-weight:bold;
-    display:none;
-    margin-top:2px;
+
+    line-height:1.2;
+
+    cursor:pointer;
+
+    transition:0.2s;
+
+    box-shadow:
+        0 4px 14px rgba(0,0,0,0.5),
+        inset 0 0 12px rgba(255,255,255,0.03);
 }
+
+.menu-card:hover{
+
+    transform:scale(1.01);
+
+    border-color:rgba(212,175,55,0.6);
+}
+
+
+/* ===== PREVIEW EXCEL ===== */
 
 .excel-preview{
+
     width:100%;
-    max-height:180px;
+
+    max-height:130px;
+
     overflow:auto;
+
     background:#ffffff;
+
     color:#111111;
-    border-radius:12px;
+
+    border-radius:14px;
+
     padding:8px;
-    font-size:11px;
+
+    font-size:10px;
+
     display:none;
 }
 
-.excel-preview table{
-    border-collapse:collapse;
-    width:100%;
+.excel-preview-title{
+
+    color:#d4af37;
+
+    font-size:13px;
+
+    font-weight:bold;
+
+    display:none;
 }
 
-.excel-preview td{
-    border:1px solid #cccccc;
-    padding:4px;
-    white-space:nowrap;
-}
 
-
-/* ===== TELEFON REAL ===== */
+/* ===== TELEFON ===== */
 
 @media(max-width:700px){
 
     body{
         overflow:auto;
-        background:#080808;
     }
 
     .desktop-wrapper{
@@ -317,40 +256,12 @@ body{
     }
 
     .phone-frame{
+
         width:100%;
         height:100vh;
+
         border:none;
         border-radius:0;
-    }
-
-    .phone-frame:after{
-        display:none;
-    }
-
-    .app-screen{
-        padding:28px 18px 18px 18px;
-    }
-
-    .header-title{
-        font-size:32px;
-    }
-
-    .premium-header-icon{
-        width:46px;
-        height:46px;
-        font-size:22px;
-    }
-
-    .menu-card{
-        min-height:80px;
-        grid-template-columns:76px 1fr 30px;
-        font-size:21px;
-    }
-
-    .menu-icon{
-        width:76px;
-        height:80px;
-        font-size:29px;
     }
 
 }
