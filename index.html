@@ -661,6 +661,7 @@
         }
 
 
+
         // ===== SALVARE PONTAJ ZILNIC IN SUPABASE =====
         async function salveazaPontajZilnic(randuri) {
 
@@ -674,40 +675,54 @@
 
                     const nume = String(rand[3] || "").trim();
                     const departament = String(rand[4] || "").trim();
-                    const dataOra = String(rand[5] || "").trim();
+                    const dataOraRaw = rand[5];
 
-                    if (!nume || !dataOra) {
+                    if (!nume || !dataOraRaw) {
                         continue;
                     }
 
-                    const parti = dataOra.split(" ");
+                    const dateInfo = convertesteDataOraExcel(dataOraRaw);
 
-                    const data = parti[0] || "";
-                    const ora = parti[1] || "";
+                    if (!dateInfo) {
+                        continue;
+                    }
 
-                    const cheie = nume + "|" + data;
+                    const cheie = nume + "|" + dateInfo.data;
 
                     if (!grupare[cheie]) {
 
                         grupare[cheie] = {
                             nume: nume,
                             departament: departament,
-                            data: data,
-                            ora_intrare: ora,
-                            ora_iesire: ora,
-                            nr_pontari: 1
+                            data: dateInfo.data,
+                            pontari: []
                         };
-
-                    } else {
-
-                        grupare[cheie].ora_iesire = ora;
-                        grupare[cheie].nr_pontari++;
 
                     }
 
+                    grupare[cheie].pontari.push(dateInfo);
+
                 }
 
-                const rezultate = Object.values(grupare);
+                const rezultate = Object.values(grupare).map(function(grup) {
+
+                    grup.pontari.sort(function(a, b) {
+                        return a.minute - b.minute;
+                    });
+
+                    const primaPontare = grup.pontari[0];
+                    const ultimaPontare = grup.pontari[grup.pontari.length - 1];
+
+                    return {
+                        nume: grup.nume,
+                        departament: grup.departament,
+                        data: grup.data,
+                        ora_intrare: primaPontare.ora,
+                        ora_iesire: ultimaPontare.ora,
+                        nr_pontari: grup.pontari.length
+                    };
+
+                });
 
                 console.log("REZULTATE:", rezultate);
 
@@ -768,6 +783,58 @@
                 );
 
             }
+
+        }
+
+        // ===== CONVERSIE DATA SI ORA EXCEL =====
+        function convertesteDataOraExcel(valoare) {
+
+            const text = String(valoare).trim();
+
+            const parti = text.split(" ");
+
+            if (parti.length < 3) {
+                return null;
+            }
+
+            const dataText = parti[0];
+            const oraText = parti[1];
+            const ampm = parti[2].toUpperCase();
+
+            const dataParti = dataText.split("/");
+
+            if (dataParti.length !== 3) {
+                return null;
+            }
+
+            const luna = dataParti[0].padStart(2, "0");
+            const zi = dataParti[1].padStart(2, "0");
+            const an = dataParti[2];
+
+            const oraParti = oraText.split(":");
+
+            if (oraParti.length < 2) {
+                return null;
+            }
+
+            let ora = parseInt(oraParti[0], 10);
+            const minut = parseInt(oraParti[1], 10);
+
+            if (ampm === "PM" && ora !== 12) {
+                ora += 12;
+            }
+
+            if (ampm === "AM" && ora === 12) {
+                ora = 0;
+            }
+
+            const minuteTotale = ora * 60 + minut;
+
+            return {
+                data: an + "-" + luna + "-" + zi,
+                ora: String(ora).padStart(2, "0") + ":" + String(minut).padStart(2, "0"),
+                minute: minuteTotale
+            };
 
         }
 
