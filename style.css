@@ -266,10 +266,11 @@ body{
 
 }
 
-/* ===== RAPORT LUNAR - ORE LUCRATE MAI SPRE MIJLOC ===== */
+/* ===== RAPORT LUNAR - ALINIERE ORE CU TOTALURI ===== */
 
 .monthly-value-cell{
-    grid-template-columns: 1fr 90px !important;
+    grid-template-columns: 162px 70px !important;
+    justify-content: start !important;
 }
 
 .monthly-hours-cell{
