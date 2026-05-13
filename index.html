@@ -677,6 +677,14 @@
                     const departament = String(rand[4] || "").trim();
                     const dataOraRaw = rand[5];
 
+                    // ===== EXCLUDERE ANGAJATI =====
+                    if (
+                        nume === "VOLINTIRU ANA MARIA" ||
+                        nume === "VOLINTIRU MIHAIL"
+                    ) {
+                        continue;
+                    }
+
                     if (!nume || !dataOraRaw) {
                         continue;
                     }
