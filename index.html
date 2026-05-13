@@ -2505,6 +2505,20 @@
             html += "</div>";
             html += "</div>";
 
+            const procentRealizat =
+                totalOreLucratoareMinute > 0
+                    ? ((totalMinuteLucrate / totalOreLucratoareMinute) * 100).toFixed(1)
+                    : "0.0";
+
+            html += "<div style='height:10px;'></div>";
+
+            html += "<div style='padding:0 10px 12px 10px;font-family:Montserrat,Arial,sans-serif;'>";
+            html += "<div style='display:grid;grid-template-columns:210px 70px;align-items:center;color:#ffffff;font-size:12px;font-weight:900;'>";
+            html += "<div>Procent:</div>";
+            html += "<div style='color:#2f7dff;text-align:left;font-weight:900;'>" + procentRealizat + "%</div>";
+            html += "</div>";
+            html += "</div>";
+
             grid.innerHTML = html;
 
         }
