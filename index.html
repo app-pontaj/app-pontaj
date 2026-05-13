@@ -1302,10 +1302,14 @@
                         continue;
                     }
 
-                    // ===== EXCLUDERE ANGAJATI =====
+                    // ===== EXCLUDERE ANGAJATI DIN SUPABASE =====
+                    const angajatGasit = listaAngajatiSupabase.find(function(angajat) {
+                        return String(angajat.nume || "").trim() === nume;
+                    });
+
                     if (
-                        nume === "VOLINTIRU ANA MARIA" ||
-                        nume === "VOLINTIRU MIHAIL"
+                        angajatGasit &&
+                        angajatGasit.apare_in_rapoarte === false
                     ) {
                         continue;
                     }
