@@ -2475,17 +2475,34 @@
 
             html += "<div style='height:12px;'></div>";
 
-            html += "<div style='padding:0 10px 0 10px;color:#ffffff;font-size:11px;font-weight:700;line-height:1.9;font-family:Montserrat,Arial,sans-serif;'>";
-            html += "Total ore lucrătoare pe lună: <span style='color:#d4af37;'>" + formateazaMinuteOra(totalOreLucratoareMinute) + "</span><br>";
-            html += "Total ore lucrate pe lună: <span style='color:#d4af37;'>" + formateazaMinuteOra(totalMinuteLucrate) + "</span>";
+            const culoareDiferenta =
+                diferentaMinute < 0
+                    ? "#ff3b3b"
+                    : "#d4af37";
+
+            html += "<div style='padding:0 10px 0 10px;font-family:Montserrat,Arial,sans-serif;'>";
+
+            html += "<div style='display:grid;grid-template-columns:210px 70px;align-items:center;color:#ffffff;font-size:11px;font-weight:700;line-height:1.9;'>";
+            html += "<div>Total ore lucrătoare pe lună:</div>";
+            html += "<div style='color:#d4af37;text-align:left;'>" + formateazaMinuteOra(totalOreLucratoareMinute) + "</div>";
+            html += "</div>";
+
+            html += "<div style='display:grid;grid-template-columns:210px 70px;align-items:center;color:#ffffff;font-size:11px;font-weight:700;line-height:1.9;'>";
+            html += "<div>Total ore lucrate pe lună:</div>";
+            html += "<div style='color:#d4af37;text-align:left;'>" + formateazaMinuteOra(totalMinuteLucrate) + "</div>";
+            html += "</div>";
+
             html += "</div>";
 
             html += "<div style='width:235px;height:1px;background:rgba(212,175,55,0.9);margin:6px 0 0 10px;'></div>";
 
             html += "<div style='height:10px;'></div>";
 
-            html += "<div style='padding:0 10px 10px 10px;color:#ffffff;font-size:12px;font-weight:900;font-family:Montserrat,Arial,sans-serif;'>";
-            html += "Diferență: <span style='color:#d4af37;'>" + diferentaText + "</span>";
+            html += "<div style='padding:0 10px 10px 10px;font-family:Montserrat,Arial,sans-serif;'>";
+            html += "<div style='display:grid;grid-template-columns:210px 70px;align-items:center;color:#ffffff;font-size:12px;font-weight:900;'>";
+            html += "<div>Diferență:</div>";
+            html += "<div style='color:" + culoareDiferenta + ";text-align:left;'>" + diferentaText + "</div>";
+            html += "</div>";
             html += "</div>";
 
             grid.innerHTML = html;
