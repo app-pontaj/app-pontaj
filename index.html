@@ -2105,6 +2105,34 @@
 
         }
 
+        // ===== VERIFICARE ANGAJAT PERMIS IN RAPOARTE =====
+        function esteAngajatPermisInRapoarte(nume) {
+
+            const numeCurat = String(nume || "").trim();
+
+            const angajat = listaAngajatiSupabase.find(function(item) {
+                return String(item.nume || "").trim() === numeCurat;
+            });
+
+            if (!angajat) {
+                return true;
+            }
+
+            if (angajat.apare_in_rapoarte === false) {
+                return false;
+            }
+
+            if (
+                angajat.activ === false &&
+                angajat.data_inactiv
+            ) {
+                return false;
+            }
+
+            return true;
+
+        }
+
         // ===== CAUTARE LIVE ANGAJATI =====
         function cautaAngajatiLive() {
 
@@ -2125,6 +2153,17 @@
             }
 
             const rezultate = listaAngajatiSupabase.filter(function(angajat) {
+
+                if (angajat.apare_in_rapoarte === false) {
+                    return false;
+                }
+
+                if (
+                    angajat.activ === false &&
+                    angajat.data_inactiv
+                ) {
+                    return false;
+                }
 
                 return String(angajat.nume || "")
                     .toLowerCase()
@@ -2151,6 +2190,23 @@
 
         // ===== SELECTARE ANGAJAT RAPORT =====
         function selecteazaAngajatRaport(nume) {
+
+            if (!esteAngajatPermisInRapoarte(nume)) {
+
+                angajatSelectatRaport = "";
+
+                document.getElementById("employee-search-input").value = "";
+
+                document.getElementById("employee-search-results").innerHTML = "";
+
+                showMessage(
+                    "Angajat exclus din rapoarte",
+                    "error"
+                );
+
+                return;
+
+            }
 
             angajatSelectatRaport = nume;
 
@@ -2270,6 +2326,17 @@
 
                 showMessage(
                     "Selectează angajatul",
+                    "error"
+                );
+
+                return;
+
+            }
+
+            if (!esteAngajatPermisInRapoarte(angajatSelectatRaport)) {
+
+                showMessage(
+                    "Angajat exclus din rapoarte",
                     "error"
                 );
 
