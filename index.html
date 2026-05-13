@@ -695,11 +695,11 @@
                         </button>
 
                         <div class="report-title">
-                            Zile fără pontaj
+                            Rapoarte
                         </div>
 
                         <div class="report-subtitle">
-                            Luni - Vineri, fără zile libere legale
+                            Alege luna raportului
                         </div>
                     </div>
 
@@ -1516,12 +1516,6 @@
 
         // ===== DESCHIDERE PAGINA RAPORT TEST =====
         async function deschidePaginaRaportTest() {
-
-            const continutRaport = await genereazaRaportZileFaraPontaj();
-
-            if (!continutRaport) {
-                return;
-            }
 
             document.getElementById("main-menu").style.display = "none";
             document.getElementById("report-page").style.display = "block";
