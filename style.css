@@ -265,3 +265,15 @@ body{
     }
 
 }
+
+/* ===== RAPORT LUNAR - ORE LUCRATE MAI SPRE MIJLOC ===== */
+
+.monthly-value-cell{
+    grid-template-columns: 1fr 90px !important;
+}
+
+.monthly-hours-cell{
+    text-align: left !important;
+    padding-left: 0 !important;
+}
+
