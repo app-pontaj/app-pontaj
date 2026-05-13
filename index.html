@@ -240,70 +240,99 @@
         }
 
 
-        .report-top-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 24px;
+        .report-page {
+            width: 100%;
+            height: 100%;
+            padding: 22px 14px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            background: #050505;
         }
 
-        .back-modern {
+        .report-header {
+            position: sticky;
+            top: 0;
+            background: #050505;
+            padding-bottom: 16px;
+            z-index: 2;
+        }
+
+        .report-top-row {
+            display: grid;
+            grid-template-columns: 95px 1fr 95px;
+            align-items: center;
+            margin-bottom: 18px;
+        }
+
+        .report-back-modern {
             background: transparent;
             border: none;
             color: #ff4d4d;
-            font-size: 24px;
-            font-weight: bold;
+            font-size: 22px;
+            font-weight: 800;
+            text-align: left;
             cursor: pointer;
+            padding: 0;
+            line-height: 1;
         }
 
         .report-title-modern {
             color: #ffffff;
             font-size: 30px;
-            font-weight: bold;
-            flex: 1;
+            font-weight: 900;
             text-align: center;
-            margin-right: 40px;
+            letter-spacing: 0.5px;
+            line-height: 1;
         }
 
-        .report-search-row {
+        .report-gold-line {
+            width: 100%;
+            height: 1px;
+            background: #d4af37;
+            margin-bottom: 20px;
+        }
+
+        .report-filter-row {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 12px;
-            margin-bottom: 22px;
+            margin-bottom: 20px;
         }
 
-        .report-filter-box {
-            min-height: 54px;
-            border-radius: 16px;
-            border: none;
-            background: linear-gradient(180deg, #f4d03f, #d4af37);
-            color: #111111;
-            font-size: 16px;
-            font-weight: bold;
+        .report-filter-card {
+            height: 52px;
+            border-radius: 15px;
+            border: 2px solid #d4af37;
+            background: #050505;
+            color: #d4af37;
+            font-size: 15px;
+            font-weight: 900;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 0 10px;
+            text-align: center;
+            line-height: 1.15;
         }
 
         .months-grid {
+            width: 100%;
             display: grid;
-            grid-template-columns: repeat(6, auto);
-            gap: 10px;
-            justify-content: center;
+            grid-template-columns: repeat(6, minmax(0, 1fr));
+            gap: 8px;
         }
 
         .month-card {
-            min-width: 58px;
             height: 42px;
-            padding: 0 12px;
-            border-radius: 12px;
+            min-width: 0;
+            padding: 0;
+            border-radius: 11px;
             border: none;
             background: linear-gradient(180deg, #f4d03f, #d4af37);
             color: #111111;
             font-size: 16px;
-            font-weight: bold;
+            font-weight: 900;
             cursor: pointer;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.45);
         }
 
 
@@ -443,9 +472,9 @@
 
                 <!-- ===== TITLU APLICATIE ===== -->
                 <div class="premium-header">
-                    <div class="premium-header-icon"></div>
+                    <div class="premium-header-icon">⌚</div>
                     <div class="header-title">PONTAJ</div>
-                    <div class="premium-header-icon"></div>
+                    <div class="premium-header-icon">👤</div>
                 </div>
 
                 <div class="premium-line"></div>
@@ -738,25 +767,29 @@
                         <div class="report-top-row">
 
                             <button
-                                class="back-modern"
+                                class="report-back-modern"
                                 onclick="inchidePaginaRaportTest()"
                             >
-                                ← Back
+                                ‹ Back
                             </button>
 
                             <div class="report-title-modern">
                                 Rapoarte
                             </div>
 
+                            <div></div>
+
                         </div>
 
-                        <div class="report-search-row">
+                        <div class="report-gold-line"></div>
 
-                            <div class="report-filter-box">
+                        <div class="report-filter-row">
+
+                            <div class="report-filter-card">
                                 Cauta angajat
                             </div>
 
-                            <div class="report-filter-box">
+                            <div class="report-filter-card">
                                 Toti angajatii
                             </div>
 
@@ -773,12 +806,11 @@
                         <button class="month-card">Feb</button>
                         <button class="month-card">Mar</button>
                         <button class="month-card">Apr</button>
-
                         <button class="month-card">Mai</button>
                         <button class="month-card">Iun</button>
+
                         <button class="month-card">Iul</button>
                         <button class="month-card">Aug</button>
-
                         <button class="month-card">Sep</button>
                         <button class="month-card">Oct</button>
                         <button class="month-card">Noi</button>
@@ -1578,6 +1610,9 @@
         // ===== DESCHIDERE PAGINA RAPORT TEST =====
         async function deschidePaginaRaportTest() {
 
+            document.querySelector(".premium-header").style.display = "none";
+            document.querySelector(".premium-line").style.display = "none";
+
             document.getElementById("main-menu").style.display = "none";
             document.getElementById("report-page").style.display = "block";
 
@@ -1588,6 +1623,9 @@
 
             document.getElementById("report-page").style.display = "none";
             document.getElementById("main-menu").style.display = "flex";
+
+            document.querySelector(".premium-header").style.display = "flex";
+            document.querySelector(".premium-line").style.display = "block";
 
         }
 
