@@ -139,6 +139,21 @@
             user-select: none;
         }
 
+        .raport-angajat {
+            font-weight: bold;
+            color: #111111;
+            margin-top: 8px;
+            margin-bottom: 3px;
+        }
+
+        .raport-zile {
+            font-size: 11px;
+            color: #333333;
+            margin-bottom: 6px;
+            border-bottom: 1px solid #dddddd;
+            padding-bottom: 5px;
+        }
+
     </style>
 
 </head>
@@ -245,7 +260,10 @@
                         <span class="menu-arrow">›</span>
                     </div>
 
-                    <div class="menu-card">
+                    <div
+                        class="menu-card"
+                        onclick="afiseazaRaportZileFaraPontaj()"
+                    >
                         <span class="menu-icon">📊</span>
                         <span class="menu-text">Rapoarte</span>
                         <span class="menu-arrow">›</span>
@@ -281,6 +299,20 @@
                     <div
                         class="excel-preview"
                         id="excel-preview"
+                    >
+                    </div>
+
+                    <!-- ===== RAPORT TEST ZILE FARA PONTAJ ===== -->
+                    <div
+                        class="excel-preview-title"
+                        id="raport-zile-title"
+                    >
+                        Zile fara pontaj Luni - Vineri
+                    </div>
+
+                    <div
+                        class="excel-preview"
+                        id="raport-zile-box"
                     >
                     </div>
 
@@ -345,6 +377,9 @@
 
         // ===== DATE UTILIZATOR LOGAT =====
         let utilizatorLogat = null;
+
+        // ===== DATE ULTIM IMPORT PENTRU RAPOARTE TEST =====
+        let ultimImportRanduri = [];
 
         // ===== AFISARE MESAJ =====
         function showMessage(text, type) {
@@ -603,6 +638,8 @@
 
                     afiseazaPrimeleRanduri(randuri);
 
+                    ultimImportRanduri = randuri;
+
                     await salveazaPontajZilnic(randuri);
 
                     showMessage(
@@ -843,6 +880,150 @@
                 ora: String(ora).padStart(2, "0") + ":" + String(minut).padStart(2, "0"),
                 minute: minuteTotale
             };
+
+        }
+
+
+
+
+        // ===== RAPORT TEST: ZILE FARA PONTAJ LUNI - VINERI =====
+        function afiseazaRaportZileFaraPontaj() {
+
+            const box = document.getElementById("raport-zile-box");
+            const titlu = document.getElementById("raport-zile-title");
+
+            if (!ultimImportRanduri || ultimImportRanduri.length <= 1) {
+
+                showMessage(
+                    "Nu exista import pentru raport",
+                    "error"
+                );
+
+                return;
+
+            }
+
+            const angajati = {};
+            const pontaje = {};
+            let dataMinima = null;
+            let dataMaxima = null;
+
+            for (let i = 1; i < ultimImportRanduri.length; i++) {
+
+                const rand = ultimImportRanduri[i];
+
+                const nume = String(rand[3] || "").trim();
+                const dataOraRaw = rand[5];
+
+                if (
+                    !nume ||
+                    !dataOraRaw ||
+                    nume === "VOLINTIRU ANA MARIA" ||
+                    nume === "VOLINTIRU MIHAIL"
+                ) {
+                    continue;
+                }
+
+                const dateInfo = convertesteDataOraExcel(dataOraRaw);
+
+                if (!dateInfo) {
+                    continue;
+                }
+
+                angajati[nume] = true;
+                pontaje[nume + "|" + dateInfo.data] = true;
+
+                const dataObj = creeazaDataDinText(dateInfo.data);
+
+                if (!dataMinima || dataObj < dataMinima) {
+                    dataMinima = dataObj;
+                }
+
+                if (!dataMaxima || dataObj > dataMaxima) {
+                    dataMaxima = dataObj;
+                }
+
+            }
+
+            const listaAngajati = Object.keys(angajati).sort(function(a, b) {
+                return a.localeCompare(b, "ro");
+            });
+
+            let html = "";
+
+            listaAngajati.forEach(function(nume) {
+
+                const zileLipsa = [];
+                const dataCurenta = new Date(dataMinima);
+
+                while (dataCurenta <= dataMaxima) {
+
+                    const ziSaptamana = dataCurenta.getDay();
+
+                    if (ziSaptamana >= 1 && ziSaptamana <= 5) {
+
+                        const dataText = formatDataPentruCheie(dataCurenta);
+
+                        if (!pontaje[nume + "|" + dataText]) {
+                            zileLipsa.push(formatDataAfisare(dataCurenta));
+                        }
+
+                    }
+
+                    dataCurenta.setDate(dataCurenta.getDate() + 1);
+
+                }
+
+                if (zileLipsa.length > 0) {
+
+                    html += "<div class='raport-angajat'>" + nume + "</div>";
+                    html += "<div class='raport-zile'>" + zileLipsa.join(", ") + "</div>";
+
+                }
+
+            });
+
+            if (html === "") {
+                html = "Nu exista zile fara pontaj in perioada importata.";
+            }
+
+            box.innerHTML = html;
+            box.style.display = "block";
+            titlu.style.display = "block";
+
+        }
+
+        // ===== DATA DIN TEXT YYYY-MM-DD =====
+        function creeazaDataDinText(dataText) {
+
+            const parti = dataText.split("-");
+
+            return new Date(
+                parseInt(parti[0], 10),
+                parseInt(parti[1], 10) - 1,
+                parseInt(parti[2], 10)
+            );
+
+        }
+
+        // ===== FORMATARE DATA PENTRU CHEIE =====
+        function formatDataPentruCheie(dataObj) {
+
+            const an = dataObj.getFullYear();
+            const luna = String(dataObj.getMonth() + 1).padStart(2, "0");
+            const zi = String(dataObj.getDate()).padStart(2, "0");
+
+            return an + "-" + luna + "-" + zi;
+
+        }
+
+        // ===== FORMATARE DATA PENTRU AFISARE =====
+        function formatDataAfisare(dataObj) {
+
+            const zi = String(dataObj.getDate()).padStart(2, "0");
+            const luna = String(dataObj.getMonth() + 1).padStart(2, "0");
+
+            return zi + "." + luna;
 
         }
 
