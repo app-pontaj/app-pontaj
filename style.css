@@ -40,9 +40,9 @@ body{
 
 .phone-frame{
 
-    width:min(390px, 95vw, calc((100vh - 20px) * 390 / 844));
+    width:min(430px, 95vw, calc((100vh - 20px) * 430 / 844));
 
-    height:calc(min(390px, 95vw, calc((100vh - 20px) * 390 / 844)) * 844 / 390);
+    height:calc(min(430px, 95vw, calc((100vh - 20px) * 430 / 844)) * 844 / 430);
 
     background:#000000;
 
