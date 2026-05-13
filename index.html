@@ -240,23 +240,70 @@
         }
 
 
-        .months-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-            margin-top: 20px;
+        .report-top-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
         }
 
-        .month-card {
-            min-height: 62px;
+        .back-modern {
+            background: transparent;
+            border: none;
+            color: #ff4d4d;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .report-title-modern {
+            color: #ffffff;
+            font-size: 30px;
+            font-weight: bold;
+            flex: 1;
+            text-align: center;
+            margin-right: 40px;
+        }
+
+        .report-search-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 22px;
+        }
+
+        .report-filter-box {
+            min-height: 54px;
             border-radius: 16px;
             border: none;
             background: linear-gradient(180deg, #f4d03f, #d4af37);
             color: #111111;
-            font-size: 18px;
+            font-size: 16px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 10px;
+        }
+
+        .months-grid {
+            display: grid;
+            grid-template-columns: repeat(6, auto);
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .month-card {
+            min-width: 58px;
+            height: 42px;
+            padding: 0 12px;
+            border-radius: 12px;
+            border: none;
+            background: linear-gradient(180deg, #f4d03f, #d4af37);
+            color: #111111;
+            font-size: 16px;
             font-weight: bold;
             cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.35);
         }
 
 
@@ -396,9 +443,9 @@
 
                 <!-- ===== TITLU APLICATIE ===== -->
                 <div class="premium-header">
-                    <div class="premium-header-icon">⌚</div>
+                    <div class="premium-header-icon"></div>
                     <div class="header-title">PONTAJ</div>
-                    <div class="premium-header-icon">👤</div>
+                    <div class="premium-header-icon"></div>
                 </div>
 
                 <div class="premium-line"></div>
@@ -687,20 +734,34 @@
                 >
 
                     <div class="report-header">
-                        <button
-                            class="report-back"
-                            onclick="inchidePaginaRaportTest()"
-                        >
-                            ‹ Înapoi
-                        </button>
 
-                        <div class="report-title">
-                            Rapoarte
+                        <div class="report-top-row">
+
+                            <button
+                                class="back-modern"
+                                onclick="inchidePaginaRaportTest()"
+                            >
+                                ← Back
+                            </button>
+
+                            <div class="report-title-modern">
+                                Rapoarte
+                            </div>
+
                         </div>
 
-                        <div class="report-subtitle">
-                            Alege luna raportului
+                        <div class="report-search-row">
+
+                            <div class="report-filter-box">
+                                Cauta angajat
+                            </div>
+
+                            <div class="report-filter-box">
+                                Toti angajatii
+                            </div>
+
                         </div>
+
                     </div>
 
                     <div
