@@ -95,7 +95,7 @@
             color: #111111;
             border-radius: 12px;
             padding: 8px;
-            font-size: 11px;
+            font-size: 9px;
             display: none;
         }
 
@@ -147,7 +147,7 @@
         }
 
         .raport-zile {
-            font-size: 11px;
+            font-size: 9px;
             color: #333333;
             margin-bottom: 6px;
             border-bottom: 1px solid #dddddd;
@@ -299,32 +299,31 @@
 
 
         .monthly-report-page {
-            position: relative;
-            z-index: 5;
             width: 100%;
             height: 100%;
-            padding: 12px;
-            overflow: auto;
+            padding: 10px 8px 16px;
+            overflow-y: auto;
+            overflow-x: hidden;
             background: #050505;
             display: none;
         }
 
         .monthly-report-wrapper {
             width: 100%;
-            border: 1px solid #d4af37;
-            border-radius: 14px;
-            overflow: auto;
+            border: 1px solid rgba(212,175,55,0.55);
+            border-radius: 12px;
+            overflow: hidden;
             background: #0a0a0a;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.45);
         }
 
         .monthly-report-grid {
+            width: 100%;
             display: grid;
-            color: #ffffff;
-            min-width: 980px;
         }
 
         .monthly-head-cell {
-            min-height: 48px;
+            min-height: 42px;
             background: linear-gradient(145deg, #f6d257, #a96f10);
             color: #111111;
             border-right: 1px solid rgba(0,0,0,0.35);
@@ -333,12 +332,12 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            font-size: 11px;
+            font-size: 9px;
             font-weight: 900;
         }
 
         .monthly-day-cell {
-            min-height: 44px;
+            min-height: 40px;
             border-right: 1px solid rgba(212,175,55,0.20);
             border-bottom: 1px solid rgba(212,175,55,0.20);
             display: flex;
@@ -346,7 +345,7 @@
             justify-content: center;
             text-align: center;
             padding: 4px;
-            font-size: 10px;
+            font-size: 8px;
             font-weight: 900;
         }
 
@@ -2145,7 +2144,7 @@
             const zileLuna = new Date(anCurent, luna, 0).getDate();
 
             grid.style.gridTemplateColumns =
-                "90px repeat(" + zileLuna + ", 72px)";
+                "42px repeat(" + zileLuna + ", minmax(0, 1fr))";
 
             const { data: pontaje } = await supabaseClient
                 .from("pontaj_zilnic")
@@ -2173,7 +2172,7 @@
 
             }
 
-            html += "<div class='monthly-day-cell monthly-left-cell'>Ore</div>";
+            html += "<div class='monthly-day-cell monthly-left-cell'>H</div>";
 
             for (let zi = 1; zi <= zileLuna; zi++) {
 
@@ -2226,7 +2225,7 @@
 
                     } else {
 
-                        textCelula = "FARA PONTAJ";
+                        textCelula = "LIPSA";
                         clasa = "monthly-missing";
 
                     }
@@ -2260,3 +2259,96 @@
 </body>
 
 </html>
+
+/* ===== REPORT PAGE ===== */
+
+        .report-page {
+            width: 100%;
+            height: 100%;
+            padding: 18px 16px 30px 16px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            background: #050505;
+        }
+
+        .report-header {
+            width: 100%;
+        }
+
+        .report-top-row {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 34px;
+            margin-bottom: 14px;
+        }
+
+        .report-back-modern {
+            background: transparent;
+            border: none;
+            color: #ff4040;
+            font-size: 15px;
+            font-weight: 800;
+            cursor: pointer;
+            padding: 0;
+            margin: 0;
+            line-height: 1;
+        }
+
+        .report-title-modern {
+            color: #d4af37;
+            font-size: 24px;
+            font-weight: 900;
+            line-height: 1;
+        }
+
+        .report-gold-line {
+            width: calc(100% + 32px);
+            margin-left: -16px;
+            height: 1px;
+            background: #caa628;
+            margin-bottom: 16px;
+        }
+
+        .report-filter-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 18px;
+        }
+
+        .report-filter-card {
+            flex: 1;
+            height: 42px;
+            border-radius: 10px;
+            border: 2px solid #d4af37;
+            background: #050505;
+            color: #d4af37;
+            font-size: 13px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            line-height: 1;
+            white-space: nowrap;
+        }
+
+        .months-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 8px;
+            width: 100%;
+        }
+
+        .month-card {
+            height: 40px;
+            border-radius: 6px;
+            border: none;
+            background: linear-gradient(180deg, #f2cf43 0%, #ddb52d 100%);
+            color: #111111;
+            font-size: 14px;
+            font-weight: 900;
+            padding: 0;
+            min-width: 0;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.35);
+        }
