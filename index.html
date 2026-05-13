@@ -239,6 +239,126 @@
             padding: 30px 10px;
         }
 
+
+        .employees-page {
+            width: 100%;
+            height: 100%;
+            padding: 18px 14px;
+            overflow-y: auto;
+            background: #050505;
+            display: none;
+        }
+
+        .employees-header {
+            position: sticky;
+            top: 0;
+            background: #050505;
+            padding-bottom: 14px;
+            z-index: 2;
+        }
+
+        .employees-title {
+            color: #ffffff;
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 18px;
+            letter-spacing: 1px;
+        }
+
+        .employees-subtitle {
+            color: #d4af37;
+            font-size: 13px;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 6px;
+        }
+
+        .employee-form {
+            border-radius: 18px;
+            border: 1px solid rgba(212,175,55,0.30);
+            background: linear-gradient(90deg, rgba(255,255,255,0.10), rgba(0,0,0,0.96));
+            padding: 14px;
+            margin-bottom: 14px;
+        }
+
+        .employee-input {
+            width: 100%;
+            min-height: 42px;
+            border-radius: 14px;
+            border: 1px solid rgba(212,175,55,0.40);
+            background: #111111;
+            color: #ffffff;
+            padding: 0 12px;
+            font-size: 15px;
+            margin-bottom: 10px;
+        }
+
+        .employee-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            color: #ffffff;
+            font-size: 14px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .employee-row input[type="checkbox"] {
+            width: 22px;
+            height: 22px;
+            accent-color: #d4af37;
+        }
+
+        .employee-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .employee-button {
+            flex: 1;
+            min-height: 44px;
+            border-radius: 16px;
+            border: 1px solid rgba(212,175,55,0.45);
+            background: linear-gradient(90deg, rgba(255,255,255,0.10), rgba(0,0,0,0.95));
+            color: #d4af37;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .employees-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding-bottom: 24px;
+        }
+
+        .employee-card {
+            border-radius: 18px;
+            border: 1px solid rgba(212,175,55,0.30);
+            background: linear-gradient(90deg, rgba(255,255,255,0.10), rgba(0,0,0,0.96));
+            padding: 14px;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.45);
+            cursor: pointer;
+        }
+
+        .employee-card-name {
+            color: #ffffff;
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .employee-card-info {
+            color: #d4af37;
+            font-size: 13px;
+            line-height: 1.45;
+            font-weight: bold;
+        }
+
     </style>
 
 </head>
@@ -333,7 +453,10 @@
                         </div>
                     </div>
 
-                    <div class="menu-card">
+                    <div
+                        class="menu-card"
+                        onclick="deschidePaginaAngajati()"
+                    >
                         <span class="menu-icon">👥</span>
                         <span class="menu-text">Angajati</span>
                         <span class="menu-arrow">›</span>
@@ -411,6 +534,112 @@
                     </button>
 
                     <div class="secure-footer">🛡 Sesiune securizata</div>
+
+                </div>
+
+
+                <!-- ===== PAGINA ANGAJATI ===== -->
+                <div
+                    class="employees-page"
+                    id="employees-page"
+                    style="display:none;"
+                >
+
+                    <div class="employees-header">
+                        <button
+                            class="report-back"
+                            onclick="inchidePaginaAngajati()"
+                        >
+                            ‹ Înapoi
+                        </button>
+
+                        <div class="employees-title">
+                            Angajați
+                        </div>
+
+                        <div class="employees-subtitle">
+                            Fișe angajați și reguli de calcul
+                        </div>
+                    </div>
+
+                    <div class="employee-form">
+
+                        <input
+                            type="hidden"
+                            id="angajat-id"
+                        >
+
+                        <input
+                            type="text"
+                            id="angajat-nume"
+                            class="employee-input"
+                            placeholder="Nume angajat"
+                        >
+
+                        <div class="employee-row">
+                            <span>Activ</span>
+                            <input
+                                type="checkbox"
+                                id="angajat-activ"
+                                checked
+                            >
+                        </div>
+
+                        <input
+                            type="date"
+                            id="angajat-data-inactiv"
+                            class="employee-input"
+                            title="Data inactivare"
+                        >
+
+                        <div class="employee-row">
+                            <span>Start înainte de 07:00 devine 07:00</span>
+                            <input
+                                type="checkbox"
+                                id="angajat-regula-0700"
+                            >
+                        </div>
+
+                        <div class="employee-row">
+                            <span>Se scade pauza de masă</span>
+                            <input
+                                type="checkbox"
+                                id="angajat-pauza-masa"
+                            >
+                        </div>
+
+                        <input
+                            type="number"
+                            id="angajat-pauza-minute"
+                            class="employee-input"
+                            placeholder="Minute pauză masă"
+                            min="0"
+                            value="0"
+                        >
+
+                        <div class="employee-actions">
+                            <button
+                                class="employee-button"
+                                onclick="reseteazaFormularAngajat()"
+                            >
+                                Nou
+                            </button>
+
+                            <button
+                                class="employee-button"
+                                onclick="salveazaAngajat()"
+                            >
+                                Salvează
+                            </button>
+                        </div>
+
+                    </div>
+
+                    <div
+                        class="employees-list"
+                        id="employees-list"
+                    >
+                    </div>
 
                 </div>
 
@@ -720,6 +949,215 @@
             location.reload();
 
         }
+
+
+
+        // ===== DATE ANGAJATI =====
+        let listaAngajatiSupabase = [];
+
+        // ===== DESCHIDERE PAGINA ANGAJATI =====
+        async function deschidePaginaAngajati() {
+
+            document.getElementById("main-menu").style.display = "none";
+            document.getElementById("employees-page").style.display = "block";
+
+            await incarcaAngajati();
+
+        }
+
+        // ===== INCHIDERE PAGINA ANGAJATI =====
+        function inchidePaginaAngajati() {
+
+            document.getElementById("employees-page").style.display = "none";
+            document.getElementById("main-menu").style.display = "flex";
+
+        }
+
+        // ===== INCARCARE ANGAJATI DIN SUPABASE =====
+        async function incarcaAngajati() {
+
+            const lista = document.getElementById("employees-list");
+
+            lista.innerHTML = "<div class='report-empty'>Se încarcă angajații...</div>";
+
+            const { data, error } = await supabaseClient
+                .from("angajati")
+                .select("*")
+                .order("nume", {
+                    ascending: true
+                });
+
+            if (error) {
+
+                lista.innerHTML = "";
+
+                showMessage(
+                    "Eroare citire angajați",
+                    "error"
+                );
+
+                return;
+
+            }
+
+            listaAngajatiSupabase = data || [];
+
+            afiseazaAngajati();
+
+        }
+
+        // ===== AFISARE ANGAJATI =====
+        function afiseazaAngajati() {
+
+            const lista = document.getElementById("employees-list");
+
+            if (!listaAngajatiSupabase.length) {
+
+                lista.innerHTML = "<div class='report-empty'>Nu există angajați salvați.</div>";
+
+                return;
+
+            }
+
+            let html = "";
+
+            listaAngajatiSupabase.forEach(function(angajat, index) {
+
+                const status = angajat.activ ? "Activ" : "Inactiv";
+                const dataInactiv = angajat.data_inactiv ? " din " + angajat.data_inactiv : "";
+                const regula0700 = angajat.regula_start_0700 ? "Da" : "Nu";
+                const pauzaMasa = angajat.pauza_masa ? "Da" : "Nu";
+                const pauzaMinute = angajat.pauza_minute || 0;
+
+                html += "<div class='employee-card' onclick='editeazaAngajat(" + index + ")'>";
+                html += "<div class='employee-card-name'>" + angajat.nume + "</div>";
+                html += "<div class='employee-card-info'>";
+                html += status + dataInactiv + "<br>";
+                html += "Regulă 07:00: " + regula0700 + "<br>";
+                html += "Pauză masă: " + pauzaMasa + " (" + pauzaMinute + " min)";
+                html += "</div>";
+                html += "</div>";
+
+            });
+
+            lista.innerHTML = html;
+
+        }
+
+        // ===== EDITARE ANGAJAT =====
+        function editeazaAngajat(index) {
+
+            const angajat = listaAngajatiSupabase[index];
+
+            document.getElementById("angajat-id").value = angajat.id || "";
+            document.getElementById("angajat-nume").value = angajat.nume || "";
+            document.getElementById("angajat-activ").checked = !!angajat.activ;
+            document.getElementById("angajat-data-inactiv").value = angajat.data_inactiv || "";
+            document.getElementById("angajat-regula-0700").checked = !!angajat.regula_start_0700;
+            document.getElementById("angajat-pauza-masa").checked = !!angajat.pauza_masa;
+            document.getElementById("angajat-pauza-minute").value = angajat.pauza_minute || 0;
+
+            showMessage(
+                "Angajat încărcat pentru editare",
+                "success"
+            );
+
+        }
+
+        // ===== RESETARE FORMULAR ANGAJAT =====
+        function reseteazaFormularAngajat() {
+
+            document.getElementById("angajat-id").value = "";
+            document.getElementById("angajat-nume").value = "";
+            document.getElementById("angajat-activ").checked = true;
+            document.getElementById("angajat-data-inactiv").value = "";
+            document.getElementById("angajat-regula-0700").checked = false;
+            document.getElementById("angajat-pauza-masa").checked = false;
+            document.getElementById("angajat-pauza-minute").value = 0;
+
+        }
+
+        // ===== SALVARE ANGAJAT IN SUPABASE =====
+        async function salveazaAngajat() {
+
+            const id = document.getElementById("angajat-id").value;
+            const nume = document.getElementById("angajat-nume").value.trim();
+            const activ = document.getElementById("angajat-activ").checked;
+            const dataInactiv = document.getElementById("angajat-data-inactiv").value || null;
+            const regula0700 = document.getElementById("angajat-regula-0700").checked;
+            const pauzaMasa = document.getElementById("angajat-pauza-masa").checked;
+            const pauzaMinute = parseInt(document.getElementById("angajat-pauza-minute").value || "0", 10);
+
+            if (!nume) {
+
+                showMessage(
+                    "Completează numele angajatului",
+                    "error"
+                );
+
+                return;
+
+            }
+
+            if (!activ && !dataInactiv) {
+
+                showMessage(
+                    "Alege data inactivării",
+                    "error"
+                );
+
+                return;
+
+            }
+
+            const dateAngajat = {
+                nume: nume,
+                activ: activ,
+                data_inactiv: dataInactiv,
+                regula_start_0700: regula0700,
+                pauza_masa: pauzaMasa,
+                pauza_minute: pauzaMinute
+            };
+
+            let raspuns;
+
+            if (id) {
+
+                raspuns = await supabaseClient
+                    .from("angajati")
+                    .update(dateAngajat)
+                    .eq("id", id);
+
+            } else {
+
+                raspuns = await supabaseClient
+                    .from("angajati")
+                    .insert(dateAngajat);
+
+            }
+
+            if (raspuns.error) {
+
+                showMessage(
+                    "Eroare salvare angajat",
+                    "error"
+                );
+
+                return;
+
+            }
+
+            showMessage(
+                "Angajat salvat",
+                "success"
+            );
+
+            reseteazaFormularAngajat();
+
+            await incarcaAngajati();
+
+        }
+
 
         // ===== SELECTARE SI CITIRE FISIER PONTAJ =====
         function selecteazaFisier() {
