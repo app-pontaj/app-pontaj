@@ -301,19 +301,74 @@
         .monthly-report-page {
             width: 100%;
             height: 100%;
-            padding: 10px 8px 14px;
+            padding: 26px 18px 16px;
             overflow-y: auto;
             overflow-x: hidden;
             background: #050505;
             display: none;
         }
 
+        .monthly-report-header {
+            width: 100%;
+            display: grid;
+            grid-template-columns: 84px 1fr;
+            column-gap: 18px;
+            align-items: start;
+            margin-bottom: 12px;
+        }
+
+        .monthly-back-button {
+            background: transparent;
+            border: none;
+            color: #ff3b3b;
+            font-size: 17px;
+            font-weight: 900;
+            padding: 3px 0 0;
+            margin: 0;
+            cursor: pointer;
+            text-align: left;
+            font-family: 'Montserrat', Arial, sans-serif;
+            line-height: 1.05;
+        }
+
+        .monthly-title-box {
+            min-width: 0;
+        }
+
+        .monthly-employee-name {
+            color: #d4af37;
+            font-size: 19px;
+            font-weight: 900;
+            line-height: 1.05;
+            letter-spacing: 0.2px;
+            font-family: 'Montserrat', Arial, sans-serif;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .monthly-month-year {
+            color: #ffffff;
+            font-size: 18px;
+            font-weight: 900;
+            line-height: 1.15;
+            margin-top: 4px;
+            font-family: 'Montserrat', Arial, sans-serif;
+        }
+
+        .monthly-gold-line {
+            width: 100%;
+            height: 1px;
+            background: rgba(212,175,55,0.95);
+            margin-bottom: 12px;
+        }
+
         .monthly-report-wrapper {
             width: 100%;
-            border: 1px solid rgba(212,175,55,0.65);
-            border-radius: 12px;
+            border: 1px solid rgba(212,175,55,0.88);
+            border-radius: 0 12px 12px 12px;
             overflow: hidden;
-            background: #0a0a0a;
+            background: linear-gradient(145deg, #161616 0%, #0b0b0b 100%);
             box-shadow: 0 8px 18px rgba(0,0,0,0.55);
         }
 
@@ -325,10 +380,10 @@
         }
 
         .monthly-report-row {
-            min-height: 18px;
+            min-height: 22px;
             display: grid;
-            grid-template-columns: 58px 1fr;
-            border-bottom: 1px solid rgba(212,175,55,0.18);
+            grid-template-columns: 66px 1fr;
+            border-bottom: 1px solid rgba(212,175,55,0.22);
         }
 
         .monthly-report-row:last-child {
@@ -336,45 +391,74 @@
         }
 
         .monthly-date-cell {
-            background: linear-gradient(145deg, #f6d257, #a96f10);
-            color: #111111;
+            background: linear-gradient(145deg, #ffe27a 0%, #d6a72d 56%, #b98208 100%);
+            color: #050505;
             display: flex;
             align-items: center;
             justify-content: center;
             text-align: center;
-            font-size: 9px;
+            font-size: 11px;
             line-height: 1;
             font-weight: 900;
             padding: 2px 3px;
-            border-right: 1px solid rgba(0,0,0,0.45);
+            border-right: 1px solid rgba(0,0,0,0.55);
             font-family: 'Montserrat', Arial, sans-serif;
         }
 
+        .monthly-date-weekend {
+            background: linear-gradient(145deg, #2f6ecf 0%, #17448e 100%);
+            color: #ffffff;
+        }
+
         .monthly-value-cell {
-            display: flex;
+            display: grid;
+            grid-template-columns: 1fr 74px;
             align-items: center;
-            justify-content: center;
             text-align: center;
-            font-size: 10px;
+            font-size: 12px;
             line-height: 1;
-            font-weight: 900;
-            padding: 2px 4px;
+            padding: 0;
             font-family: 'Montserrat', Arial, sans-serif;
+        }
+
+        .monthly-interval-cell {
+            color: #ffffff;
+            font-size: 12px;
+            font-weight: 500;
+            text-align: center;
+            padding-left: 8px;
+        }
+
+        .monthly-hours-cell {
+            color: #d4af37;
+            font-size: 13px;
+            font-weight: 900;
+            text-align: left;
+            padding-left: 8px;
         }
 
         .monthly-normal {
             background: rgba(255,255,255,0.06);
-            color: #f2c94c;
         }
 
         .monthly-missing {
-            background: rgba(255,0,0,0.78);
+            background: linear-gradient(90deg, #e00000 0%, #c50000 100%);
             color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 900;
         }
 
         .monthly-red {
             background: rgba(255,255,255,0.06);
-            color: #ff4d4d;
+            color: #ff3b3b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 900;
         }
 
 .employees-page {
@@ -897,29 +981,33 @@
                     style="display:none;"
                 >
 
-                    <div class="report-header">
+                    <div class="monthly-report-header">
 
-                        <div class="report-top-row">
+                        <button
+                            class="monthly-back-button"
+                            onclick="inchideRaportLunar()"
+                        >
+                            ‹ Back
+                        </button>
 
-                            <button
-                                class="report-back-modern"
-                                onclick="inchideRaportLunar()"
-                            >
-                                ‹ Back
-                            </button>
-
+                        <div class="monthly-title-box">
                             <div
-                                class="report-title-modern"
-                                id="monthly-report-title"
+                                class="monthly-employee-name"
+                                id="monthly-report-name"
                             >
                                 Raport
                             </div>
 
+                            <div
+                                class="monthly-month-year"
+                                id="monthly-report-month"
+                            >
+                            </div>
                         </div>
 
-                        <div class="report-gold-line"></div>
-
                     </div>
+
+                    <div class="monthly-gold-line"></div>
 
                     <div class="monthly-report-wrapper">
 
@@ -2122,6 +2210,58 @@
 
         }
 
+        // ===== FORMATARE MINUTE IN ORA =====
+        function formateazaMinuteOra(totalMinute) {
+
+            const ore = Math.floor(totalMinute / 60);
+            const minute = totalMinute % 60;
+
+            return String(ore).padStart(2, '0') +
+                ":" +
+                String(minute).padStart(2, '0');
+
+        }
+
+        // ===== INTERVAL PONTAT CU REGULA 07:00 =====
+        function calculeazaIntervalPontat(oraIntrare, oraIesire, regula0700) {
+
+            if (!oraIntrare || !oraIesire) {
+                return "";
+            }
+
+            let start = transformaOraMinute(oraIntrare);
+
+            if (regula0700 && start < 420) {
+                start = 420;
+            }
+
+            return formateazaMinuteOra(start) + " - " + oraIesire;
+
+        }
+
+        // ===== NUME LUNA COMPLET =====
+        function numeLunaComplet(luna) {
+
+            const luni = [
+                "",
+                "Ianuarie",
+                "Februarie",
+                "Martie",
+                "Aprilie",
+                "Mai",
+                "Iunie",
+                "Iulie",
+                "August",
+                "Septembrie",
+                "Octombrie",
+                "Noiembrie",
+                "Decembrie"
+            ];
+
+            return luni[luna] || "";
+
+        }
+
         // ===== DESCHIDE RAPORT LUNAR =====
         async function deschideRaportLunar(luna, numeLuna) {
 
@@ -2139,12 +2279,15 @@
             document.getElementById("report-page").style.display = "none";
             document.getElementById("monthly-report-page").style.display = "block";
 
-            document.getElementById("monthly-report-title").innerHTML =
-                angajatSelectatRaport + " - " + numeLuna;
+            const anCurent = new Date().getFullYear();
+
+            document.getElementById("monthly-report-name").innerHTML =
+                angajatSelectatRaport;
+
+            document.getElementById("monthly-report-month").innerHTML =
+                numeLunaComplet(luna) + " " + anCurent;
 
             const grid = document.getElementById("monthly-report-grid");
-
-            const anCurent = new Date().getFullYear();
 
             const zileLuna = new Date(anCurent, luna, 0).getDate();
 
@@ -2182,12 +2325,27 @@
                     return p.data === dataText;
                 });
 
-                let textCelula = "";
-                let clasa = "monthly-normal";
+                const clasaData = weekend
+                    ? "monthly-date-cell monthly-date-weekend"
+                    : "monthly-date-cell";
+
+                html += "<div class='monthly-report-row'>";
+
+                html += "<div class='" + clasaData + "'>" +
+                    ziSapt + " " +
+                    String(zi).padStart(2,'0') + "." +
+                    String(luna).padStart(2,'0') +
+                    "</div>";
 
                 if (pontaj) {
 
-                    textCelula = calculeazaOreNete(
+                    const intervalPontat = calculeazaIntervalPontat(
+                        pontaj.ora_intrare,
+                        pontaj.ora_iesire,
+                        angajat?.regula_start_0700
+                    );
+
+                    const oreNete = calculeazaOreNete(
                         pontaj.ora_intrare,
                         pontaj.ora_iesire,
                         angajat?.regula_start_0700,
@@ -2195,39 +2353,32 @@
                         angajat?.pauza_minute
                     );
 
-                    if (weekend || sarbatoare || textCelula.startsWith("-")) {
-                        clasa = "monthly-red";
-                    }
+                    html += "<div class='monthly-value-cell monthly-normal'>";
+                    html += "<div class='monthly-interval-cell'>" +
+                        intervalPontat +
+                        "</div>";
+                    html += "<div class='monthly-hours-cell'>" +
+                        oreNete +
+                        "</div>";
+                    html += "</div>";
+
+                } else if (sarbatoare) {
+
+                    html += "<div class='monthly-red'>S.L</div>";
+
+                } else if (weekend) {
+
+                    html += "<div class='monthly-value-cell monthly-normal'>";
+                    html += "<div class='monthly-interval-cell'></div>";
+                    html += "<div class='monthly-hours-cell'></div>";
+                    html += "</div>";
 
                 } else {
 
-                    if (sarbatoare) {
-
-                        textCelula = "S.L";
-                        clasa = "monthly-red";
-
-                    } else if (weekend) {
-
-                        textCelula = "";
-
-                    } else {
-
-                        textCelula = "FARA PONTAJ";
-                        clasa = "monthly-missing";
-
-                    }
+                    html += "<div class='monthly-missing'>FARA PONTAJ</div>";
 
                 }
 
-                html += "<div class='monthly-report-row'>";
-                html += "<div class='monthly-date-cell'>" +
-                    ziSapt + " " +
-                    String(zi).padStart(2,'0') + "." +
-                    String(luna).padStart(2,'0') +
-                    "</div>";
-                html += "<div class='monthly-value-cell " + clasa + "'>" +
-                    textCelula +
-                    "</div>";
                 html += "</div>";
 
             }
