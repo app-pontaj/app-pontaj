@@ -2370,6 +2370,9 @@
 
             let html = "";
 
+            let totalMinuteLucrate = 0;
+            let totalZileLucratoare = 0;
+
             for (let zi = 1; zi <= zileLuna; zi++) {
 
                 const dataText =
@@ -2388,6 +2391,10 @@
                     dataObj.getDay() === 6;
 
                 const sarbatoare = esteZiLiberaLegala(dataText);
+
+                if (!weekend && !sarbatoare) {
+                    totalZileLucratoare++;
+                }
 
                 const pontaj = (pontaje || []).find(function(p) {
                     return p.data === dataText;
@@ -2421,6 +2428,13 @@
                         angajat?.pauza_minute
                     );
 
+                    const minuteOreNete =
+                        transformaOraMinute(oreNete.replace("-", ""));
+
+                    if (!oreNete.startsWith("-")) {
+                        totalMinuteLucrate += minuteOreNete;
+                    }
+
                     html += "<div class='monthly-value-cell monthly-normal'>";
                     html += "<div class='monthly-interval-cell'>" +
                         intervalPontat +
@@ -2450,6 +2464,29 @@
                 html += "</div>";
 
             }
+
+            const totalOreLucratoareMinute = totalZileLucratoare * 8 * 60;
+            const diferentaMinute =
+                totalMinuteLucrate - totalOreLucratoareMinute;
+
+            const diferentaText =
+                (diferentaMinute < 0 ? "-" : "") +
+                formateazaMinuteOra(Math.abs(diferentaMinute));
+
+            html += "<div style='height:12px;'></div>";
+
+            html += "<div style='padding:0 10px 0 10px;color:#ffffff;font-size:11px;font-weight:700;line-height:1.9;font-family:Montserrat,Arial,sans-serif;'>";
+            html += "Total ore lucrătoare pe lună: <span style='color:#d4af37;'>" + formateazaMinuteOra(totalOreLucratoareMinute) + "</span><br>";
+            html += "Total ore lucrate pe lună: <span style='color:#d4af37;'>" + formateazaMinuteOra(totalMinuteLucrate) + "</span>";
+            html += "</div>";
+
+            html += "<div style='width:235px;height:1px;background:rgba(212,175,55,0.9);margin:6px 0 0 10px;'></div>";
+
+            html += "<div style='height:10px;'></div>";
+
+            html += "<div style='padding:0 10px 10px 10px;color:#ffffff;font-size:12px;font-weight:900;font-family:Montserrat,Arial,sans-serif;'>";
+            html += "Diferență: <span style='color:#d4af37;'>" + diferentaText + "</span>";
+            html += "</div>";
 
             grid.innerHTML = html;
 
