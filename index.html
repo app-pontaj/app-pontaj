@@ -1606,6 +1606,20 @@
             document.getElementById("main-menu").style.display = "none";
             document.getElementById("report-page").style.display = "block";
 
+            // ===== INCARCARE ANGAJATI PENTRU SEARCH =====
+            if (!listaAngajatiSupabase.length) {
+
+                const { data } = await supabaseClient
+                    .from("angajati")
+                    .select("*")
+                    .order("nume", {
+                        ascending: true
+                    });
+
+                listaAngajatiSupabase = data || [];
+
+            }
+
         }
 
         // ===== INCHIDERE PAGINA RAPORT TEST =====
