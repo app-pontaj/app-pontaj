@@ -830,6 +830,12 @@
                     const nume = String(rand[3] || "").trim();
                     const departament = String(rand[4] || "").trim();
                     const dataOraRaw = rand[5];
+                    const eveniment = String(rand[7] || "").trim().toUpperCase();
+
+                    // ===== EXCLUDERE DOOR OPEN =====
+                    if (eveniment.includes("DOOR OPEN")) {
+                        continue;
+                    }
 
                     // ===== EXCLUDERE ANGAJATI =====
                     if (
@@ -1052,8 +1058,10 @@
 
                 const nume = String(rand[3] || "").trim();
                 const dataOraRaw = rand[5];
+                const eveniment = String(rand[7] || "").trim().toUpperCase();
 
                 if (
+                    eveniment.includes("DOOR OPEN") ||
                     !nume ||
                     !dataOraRaw ||
                     nume === "VOLINTIRU ANA MARIA" ||
