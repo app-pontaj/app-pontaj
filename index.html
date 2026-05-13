@@ -231,20 +231,32 @@
             font-weight: bold;
         }
 
-        .ore-negative {
-            color: #ff4d4d;
-        }
-
-        .ore-positive {
-            color: #6dff6d;
-        }
-
         .report-empty {
             color: #d4af37;
             text-align: center;
             font-size: 16px;
             font-weight: bold;
             padding: 30px 10px;
+        }
+
+
+        .months-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .month-card {
+            min-height: 62px;
+            border-radius: 16px;
+            border: none;
+            background: linear-gradient(180deg, #f4d03f, #d4af37);
+            color: #111111;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.35);
         }
 
 
@@ -692,9 +704,25 @@
                     </div>
 
                     <div
-                        class="report-list"
+                        class="months-grid"
                         id="report-list"
                     >
+
+                        <button class="month-card">Ian</button>
+                        <button class="month-card">Feb</button>
+                        <button class="month-card">Mar</button>
+                        <button class="month-card">Apr</button>
+
+                        <button class="month-card">Mai</button>
+                        <button class="month-card">Iun</button>
+                        <button class="month-card">Iul</button>
+                        <button class="month-card">Aug</button>
+
+                        <button class="month-card">Sep</button>
+                        <button class="month-card">Oct</button>
+                        <button class="month-card">Noi</button>
+                        <button class="month-card">Dec</button>
+
                     </div>
 
                 </div>
@@ -1569,7 +1597,6 @@
 
             const angajati = {};
             const pontaje = {};
-            const gruparePontajeOre = {};
             let dataMinima = null;
             let dataMaxima = null;
 
@@ -1598,20 +1625,6 @@
                 angajati[nume] = true;
                 pontaje[nume + "|" + dateInfo.data] = true;
 
-                const cheieOre = nume + "|" + dateInfo.data;
-
-                if (!gruparePontajeOre[cheieOre]) {
-
-                    gruparePontajeOre[cheieOre] = {
-                        nume: nume,
-                        data: dateInfo.data,
-                        ore: []
-                    };
-
-                }
-
-                gruparePontajeOre[cheieOre].ore.push(dateInfo);
-
                 const dataObj = creeazaDataDinText(dateInfo.data);
 
                 if (!dataMinima || dataObj < dataMinima) {
@@ -1623,23 +1636,6 @@
                 }
 
             }
-
-
-            Object.keys(gruparePontajeOre).forEach(function(cheie) {
-
-                gruparePontajeOre[cheie].ore.sort(function(a, b) {
-                    return a.minute - b.minute;
-                });
-
-                gruparePontajeOre[cheie].ora_intrare =
-                    gruparePontajeOre[cheie].ore[0].ora;
-
-                gruparePontajeOre[cheie].ora_iesire =
-                    gruparePontajeOre[cheie].ore[
-                        gruparePontajeOre[cheie].ore.length - 1
-                    ].ora;
-
-            });
 
             const listaAngajati = Object.keys(angajati)
                 .filter(function(nume) {
@@ -1681,43 +1677,8 @@
                 if (zileLipsa.length > 0) {
 
                     html += "<div class='report-card'>";
-                    const pontajExemplu = Object.keys(pontaje).find(function(cheie) {
-                        return cheie.startsWith(nume + "|");
-                    });
-
-                    let htmlOre = "";
-
-                    if (pontajExemplu) {
-
-                        const dataPontaj = pontajExemplu.split("|")[1];
-
-                        const pontajGasit = Object.values(gruparePontajeOre).find(function(p) {
-                            return p.nume === nume && p.data === dataPontaj;
-                        });
-
-                        if (pontajGasit) {
-
-                            const regulaAngajat = reguliDupaNume[nume] || {};
-
-                            const totalMinute = calculeazaOreLucrate(
-                                pontajGasit.ora_intrare,
-                                pontajGasit.ora_iesire,
-                                regulaAngajat
-                            );
-
-                            const clasaOre = totalMinute < 0 ? "ore-negative" : "ore-positive";
-
-                            htmlOre =
-                                "<br><span class='" + clasaOre + "'>Ore lucrate: " +
-                                formateazaMinute(totalMinute) +
-                                "</span>";
-
-                        }
-
-                    }
-
                     html += "<div class='report-card-name'>" + nume + "</div>";
-                    html += "<div class='report-card-days'>" + zileLipsa.join(", ") + htmlOre + "</div>";
+                    html += "<div class='report-card-days'>" + zileLipsa.join(", ") + "</div>";
                     html += "</div>";
 
                 }
@@ -1733,66 +1694,6 @@
             return true;
 
         }
-
-
-        // ===== CALCUL ORE LUCRATE =====
-        function calculeazaOreLucrate(oraIntrare, oraIesire, regulaAngajat) {
-
-            let minuteIntrare = convertesteOraInMinute(oraIntrare);
-            let minuteIesire = convertesteOraInMinute(oraIesire);
-
-            if (
-                regulaAngajat &&
-                regulaAngajat.regula_start_0700 === true &&
-                minuteIntrare < 420
-            ) {
-                minuteIntrare = 420;
-            }
-
-            let totalMinute = minuteIesire - minuteIntrare;
-
-            if (
-                regulaAngajat &&
-                regulaAngajat.pauza_masa === true
-            ) {
-                totalMinute -= parseInt(regulaAngajat.pauza_minute || 0, 10);
-            }
-
-            return totalMinute;
-
-        }
-
-        // ===== CONVERSIE HH:MM IN MINUTE =====
-        function convertesteOraInMinute(oraText) {
-
-            const parti = String(oraText || "00:00").split(":");
-
-            const ora = parseInt(parti[0] || "0", 10);
-            const minute = parseInt(parti[1] || "0", 10);
-
-            return ora * 60 + minute;
-
-        }
-
-        // ===== FORMATARE MINUTE IN HH:MM =====
-        function formateazaMinute(totalMinute) {
-
-            const negativ = totalMinute < 0;
-
-            const valoare = Math.abs(totalMinute);
-
-            const ore = Math.floor(valoare / 60);
-            const minute = valoare % 60;
-
-            const rezultat =
-                String(ore).padStart(2, "0") +
-                ":" +
-                String(minute).padStart(2, "0");
-
-            return negativ ? "-" + rezultat : rezultat;
-
-        }
-
 
         // ===== ZILE LIBERE LEGALE 2026 =====
         function esteZiLiberaLegala(dataText) {
