@@ -251,6 +251,52 @@
             cursor: pointer;
         }
 
+
+        .report-filter-card.active {
+            background: linear-gradient(145deg, #ffe27a 0%, #d6a72d 56%, #b98208 100%);
+            color: #050505;
+            border: 1px solid #ffd75a;
+        }
+
+        .employee-search-area {
+            display: none;
+            margin-bottom: 16px;
+        }
+
+        .employee-search-input {
+            width: 100%;
+            height: 44px;
+            border-radius: 10px;
+            border: 1px solid #d4af37;
+            background: linear-gradient(145deg, #141414 0%, #050505 100%);
+            color: #ffffff;
+            padding: 0 14px;
+            font-size: 14px;
+            font-weight: 700;
+            outline: none;
+        }
+
+        .employee-search-results {
+            margin-top: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .employee-search-item {
+            min-height: 40px;
+            border-radius: 9px;
+            border: 1px solid rgba(212,175,55,0.35);
+            background: linear-gradient(145deg, #141414 0%, #050505 100%);
+            color: #f2c94c;
+            display: flex;
+            align-items: center;
+            padding: 0 12px;
+            font-size: 13px;
+            font-weight: 800;
+            cursor: pointer;
+        }
+
 .employees-page {
             width: 100%;
             height: 100%;
@@ -700,14 +746,43 @@
 
                         <div class="report-filter-row">
 
-                            <div class="report-filter-card">
+                            <div
+                                class="report-filter-card"
+                                id="btn-cauta-angajat"
+                                onclick="activeazaCautareAngajat()"
+                            >
                                 🔎 Cauta angajat
                             </div>
 
-                            <div class="report-filter-card">
+                            <div
+                                class="report-filter-card"
+                                id="btn-toti-angajatii"
+                                onclick="activeazaTotiAngajatii()"
+                            >
                                 👥 Toti angajatii
                             </div>
 
+                        </div>
+
+                    </div>
+
+                    <div
+                        class="employee-search-area"
+                        id="employee-search-area"
+                    >
+
+                        <input
+                            type="text"
+                            class="employee-search-input"
+                            id="employee-search-input"
+                            placeholder="Scrie cateva litere..."
+                            oninput="cautaAngajatiLive()"
+                        >
+
+                        <div
+                            class="employee-search-results"
+                            id="employee-search-results"
+                        >
                         </div>
 
                     </div>
@@ -1757,6 +1832,108 @@
             return zi + "." + luna;
 
         }
+
+
+
+        
+
+        // ===== SELECTIE RAPORT =====
+        let modRaportSelectat = "";
+        let angajatSelectatRaport = "";
+
+        // ===== MOD CAUTARE ANGAJAT =====
+        function activeazaCautareAngajat() {
+
+            modRaportSelectat = "angajat";
+
+            document
+                .getElementById("btn-cauta-angajat")
+                .classList.add("active");
+
+            document
+                .getElementById("btn-toti-angajatii")
+                .classList.remove("active");
+
+            document
+                .getElementById("employee-search-area")
+                .style.display = "block";
+
+        }
+
+        // ===== MOD TOTI ANGAJATII =====
+        function activeazaTotiAngajatii() {
+
+            modRaportSelectat = "toti";
+
+            document
+                .getElementById("btn-toti-angajatii")
+                .classList.add("active");
+
+            document
+                .getElementById("btn-cauta-angajat")
+                .classList.remove("active");
+
+            document
+                .getElementById("employee-search-area")
+                .style.display = "none";
+
+        }
+
+        // ===== CAUTARE LIVE ANGAJATI =====
+        function cautaAngajatiLive() {
+
+            const textCautare = document
+                .getElementById("employee-search-input")
+                .value
+                .trim()
+                .toLowerCase();
+
+            const rezultateBox = document.getElementById("employee-search-results");
+
+            if (!textCautare) {
+
+                rezultateBox.innerHTML = "";
+
+                return;
+
+            }
+
+            const rezultate = listaAngajatiSupabase.filter(function(angajat) {
+
+                return String(angajat.nume || "")
+                    .toLowerCase()
+                    .includes(textCautare);
+
+            });
+
+            let html = "";
+
+            rezultate.forEach(function(angajat) {
+
+                html +=
+                    "<div class='employee-search-item' onclick='selecteazaAngajatRaport(" +
+                    JSON.stringify(angajat.nume) +
+                    ")'>" +
+                    angajat.nume +
+                    "</div>";
+
+            });
+
+            rezultateBox.innerHTML = html;
+
+        }
+
+        // ===== SELECTARE ANGAJAT RAPORT =====
+        function selecteazaAngajatRaport(nume) {
+
+            angajatSelectatRaport = nume;
+
+            document.getElementById("employee-search-input").value = nume;
+
+            document.getElementById("employee-search-results").innerHTML = "";
+
+        }
+
 
 
 
