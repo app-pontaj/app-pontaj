@@ -297,6 +297,78 @@
             cursor: pointer;
         }
 
+
+        .monthly-report-page {
+            width: 100%;
+            height: 100%;
+            padding: 12px;
+            overflow: auto;
+            background: #050505;
+            display: none;
+        }
+
+        .monthly-report-wrapper {
+            border: 1px solid #d4af37;
+            border-radius: 14px;
+            overflow: auto;
+            background: #0a0a0a;
+        }
+
+        .monthly-report-grid {
+            display: grid;
+            min-width: 980px;
+        }
+
+        .monthly-head-cell {
+            min-height: 48px;
+            background: linear-gradient(145deg, #f6d257, #a96f10);
+            color: #111111;
+            border-right: 1px solid rgba(0,0,0,0.35);
+            border-bottom: 2px solid #000000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 900;
+        }
+
+        .monthly-day-cell {
+            min-height: 44px;
+            border-right: 1px solid rgba(212,175,55,0.20);
+            border-bottom: 1px solid rgba(212,175,55,0.20);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 4px;
+            font-size: 10px;
+            font-weight: 900;
+        }
+
+        .monthly-left-cell {
+            position: sticky;
+            left: 0;
+            z-index: 2;
+            background: linear-gradient(145deg, #f6d257, #a96f10);
+            color: #111111;
+        }
+
+        .monthly-normal {
+            background: rgba(255,255,255,0.06);
+            color: #f2c94c;
+        }
+
+        .monthly-missing {
+            background: rgba(255,0,0,0.70);
+            color: #ffffff;
+        }
+
+        .monthly-red {
+            background: rgba(255,255,255,0.06);
+            color: #ff4d4d;
+        }
+
 .employees-page {
             width: 100%;
             height: 100%;
@@ -792,19 +864,19 @@
                         id="report-list"
                     >
 
-                        <button class="month-card">Ian</button>
-                        <button class="month-card">Feb</button>
-                        <button class="month-card">Mar</button>
-                        <button class="month-card">Apr</button>
-                        <button class="month-card">Mai</button>
-                        <button class="month-card">Iun</button>
+                        <button class="month-card" onclick="deschideRaportLunar(1,'Ian')">Ian</button>
+                        <button class="month-card" onclick="deschideRaportLunar(2,'Feb')">Feb</button>
+                        <button class="month-card" onclick="deschideRaportLunar(3,'Mar')">Mar</button>
+                        <button class="month-card" onclick="deschideRaportLunar(4,'Apr')">Apr</button>
+                        <button class="month-card" onclick="deschideRaportLunar(5,'Mai')">Mai</button>
+                        <button class="month-card" onclick="deschideRaportLunar(6,'Iun')">Iun</button>
 
-                        <button class="month-card">Iul</button>
-                        <button class="month-card">Aug</button>
-                        <button class="month-card">Sep</button>
-                        <button class="month-card">Oct</button>
-                        <button class="month-card">Noi</button>
-                        <button class="month-card">Dec</button>
+                        <button class="month-card" onclick="deschideRaportLunar(7,'Iul')">Iul</button>
+                        <button class="month-card" onclick="deschideRaportLunar(8,'Aug')">Aug</button>
+                        <button class="month-card" onclick="deschideRaportLunar(9,'Sep')">Sep</button>
+                        <button class="month-card" onclick="deschideRaportLunar(10,'Oct')">Oct</button>
+                        <button class="month-card" onclick="deschideRaportLunar(11,'Noi')">Noi</button>
+                        <button class="month-card" onclick="deschideRaportLunar(12,'Dec')">Dec</button>
 
                     </div>
 
@@ -815,6 +887,49 @@
         </div>
 
     </div>
+
+    
+                <div
+                    class="monthly-report-page"
+                    id="monthly-report-page"
+                >
+
+                    <div class="report-header">
+
+                        <div class="report-top-row">
+
+                            <button
+                                class="report-back-modern"
+                                onclick="inchideRaportLunar()"
+                            >
+                                ‹ Back
+                            </button>
+
+                            <div
+                                class="report-title-modern"
+                                id="monthly-report-title"
+                            >
+                                Raport
+                            </div>
+
+                        </div>
+
+                        <div class="report-gold-line"></div>
+
+                    </div>
+
+                    <div class="monthly-report-wrapper">
+
+                        <div
+                            class="monthly-report-grid"
+                            id="monthly-report-grid"
+                        >
+                        </div>
+
+                    </div>
+
+                </div>
+
 
     <!-- ===== CASETA MESAJE ===== -->
     <div
@@ -1948,6 +2063,189 @@
 
         }
 
+
+
+
+        
+
+        // ===== ZILE SAPTAMANA =====
+        const ZILE_SCURTE = ['Du','Lu','Ma','Mi','Jo','Vi','Sa'];
+
+        // ===== CALCUL ORE NETE =====
+        function calculeazaOreNete(oraIntrare, oraIesire, regula0700, pauzaMasa, pauzaMinute) {
+
+            if (!oraIntrare || !oraIesire) {
+                return "";
+            }
+
+            let start = transformaOraMinute(oraIntrare);
+            let stop = transformaOraMinute(oraIesire);
+
+            if (regula0700 && start < 420) {
+                start = 420;
+            }
+
+            let total = stop - start;
+
+            if (pauzaMasa) {
+                total -= Number(pauzaMinute || 0);
+            }
+
+            const negativ = total < 0;
+
+            total = Math.abs(total);
+
+            const ore = Math.floor(total / 60);
+            const minute = total % 60;
+
+            return (negativ ? "-" : "") +
+                String(ore).padStart(2,'0') +
+                ":" +
+                String(minute).padStart(2,'0');
+
+        }
+
+        // ===== ORA IN MINUTE =====
+        function transformaOraMinute(ora) {
+
+            const parti = String(ora).split(":");
+
+            return (Number(parti[0]) * 60) + Number(parti[1]);
+
+        }
+
+        // ===== DESCHIDE RAPORT LUNAR =====
+        async function deschideRaportLunar(luna, numeLuna) {
+
+            if (modRaportSelectat !== "angajat" || !angajatSelectatRaport) {
+
+                showMessage(
+                    "Selectează angajatul",
+                    "error"
+                );
+
+                return;
+
+            }
+
+            document.getElementById("report-page").style.display = "none";
+            document.getElementById("monthly-report-page").style.display = "block";
+
+            document.getElementById("monthly-report-title").innerHTML =
+                angajatSelectatRaport + " - " + numeLuna;
+
+            const grid = document.getElementById("monthly-report-grid");
+
+            const anCurent = new Date().getFullYear();
+
+            const zileLuna = new Date(anCurent, luna, 0).getDate();
+
+            grid.style.gridTemplateColumns =
+                "90px repeat(" + zileLuna + ", 72px)";
+
+            const { data: pontaje } = await supabaseClient
+                .from("pontaj_zilnic")
+                .select("*")
+                .eq("nume", angajatSelectatRaport);
+
+            const angajat = listaAngajatiSupabase.find(function(a) {
+                return a.nume === angajatSelectatRaport;
+            });
+
+            let html = "";
+
+            html += "<div class='monthly-head-cell monthly-left-cell'>Zi</div>";
+
+            for (let zi = 1; zi <= zileLuna; zi++) {
+
+                const dataObj = new Date(anCurent, luna - 1, zi);
+
+                const ziSapt = ZILE_SCURTE[dataObj.getDay()];
+
+                html += "<div class='monthly-head-cell'>" +
+                    "<div>" + ziSapt + "</div>" +
+                    "<div>" + String(zi).padStart(2,'0') + "." + String(luna).padStart(2,'0') + "</div>" +
+                    "</div>";
+
+            }
+
+            html += "<div class='monthly-day-cell monthly-left-cell'>Ore</div>";
+
+            for (let zi = 1; zi <= zileLuna; zi++) {
+
+                const dataText =
+                    anCurent +
+                    "-" +
+                    String(luna).padStart(2,'0') +
+                    "-" +
+                    String(zi).padStart(2,'0');
+
+                const dataObj = new Date(anCurent, luna - 1, zi);
+
+                const weekend =
+                    dataObj.getDay() === 0 ||
+                    dataObj.getDay() === 6;
+
+                const sarbatoare = esteZiLiberaLegala(dataText);
+
+                const pontaj = (pontaje || []).find(function(p) {
+                    return p.data === dataText;
+                });
+
+                let textCelula = "";
+                let clasa = "monthly-normal";
+
+                if (pontaj) {
+
+                    textCelula = calculeazaOreNete(
+                        pontaj.ora_intrare,
+                        pontaj.ora_iesire,
+                        angajat?.regula_start_0700,
+                        angajat?.pauza_masa,
+                        angajat?.pauza_minute
+                    );
+
+                    if (weekend || sarbatoare || textCelula.startsWith("-")) {
+                        clasa = "monthly-red";
+                    }
+
+                } else {
+
+                    if (sarbatoare) {
+
+                        textCelula = "S.L";
+                        clasa = "monthly-red";
+
+                    } else if (weekend) {
+
+                        textCelula = "";
+
+                    } else {
+
+                        textCelula = "FARA PONTAJ";
+                        clasa = "monthly-missing";
+
+                    }
+
+                }
+
+                html += "<div class='monthly-day-cell " + clasa + "'>" +
+                    textCelula +
+                    "</div>";
+
+            }
+
+            grid.innerHTML = html;
+
+        }
+
+        // ===== INCHIDE RAPORT LUNAR =====
+        function inchideRaportLunar() {
+
+            document.getElementById("monthly-report-page").style.display = "none";
+            document.getElementById("report-page").style.display = "block";
+
+        }
 
 
 
