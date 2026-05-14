@@ -2237,6 +2237,7 @@
 
                 const pontariCitite = [];
                 const seriCuPontajDupaOra19 = {};
+                const diminetiCuPontajIntreOra01Si04 = {};
 
                 function dataZiAnterioara(dataText) {
 
@@ -2293,8 +2294,18 @@
                     });
 
                     // ===== POSIBILA TURA DE NOAPTE =====
-                    if (dateInfo.minute >= 1140) {
+                    // Se marchează doar dacă există pontaj după ora 21:00.
+                    if (dateInfo.minute >= 1260) {
                         seriCuPontajDupaOra19[nume + "|" + dateInfo.data] = true;
+                    }
+
+                    // ===== CONFIRMARE TURA DE NOAPTE A DOUA ZI =====
+                    // Tura se confirmă doar dacă a doua zi există pontaj între 01:00 și 04:00.
+                    if (
+                        dateInfo.minute >= 60 &&
+                        dateInfo.minute <= 240
+                    ) {
+                        diminetiCuPontajIntreOra01Si04[nume + "|" + dateInfo.data] = true;
                     }
 
                 }
@@ -2309,11 +2320,13 @@
                     const dataAnterioara = dataZiAnterioara(pontare.data);
 
                     // ===== REGULA TURA DE NOAPTE =====
-                    // Pontajele inainte de 09:00 apartin zilei anterioare
-                    // doar daca angajatul a avut pontaj dupa 19:00 in ziua anterioara.
+                    // Pontajele înainte de 09:00 aparțin zilei anterioare doar dacă:
+                    // 1. angajatul a avut pontaj după 21:00 în ziua anterioară;
+                    // 2. în ziua următoare există pontaj între 01:00 și 04:00.
                     if (
                         pontare.minute < 540 &&
-                        seriCuPontajDupaOra19[pontare.nume + "|" + dataAnterioara]
+                        seriCuPontajDupaOra19[pontare.nume + "|" + dataAnterioara] &&
+                        diminetiCuPontajIntreOra01Si04[pontare.nume + "|" + pontare.data]
                     ) {
                         dataRaport = dataAnterioara;
                         minuteSortare = pontare.minute + 1440;
