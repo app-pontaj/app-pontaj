@@ -951,6 +951,15 @@
                         </div>
 
                         <div class="employee-row">
+                            <span>Afișează lipsă pontaj</span>
+                            <input
+                                type="checkbox"
+                                id="angajat-afiseaza-lipsa-pontaj"
+                                checked
+                            >
+                        </div>
+
+                        <div class="employee-row">
                             <span>Start înainte de 07:00 devine 07:00</span>
                             <input
                                 type="checkbox"
@@ -1493,6 +1502,7 @@
                 const status = angajat.activ ? "Activ" : "Inactiv";
                 const dataInactiv = angajat.data_inactiv ? " din " + angajat.data_inactiv : "";
                 const apareRapoarte = angajat.apare_in_rapoarte === false ? "Nu" : "Da";
+                const afiseazaLipsaPontaj = angajat.afiseaza_lipsa_pontaj === false ? "Nu" : "Da";
                 const regula0700 = angajat.regula_start_0700 ? "Da" : "Nu";
                 const pauzaMasa = angajat.pauza_masa ? "Da" : "Nu";
                 const pauzaMinute = angajat.pauza_minute || 0;
@@ -1502,6 +1512,7 @@
                 html += "<div class='employee-card-info'>";
                 html += status + dataInactiv + "<br>";
                 html += "Apare în rapoarte: " + apareRapoarte + "<br>";
+                html += "Afișează lipsă pontaj: " + afiseazaLipsaPontaj + "<br>";
                 html += "Regulă 07:00: " + regula0700 + "<br>";
                 html += "Pauză masă: " + pauzaMasa + " (" + pauzaMinute + " min)<br>";
                 html += "Secție: " + (angajat.sectie || "-");
@@ -1525,6 +1536,7 @@
             document.getElementById("angajat-activ").checked = !!angajat.activ;
             document.getElementById("angajat-data-inactiv").value = angajat.data_inactiv || "";
             document.getElementById("angajat-apare-rapoarte").checked = angajat.apare_in_rapoarte !== false;
+            document.getElementById("angajat-afiseaza-lipsa-pontaj").checked = angajat.afiseaza_lipsa_pontaj !== false;
             document.getElementById("angajat-regula-0700").checked = !!angajat.regula_start_0700;
             document.getElementById("angajat-pauza-masa").checked = !!angajat.pauza_masa;
             document.getElementById("angajat-pauza-minute").value = angajat.pauza_minute || 0;
@@ -1545,6 +1557,7 @@
             document.getElementById("angajat-activ").checked = true;
             document.getElementById("angajat-data-inactiv").value = "";
             document.getElementById("angajat-apare-rapoarte").checked = true;
+            document.getElementById("angajat-afiseaza-lipsa-pontaj").checked = true;
             document.getElementById("angajat-regula-0700").checked = false;
             document.getElementById("angajat-pauza-masa").checked = false;
             document.getElementById("angajat-pauza-minute").value = 0;
@@ -1560,6 +1573,7 @@
             const activ = document.getElementById("angajat-activ").checked;
             const dataInactiv = document.getElementById("angajat-data-inactiv").value || null;
             const apareRapoarte = document.getElementById("angajat-apare-rapoarte").checked;
+            const afiseazaLipsaPontaj = document.getElementById("angajat-afiseaza-lipsa-pontaj").checked;
             const regula0700 = document.getElementById("angajat-regula-0700").checked;
             const pauzaMasa = document.getElementById("angajat-pauza-masa").checked;
             const pauzaMinute = parseInt(document.getElementById("angajat-pauza-minute").value || "0", 10);
@@ -1592,6 +1606,7 @@
                 activ: activ,
                 data_inactiv: dataInactiv,
                 apare_in_rapoarte: apareRapoarte,
+                afiseaza_lipsa_pontaj: afiseazaLipsaPontaj,
                 regula_start_0700: regula0700,
                 pauza_masa: pauzaMasa,
                 pauza_minute: pauzaMinute
@@ -2363,15 +2378,6 @@
                     return;
                 }
 
-                const estePaza = String(angajat.sectie || "")
-                    .trim()
-                    .toLowerCase()
-                    .includes("paza");
-
-                if (estePaza) {
-                    return;
-                }
-
                 const zileLipsa = [];
                 const dataCurenta = new Date(dataStart);
 
@@ -2392,6 +2398,7 @@
                             dataText >= angajat.data_inactiv;
 
                         if (
+                            angajat.afiseaza_lipsa_pontaj !== false &&
                             !angajatInactivLaData &&
                             !pontajeDupaAngajatZi[nume + "|" + dataText]
                         ) {
@@ -2743,12 +2750,6 @@
                 return a.nume === angajatSelectatRaport;
             });
 
-            const estePaza =
-                String(angajat?.sectie || "")
-                    .trim()
-                    .toLowerCase()
-                    .includes("paza");
-
             let html = "";
 
             let totalMinuteLucrate = 0;
@@ -2838,7 +2839,7 @@
 
                 } else {
 
-                    if (estePaza) {
+                    if (angajat?.afiseaza_lipsa_pontaj === false) {
 
                         html += "<div class='monthly-value-cell monthly-normal'>";
                         html += "<div class='monthly-interval-cell'></div>";
