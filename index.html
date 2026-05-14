@@ -462,6 +462,84 @@
             font-weight: 900;
         }
 
+
+        /* ===== PAGINA RAPORT ZILE FARA PONTAJ ===== */
+        .missing-days-page {
+            width: 100%;
+            height: 100%;
+            padding: 18px 14px;
+            overflow-y: auto;
+            background: #050505;
+            display: none;
+        }
+
+        .missing-days-header {
+            position: sticky;
+            top: 0;
+            background: #050505;
+            padding-bottom: 14px;
+            z-index: 2;
+        }
+
+        .missing-days-title {
+            color: #ffffff;
+            font-size: 22px;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 18px;
+            letter-spacing: 0.6px;
+            font-family: 'Montserrat', Arial, sans-serif;
+        }
+
+        .missing-days-subtitle {
+            color: #d4af37;
+            font-size: 13px;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 6px;
+            font-family: 'Montserrat', Arial, sans-serif;
+        }
+
+        .missing-days-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding-bottom: 24px;
+        }
+
+        .missing-days-card {
+            border-radius: 18px;
+            border: 1px solid rgba(212,175,55,0.30);
+            background: linear-gradient(90deg, rgba(255,255,255,0.10), rgba(0,0,0,0.96));
+            padding: 14px;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.45);
+        }
+
+        .missing-days-name {
+            color: #ffffff;
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            font-family: 'Montserrat', Arial, sans-serif;
+        }
+
+        .missing-days-line {
+            color: #d4af37;
+            font-size: 13px;
+            line-height: 1.6;
+            font-weight: bold;
+            font-family: 'Montserrat', Arial, sans-serif;
+        }
+
+        .missing-days-empty {
+            color: #d4af37;
+            font-size: 14px;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 40px;
+            font-family: 'Montserrat', Arial, sans-serif;
+        }
+
 .employees-page {
             width: 100%;
             height: 100%;
@@ -699,6 +777,15 @@
                         <span class="menu-arrow">›</span>
                     </div>
 
+                    <div
+                        class="menu-card"
+                        onclick="deschidePaginaRaportZileFaraPontaj()"
+                    >
+                        <span class="menu-icon">⚠</span>
+                        <span class="menu-text">Raport zile fără pontaj</span>
+                        <span class="menu-arrow">›</span>
+                    </div>
+
                     <!-- ===== IMPORT PONTAJ ===== -->
                     <div
                         class="menu-card"
@@ -759,6 +846,39 @@
 
                 </div>
 
+
+
+                <!-- ===== PAGINA RAPORT ZILE FARA PONTAJ ===== -->
+                <div
+                    class="missing-days-page"
+                    id="missing-days-page"
+                    style="display:none;"
+                >
+
+                    <div class="missing-days-header">
+                        <button
+                            class="report-back"
+                            onclick="inchidePaginaRaportZileFaraPontaj()"
+                        >
+                            ‹ Înapoi
+                        </button>
+
+                        <div class="missing-days-title">
+                            Raport zile fără pontaj
+                        </div>
+
+                        <div class="missing-days-subtitle">
+                            Angajați cu lipsă pontaj
+                        </div>
+                    </div>
+
+                    <div
+                        class="missing-days-list"
+                        id="missing-days-list"
+                    >
+                    </div>
+
+                </div>
 
                 <!-- ===== PAGINA ANGAJATI ===== -->
                 <div
@@ -2108,6 +2228,176 @@
 
         }
 
+
+
+        // ===== FORMATARE SCURTA ZI SI DATA =====
+        function formatZiScurtaData(dataObj) {
+
+            const ziScurta = ZILE_SCURTE[dataObj.getDay()];
+            const zi = String(dataObj.getDate()).padStart(2, "0");
+            const luna = String(dataObj.getMonth() + 1).padStart(2, "0");
+
+            return ziScurta + " " + zi + "." + luna;
+
+        }
+
+        // ===== DESCHIDERE PAGINA RAPORT ZILE FARA PONTAJ =====
+        async function deschidePaginaRaportZileFaraPontaj() {
+
+            document.querySelector(".premium-header").style.display = "none";
+            document.querySelector(".premium-line").style.display = "none";
+
+            document.getElementById("main-menu").style.display = "none";
+            document.getElementById("missing-days-page").style.display = "block";
+
+            await incarcaRaportZileFaraPontaj();
+
+        }
+
+        // ===== INCHIDERE PAGINA RAPORT ZILE FARA PONTAJ =====
+        function inchidePaginaRaportZileFaraPontaj() {
+
+            document.getElementById("missing-days-page").style.display = "none";
+            document.getElementById("main-menu").style.display = "flex";
+
+            document.querySelector(".premium-header").style.display = "flex";
+            document.querySelector(".premium-line").style.display = "block";
+
+        }
+
+        // ===== INCARCARE RAPORT ZILE FARA PONTAJ DIN SUPABASE =====
+        async function incarcaRaportZileFaraPontaj() {
+
+            const lista = document.getElementById("missing-days-list");
+
+            lista.innerHTML = "<div class='missing-days-empty'>Se încarcă raportul...</div>";
+
+            const anCurent = new Date().getFullYear();
+            const lunaCurenta = new Date().getMonth() + 1;
+            const primaZiLuna = anCurent + "-" + String(lunaCurenta).padStart(2, "0") + "-01";
+            const ultimaZiLuna = anCurent + "-" + String(lunaCurenta).padStart(2, "0") + "-" + String(new Date(anCurent, lunaCurenta, 0).getDate()).padStart(2, "0");
+
+            const { data: angajati, error: eroareAngajati } = await supabaseClient
+                .from("angajati")
+                .select("*")
+                .order("nume", {
+                    ascending: true
+                });
+
+            if (eroareAngajati) {
+
+                lista.innerHTML = "";
+
+                showMessage(
+                    "Eroare citire angajați",
+                    "error"
+                );
+
+                return;
+
+            }
+
+            const { data: pontaje, error: eroarePontaje } = await supabaseClient
+                .from("pontaj_zilnic")
+                .select("nume,data")
+                .gte("data", primaZiLuna)
+                .lte("data", ultimaZiLuna);
+
+            if (eroarePontaje) {
+
+                lista.innerHTML = "";
+
+                showMessage(
+                    "Eroare citire pontaj",
+                    "error"
+                );
+
+                return;
+
+            }
+
+            const pontajeDupaAngajatZi = {};
+
+            (pontaje || []).forEach(function(pontaj) {
+                pontajeDupaAngajatZi[String(pontaj.nume || "").trim() + "|" + pontaj.data] = true;
+            });
+
+            let html = "";
+
+            (angajati || []).forEach(function(angajat) {
+
+                const nume = String(angajat.nume || "").trim();
+
+                if (!nume) {
+                    return;
+                }
+
+                if (angajat.apare_in_rapoarte === false) {
+                    return;
+                }
+
+                if (angajat.activ === false && angajat.data_inactiv && primaZiLuna >= angajat.data_inactiv) {
+                    return;
+                }
+
+                const estePaza = String(angajat.sectie || "")
+                    .trim()
+                    .toLowerCase()
+                    .includes("paza");
+
+                if (estePaza) {
+                    return;
+                }
+
+                const zileLipsa = [];
+                const zileLuna = new Date(anCurent, lunaCurenta, 0).getDate();
+
+                for (let zi = 1; zi <= zileLuna; zi++) {
+
+                    const dataObj = new Date(anCurent, lunaCurenta - 1, zi);
+                    const ziSaptamana = dataObj.getDay();
+                    const dataText = formatDataPentruCheie(dataObj);
+
+                    if (ziSaptamana === 0 || ziSaptamana === 6) {
+                        continue;
+                    }
+
+                    if (esteZiLiberaLegala(dataText)) {
+                        continue;
+                    }
+
+                    if (angajat.activ === false && angajat.data_inactiv && dataText >= angajat.data_inactiv) {
+                        continue;
+                    }
+
+                    if (!pontajeDupaAngajatZi[nume + "|" + dataText]) {
+                        zileLipsa.push(formatZiScurtaData(dataObj) + " — Lipsă pontaj");
+                    }
+
+                }
+
+                if (zileLipsa.length > 0) {
+
+                    html += "<div class='missing-days-card'>";
+                    html += "<div class='missing-days-name'>" + nume + "</div>";
+
+                    zileLipsa.forEach(function(ziLipsa) {
+                        html += "<div class='missing-days-line'>" + ziLipsa + "</div>";
+                    });
+
+                    html += "</div>";
+
+                }
+
+            });
+
+            if (html === "") {
+                html = "<div class='missing-days-empty'>Nu există zile fără pontaj în luna curentă.</div>";
+            }
+
+            lista.innerHTML = html;
+
+        }
 
 
         
