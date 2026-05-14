@@ -437,6 +437,11 @@
             padding-left: 0;
         }
 
+        .monthly-manual-correction {
+            color: #2f7dff !important;
+            font-weight: 900 !important;
+        }
+
         .monthly-normal {
             background: rgba(255,255,255,0.06);
         }
@@ -3240,10 +3245,10 @@
                     totalMinuteLucrate += minuteCorectie;
 
                     html += "<div class='monthly-value-cell monthly-normal'>";
-                    html += "<div class='monthly-interval-cell'>" +
+                    html += "<div class='monthly-interval-cell monthly-manual-correction'>" +
                         textCorectie +
                         "</div>";
-                    html += "<div class='monthly-hours-cell'>" +
+                    html += "<div class='monthly-hours-cell monthly-manual-correction'>" +
                         oreCorectie +
                         "</div>";
                     html += "</div>";
