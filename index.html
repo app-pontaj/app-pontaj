@@ -3916,6 +3916,26 @@
 
                     const pontaj = pontajeDupaAngajatZi[cheieCautare];
 
+                    // ===== DEBUG ALEXA MARIA =====
+                    if (
+                        nume.trim().toUpperCase() === "ALEXA MARIA" &&
+                        dataText === "2026-04-01"
+                    ) {
+
+                        console.log("=== DEBUG ALEXA MARIA ===");
+                        console.log("CHEIE CAUTATA:", cheieCautare);
+                        console.log("PONTAJ GASIT:", pontaj);
+
+                        Object.keys(pontajeDupaAngajatZi).forEach(function(cheie) {
+
+                            if (cheie.includes("ALEXA")) {
+                                console.log("CHEIE EXISTENTA:", cheie);
+                            }
+
+                        });
+
+                    }
+
                     const rezultatCelula = valoareCelulaRaportToti(pontaj, dataText, angajat);
                     const valoare = rezultatCelula.text;
 
