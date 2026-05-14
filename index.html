@@ -2421,6 +2421,12 @@
                 return a.nume === angajatSelectatRaport;
             });
 
+            const estePaza =
+                String(angajat?.sectie || "")
+                    .trim()
+                    .toLowerCase()
+                    .includes("paza");
+
             let html = "";
 
             let totalMinuteLucrate = 0;
@@ -2510,7 +2516,18 @@
 
                 } else {
 
-                    html += "<div class='monthly-missing'>FARA PONTAJ</div>";
+                    if (estePaza) {
+
+                        html += "<div class='monthly-value-cell monthly-normal'>";
+                        html += "<div class='monthly-interval-cell'></div>";
+                        html += "<div class='monthly-hours-cell'></div>";
+                        html += "</div>";
+
+                    } else {
+
+                        html += "<div class='monthly-missing'>FARA PONTAJ</div>";
+
+                    }
 
                 }
 
