@@ -2336,7 +2336,7 @@
                     return;
                 }
 
-                if (angajat.activ === false && angajat.data_inactiv && primaZiLuna >= angajat.data_inactiv) {
+                if (angajat.activ === false && angajat.data_inactiv && dataStopObj >= creeazaDataDinText(angajat.data_inactiv)) {
                     return;
                 }
 
