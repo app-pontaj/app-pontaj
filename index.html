@@ -265,11 +265,12 @@
             width: 100%;
             display: grid;
             grid-template-columns: repeat(6, 1fr);
-            gap: 8px;
+            column-gap: 4px;
+            row-gap: 8px;
         }
 
         .month-card {
-            height: 40px;
+            height: 32px;
             border-radius: 7px;
             border: 1px solid #ffd75a;
             background: linear-gradient(145deg, #ffe27a 0%, #d6a72d 56%, #b98208 100%);
@@ -281,6 +282,12 @@
             font-weight: 900;
             font-family: 'Montserrat', Arial, sans-serif;
             cursor: pointer;
+        }
+
+        .month-card.active-month {
+            background: #050505;
+            color: #d4af37;
+            border: 1.5px solid #d4af37;
         }
 
 
@@ -1320,19 +1327,19 @@
                         id="report-list"
                     >
 
-                        <button class="month-card" onclick="deschideRaportLunar(1,'Ian')">Ian</button>
-                        <button class="month-card" onclick="deschideRaportLunar(2,'Feb')">Feb</button>
-                        <button class="month-card" onclick="deschideRaportLunar(3,'Mar')">Mar</button>
-                        <button class="month-card" onclick="deschideRaportLunar(4,'Apr')">Apr</button>
-                        <button class="month-card" onclick="deschideRaportLunar(5,'Mai')">Mai</button>
-                        <button class="month-card" onclick="deschideRaportLunar(6,'Iun')">Iun</button>
+                        <button class="month-card" data-luna="1" onclick="deschideRaportLunar(1,'Ian')">Ian</button>
+                        <button class="month-card" data-luna="2" onclick="deschideRaportLunar(2,'Feb')">Feb</button>
+                        <button class="month-card" data-luna="3" onclick="deschideRaportLunar(3,'Mar')">Mar</button>
+                        <button class="month-card" data-luna="4" onclick="deschideRaportLunar(4,'Apr')">Apr</button>
+                        <button class="month-card" data-luna="5" onclick="deschideRaportLunar(5,'Mai')">Mai</button>
+                        <button class="month-card" data-luna="6" onclick="deschideRaportLunar(6,'Iun')">Iun</button>
 
-                        <button class="month-card" onclick="deschideRaportLunar(7,'Iul')">Iul</button>
-                        <button class="month-card" onclick="deschideRaportLunar(8,'Aug')">Aug</button>
-                        <button class="month-card" onclick="deschideRaportLunar(9,'Sep')">Sep</button>
-                        <button class="month-card" onclick="deschideRaportLunar(10,'Oct')">Oct</button>
-                        <button class="month-card" onclick="deschideRaportLunar(11,'Noi')">Noi</button>
-                        <button class="month-card" onclick="deschideRaportLunar(12,'Dec')">Dec</button>
+                        <button class="month-card" data-luna="7" onclick="deschideRaportLunar(7,'Iul')">Iul</button>
+                        <button class="month-card" data-luna="8" onclick="deschideRaportLunar(8,'Aug')">Aug</button>
+                        <button class="month-card" data-luna="9" onclick="deschideRaportLunar(9,'Sep')">Sep</button>
+                        <button class="month-card" data-luna="10" onclick="deschideRaportLunar(10,'Oct')">Oct</button>
+                        <button class="month-card" data-luna="11" onclick="deschideRaportLunar(11,'Noi')">Noi</button>
+                        <button class="month-card" data-luna="12" onclick="deschideRaportLunar(12,'Dec')">Dec</button>
 
                     </div>
 
@@ -3183,8 +3190,25 @@
 
         }
 
+        // ===== MARCARE LUNA SELECTATA =====
+        function marcheazaLunaSelectata(luna) {
+
+            document.querySelectorAll(".month-card").forEach(function(buton) {
+                buton.classList.remove("active-month");
+            });
+
+            const butonLuna = document.querySelector(".month-card[data-luna='" + luna + "']");
+
+            if (butonLuna) {
+                butonLuna.classList.add("active-month");
+            }
+
+        }
+
         // ===== DESCHIDE RAPORT LUNAR =====
         async function deschideRaportLunar(luna, numeLuna) {
+
+            marcheazaLunaSelectata(luna);
 
             if (modRaportSelectat !== "angajat" || !angajatSelectatRaport) {
 
