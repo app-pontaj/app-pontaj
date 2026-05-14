@@ -301,165 +301,77 @@
         .monthly-report-page {
             width: 100%;
             height: 100%;
-            padding: 8px 14px 10px;
-            overflow-y: hidden;
+            padding: 10px 8px 14px;
+            overflow-y: auto;
             overflow-x: hidden;
             background: #050505;
             display: none;
         }
 
-        .monthly-report-header {
-            width: 100%;
-            display: grid;
-            grid-template-columns: 70px 1fr;
-            column-gap: 12px;
-            align-items: start;
-            margin-bottom: 4px;
-        }
-
-        .monthly-back-button {
-            background: transparent;
-            border: none;
-            color: #ff3b3b;
-            font-size: 14px;
-            font-weight: 900;
-            padding: 1px 0 0;
-            margin: 0;
-            cursor: pointer;
-            text-align: left;
-            font-family: 'Montserrat', Arial, sans-serif;
-            line-height: 1;
-        }
-
-        .monthly-title-box {
-            min-width: 0;
-        }
-
-        .monthly-employee-name {
-            color: #d4af37;
-            font-size: 15px;
-            font-weight: 900;
-            line-height: 1;
-            letter-spacing: 0.2px;
-            font-family: 'Montserrat', Arial, sans-serif;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .monthly-month-year {
-            color: #ffffff;
-            font-size: 14px;
-            font-weight: 900;
-            line-height: 1;
-            margin-top: 2px;
-            font-family: 'Montserrat', Arial, sans-serif;
-        }
-
-        .monthly-gold-line {
-            width: 100%;
-            height: 1px;
-            background: rgba(212,175,55,0.95);
-            margin-bottom: 6px;
-        }
-
         .monthly-report-wrapper {
             width: 100%;
-            border: 1px solid rgba(212,175,55,0.88);
-            border-radius: 0 12px 12px 12px;
+            border: 1px solid rgba(212,175,55,0.65);
+            border-radius: 12px;
             overflow: hidden;
-            background: linear-gradient(145deg, #161616 0%, #0b0b0b 100%);
+            background: #0a0a0a;
             box-shadow: 0 8px 18px rgba(0,0,0,0.55);
         }
 
         .monthly-report-grid {
             width: 100%;
-            display: flex;
-            flex-direction: column;
+            display: grid;
             color: #ffffff;
         }
 
-        .monthly-report-row {
-            min-height: 15px;
-            display: grid;
-            grid-template-columns: 58px 1fr;
+        .monthly-head-cell {
+            min-height: 30px;
+            background: linear-gradient(145deg, #f6d257, #a96f10);
+            color: #111111;
+            border-right: 1px solid rgba(0,0,0,0.35);
+            border-bottom: 2px solid #000000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 6.5px;
+            line-height: 1.05;
+            font-weight: 900;
+            padding: 2px 1px;
+        }
+
+        .monthly-day-cell {
+            min-height: 34px;
+            border-right: 1px solid rgba(212,175,55,0.18);
             border-bottom: 1px solid rgba(212,175,55,0.18);
-        }
-
-        .monthly-report-row:last-child {
-            border-bottom: none;
-        }
-
-        .monthly-date-cell {
-            background: linear-gradient(145deg, #ffe27a 0%, #d6a72d 56%, #b98208 100%);
-            color: #050505;
             display: flex;
             align-items: center;
             justify-content: center;
             text-align: center;
-            font-size: 9px;
-            line-height: 1;
-            font-weight: 700;
-            padding: 1px 2px;
-            border-right: 1px solid rgba(0,0,0,0.55);
-            font-family: 'Montserrat', Arial, sans-serif;
-        }
-
-        .monthly-date-weekend {
-            background: linear-gradient(145deg, #2f6ecf 0%, #17448e 100%);
-            color: #ffffff;
-        }
-
-        .monthly-value-cell {
-            display: grid;
-            grid-template-columns: 1fr 56px;
-            align-items: center;
-            text-align: center;
-            font-size: 10px;
-            line-height: 1;
-            padding: 0;
-            font-family: 'Montserrat', Arial, sans-serif;
-        }
-
-        .monthly-interval-cell {
-            color: #ffffff;
-            font-size: 10px;
-            font-weight: 500;
-            text-align: left;
-            padding-left: 5px;
-        }
-
-        .monthly-hours-cell {
-            color: #d4af37;
-            font-size: 11px;
+            padding: 2px 1px;
+            font-size: 6.3px;
+            line-height: 1.05;
             font-weight: 900;
-            text-align: left;
-            padding-left: 0;
+            word-break: break-word;
+        }
+
+        .monthly-left-cell {
+            background: linear-gradient(145deg, #f6d257, #a96f10);
+            color: #111111;
         }
 
         .monthly-normal {
             background: rgba(255,255,255,0.06);
+            color: #f2c94c;
         }
 
         .monthly-missing {
-            background: linear-gradient(90deg, #e00000 0%, #c50000 100%);
+            background: rgba(255,0,0,0.78);
             color: #ffffff;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 10px;
-            font-weight: 900;
         }
 
         .monthly-red {
             background: rgba(255,255,255,0.06);
-            color: #ff3b3b;
-            display: flex;
-            align-items: center;
-            justify-content: flex-start;
-            padding-left: 5px;
-            font-size: 11px;
-            font-weight: 900;
+            color: #ff4d4d;
         }
 
 .employees-page {
@@ -971,9 +883,6 @@
                         <button class="month-card" onclick="deschideRaportLunar(11,'Noi')">Noi</button>
                         <button class="month-card" onclick="deschideRaportLunar(12,'Dec')">Dec</button>
 
-                    </div>
-
-                </div>
 
                 <!-- ===== PAGINA RAPORT LUNAR ===== -->
                 <div
@@ -982,33 +891,29 @@
                     style="display:none;"
                 >
 
-                    <div class="monthly-report-header">
+                    <div class="report-header">
 
-                        <button
-                            class="monthly-back-button"
-                            onclick="inchideRaportLunar()"
-                        >
-                            ‹ Back
-                        </button>
+                        <div class="report-top-row">
 
-                        <div class="monthly-title-box">
+                            <button
+                                class="report-back-modern"
+                                onclick="inchideRaportLunar()"
+                            >
+                                ‹ Back
+                            </button>
+
                             <div
-                                class="monthly-employee-name"
-                                id="monthly-report-name"
+                                class="report-title-modern"
+                                id="monthly-report-title"
                             >
                                 Raport
                             </div>
 
-                            <div
-                                class="monthly-month-year"
-                                id="monthly-report-month"
-                            >
-                            </div>
                         </div>
 
-                    </div>
+                        <div class="report-gold-line"></div>
 
-                    <div class="monthly-gold-line"></div>
+                    </div>
 
                     <div class="monthly-report-wrapper">
 
@@ -1018,6 +923,9 @@
                         >
                         </div>
 
+                    </div>
+
+                </div>
                     </div>
 
                 </div>
@@ -1617,7 +1525,24 @@
 
             try {
 
-                const grupare = {};
+                const pontariCitite = [];
+                const seriCuPontajDupaOra19 = {};
+
+                function dataZiAnterioara(dataText) {
+
+                    const parti = dataText.split("-");
+
+                    const dataObj = new Date(
+                        parseInt(parti[0], 10),
+                        parseInt(parti[1], 10) - 1,
+                        parseInt(parti[2], 10)
+                    );
+
+                    dataObj.setDate(dataObj.getDate() - 1);
+
+                    return formatDataPentruCheie(dataObj);
+
+                }
 
                 for (let i = 1; i < randuri.length; i++) {
 
@@ -1655,22 +1580,64 @@
                         continue;
                     }
 
-                    const cheie = nume + "|" + dateInfo.data;
+                    pontariCitite.push({
+                        nume: nume,
+                        departament: departament,
+                        data: dateInfo.data,
+                        ora: dateInfo.ora,
+                        minute: dateInfo.minute
+                    });
+
+                    // ===== MARCARE TURA DE NOAPTE POSIBILA =====
+                    if (dateInfo.minute >= 1140) {
+
+                        seriCuPontajDupaOra19[nume + "|" + dateInfo.data] = true;
+
+                    }
+
+                }
+
+                const grupare = {};
+
+                pontariCitite.forEach(function(pontare) {
+
+                    let dataRaport = pontare.data;
+                    let minuteSortare = pontare.minute;
+
+                    const dataAnterioara = dataZiAnterioara(pontare.data);
+
+                    // ===== REGULA TURA DE NOAPTE =====
+                    // Pontajele de a doua zi inainte de 09:00 apartin turei incepute ieri,
+                    // doar daca ieri exista pontaj dupa 19:00 pentru acelasi angajat.
+                    if (
+                        pontare.minute < 540 &&
+                        seriCuPontajDupaOra19[pontare.nume + "|" + dataAnterioara]
+                    ) {
+
+                        dataRaport = dataAnterioara;
+                        minuteSortare = pontare.minute + 1440;
+
+                    }
+
+                    const cheie = pontare.nume + "|" + dataRaport;
 
                     if (!grupare[cheie]) {
 
                         grupare[cheie] = {
-                            nume: nume,
-                            departament: departament,
-                            data: dateInfo.data,
+                            nume: pontare.nume,
+                            departament: pontare.departament,
+                            data: dataRaport,
                             pontari: []
                         };
 
                     }
 
-                    grupare[cheie].pontari.push(dateInfo);
+                    grupare[cheie].pontari.push({
+                        ora: pontare.ora,
+                        minute: minuteSortare
+                    });
 
-                }
+                });
 
                 const rezultate = Object.values(grupare).map(function(grup) {
 
@@ -2105,34 +2072,6 @@
 
         }
 
-        // ===== VERIFICARE ANGAJAT PERMIS IN RAPOARTE =====
-        function esteAngajatPermisInRapoarte(nume) {
-
-            const numeCurat = String(nume || "").trim();
-
-            const angajat = listaAngajatiSupabase.find(function(item) {
-                return String(item.nume || "").trim() === numeCurat;
-            });
-
-            if (!angajat) {
-                return true;
-            }
-
-            if (angajat.apare_in_rapoarte === false) {
-                return false;
-            }
-
-            if (
-                angajat.activ === false &&
-                angajat.data_inactiv
-            ) {
-                return false;
-            }
-
-            return true;
-
-        }
-
         // ===== CAUTARE LIVE ANGAJATI =====
         function cautaAngajatiLive() {
 
@@ -2153,17 +2092,6 @@
             }
 
             const rezultate = listaAngajatiSupabase.filter(function(angajat) {
-
-                if (angajat.apare_in_rapoarte === false) {
-                    return false;
-                }
-
-                if (
-                    angajat.activ === false &&
-                    angajat.data_inactiv
-                ) {
-                    return false;
-                }
 
                 return String(angajat.nume || "")
                     .toLowerCase()
@@ -2190,23 +2118,6 @@
 
         // ===== SELECTARE ANGAJAT RAPORT =====
         function selecteazaAngajatRaport(nume) {
-
-            if (!esteAngajatPermisInRapoarte(nume)) {
-
-                angajatSelectatRaport = "";
-
-                document.getElementById("employee-search-input").value = "";
-
-                document.getElementById("employee-search-results").innerHTML = "";
-
-                showMessage(
-                    "Angajat exclus din rapoarte",
-                    "error"
-                );
-
-                return;
-
-            }
 
             angajatSelectatRaport = nume;
 
@@ -2267,58 +2178,6 @@
 
         }
 
-        // ===== FORMATARE MINUTE IN ORA =====
-        function formateazaMinuteOra(totalMinute) {
-
-            const ore = Math.floor(totalMinute / 60);
-            const minute = totalMinute % 60;
-
-            return String(ore).padStart(2, '0') +
-                ":" +
-                String(minute).padStart(2, '0');
-
-        }
-
-        // ===== INTERVAL PONTAT CU REGULA 07:00 =====
-        function calculeazaIntervalPontat(oraIntrare, oraIesire, regula0700) {
-
-            if (!oraIntrare || !oraIesire) {
-                return "";
-            }
-
-            let start = transformaOraMinute(oraIntrare);
-
-            if (regula0700 && start < 420) {
-                start = 420;
-            }
-
-            return formateazaMinuteOra(start) + " - " + oraIesire;
-
-        }
-
-        // ===== NUME LUNA COMPLET =====
-        function numeLunaComplet(luna) {
-
-            const luni = [
-                "",
-                "Ianuarie",
-                "Februarie",
-                "Martie",
-                "Aprilie",
-                "Mai",
-                "Iunie",
-                "Iulie",
-                "August",
-                "Septembrie",
-                "Octombrie",
-                "Noiembrie",
-                "Decembrie"
-            ];
-
-            return luni[luna] || "";
-
-        }
-
         // ===== DESCHIDE RAPORT LUNAR =====
         async function deschideRaportLunar(luna, numeLuna) {
 
@@ -2333,31 +2192,20 @@
 
             }
 
-            if (!esteAngajatPermisInRapoarte(angajatSelectatRaport)) {
-
-                showMessage(
-                    "Angajat exclus din rapoarte",
-                    "error"
-                );
-
-                return;
-
-            }
-
             document.getElementById("report-page").style.display = "none";
             document.getElementById("monthly-report-page").style.display = "block";
 
-            const anCurent = new Date().getFullYear();
-
-            document.getElementById("monthly-report-name").innerHTML =
-                angajatSelectatRaport;
-
-            document.getElementById("monthly-report-month").innerHTML =
-                numeLunaComplet(luna) + " " + anCurent;
+            document.getElementById("monthly-report-title").innerHTML =
+                angajatSelectatRaport + " - " + numeLuna;
 
             const grid = document.getElementById("monthly-report-grid");
 
+            const anCurent = new Date().getFullYear();
+
             const zileLuna = new Date(anCurent, luna, 0).getDate();
+
+            grid.style.gridTemplateColumns =
+                "34px repeat(" + zileLuna + ", minmax(0, 1fr))";
 
             const { data: pontaje } = await supabaseClient
                 .from("pontaj_zilnic")
@@ -2370,8 +2218,22 @@
 
             let html = "";
 
-            let totalMinuteLucrate = 0;
-            let totalZileLucratoare = 0;
+            html += "<div class='monthly-head-cell monthly-left-cell'>Zi</div>";
+
+            for (let zi = 1; zi <= zileLuna; zi++) {
+
+                const dataObj = new Date(anCurent, luna - 1, zi);
+
+                const ziSapt = ZILE_SCURTE[dataObj.getDay()];
+
+                html += "<div class='monthly-head-cell'>" +
+                    "<div>" + ziSapt + "</div>" +
+                    "<div>" + String(zi).padStart(2,'0') + "." + String(luna).padStart(2,'0') + "</div>" +
+                    "</div>";
+
+            }
+
+            html += "<div class='monthly-day-cell monthly-left-cell'>Ore</div>";
 
             for (let zi = 1; zi <= zileLuna; zi++) {
 
@@ -2384,43 +2246,22 @@
 
                 const dataObj = new Date(anCurent, luna - 1, zi);
 
-                const ziSapt = ZILE_SCURTE[dataObj.getDay()];
-
                 const weekend =
                     dataObj.getDay() === 0 ||
                     dataObj.getDay() === 6;
 
                 const sarbatoare = esteZiLiberaLegala(dataText);
 
-                if (!weekend && !sarbatoare) {
-                    totalZileLucratoare++;
-                }
-
                 const pontaj = (pontaje || []).find(function(p) {
                     return p.data === dataText;
                 });
 
-                const clasaData = weekend
-                    ? "monthly-date-cell monthly-date-weekend"
-                    : "monthly-date-cell";
-
-                html += "<div class='monthly-report-row'>";
-
-                html += "<div class='" + clasaData + "'>" +
-                    ziSapt + " " +
-                    String(zi).padStart(2,'0') + "." +
-                    String(luna).padStart(2,'0') +
-                    "</div>";
+                let textCelula = "";
+                let clasa = "monthly-normal";
 
                 if (pontaj) {
 
-                    const intervalPontat = calculeazaIntervalPontat(
-                        pontaj.ora_intrare,
-                        pontaj.ora_iesire,
-                        angajat?.regula_start_0700
-                    );
-
-                    const oreNete = calculeazaOreNete(
+                    textCelula = calculeazaOreNete(
                         pontaj.ora_intrare,
                         pontaj.ora_iesire,
                         angajat?.regula_start_0700,
@@ -2428,96 +2269,35 @@
                         angajat?.pauza_minute
                     );
 
-                    const minuteOreNete =
-                        transformaOraMinute(oreNete.replace("-", ""));
-
-                    if (!oreNete.startsWith("-")) {
-                        totalMinuteLucrate += minuteOreNete;
+                    if (weekend || sarbatoare || textCelula.startsWith("-")) {
+                        clasa = "monthly-red";
                     }
-
-                    html += "<div class='monthly-value-cell monthly-normal'>";
-                    html += "<div class='monthly-interval-cell'>" +
-                        intervalPontat +
-                        "</div>";
-                    html += "<div class='monthly-hours-cell'>" +
-                        oreNete +
-                        "</div>";
-                    html += "</div>";
-
-                } else if (sarbatoare) {
-
-                    html += "<div class='monthly-red'>S.L</div>";
-
-                } else if (weekend) {
-
-                    html += "<div class='monthly-value-cell monthly-normal'>";
-                    html += "<div class='monthly-interval-cell'></div>";
-                    html += "<div class='monthly-hours-cell'></div>";
-                    html += "</div>";
 
                 } else {
 
-                    html += "<div class='monthly-missing'>FARA PONTAJ</div>";
+                    if (sarbatoare) {
+
+                        textCelula = "S.L";
+                        clasa = "monthly-red";
+
+                    } else if (weekend) {
+
+                        textCelula = "";
+
+                    } else {
+
+                        textCelula = "FARA";
+                        clasa = "monthly-missing";
+
+                    }
 
                 }
 
-                html += "</div>";
+                html += "<div class='monthly-day-cell " + clasa + "'>" +
+                    textCelula +
+                    "</div>";
 
             }
-
-            const totalOreLucratoareMinute = totalZileLucratoare * 8 * 60;
-            const diferentaMinute =
-                totalMinuteLucrate - totalOreLucratoareMinute;
-
-            const diferentaText =
-                (diferentaMinute < 0 ? "-" : "") +
-                formateazaMinuteOra(Math.abs(diferentaMinute));
-
-            html += "<div style='height:12px;'></div>";
-
-            const culoareDiferenta =
-                diferentaMinute < 0
-                    ? "#ff3b3b"
-                    : "#d4af37";
-
-            html += "<div style='padding:0 10px 0 10px;font-family:Montserrat,Arial,sans-serif;'>";
-
-            html += "<div style='display:grid;grid-template-columns:210px 70px;align-items:center;color:#ffffff;font-size:11px;font-weight:700;line-height:1.9;'>";
-            html += "<div>Total ore lucrătoare pe lună:</div>";
-            html += "<div style='color:#d4af37;text-align:left;'>" + formateazaMinuteOra(totalOreLucratoareMinute) + "</div>";
-            html += "</div>";
-
-            html += "<div style='display:grid;grid-template-columns:210px 70px;align-items:center;color:#ffffff;font-size:11px;font-weight:700;line-height:1.9;'>";
-            html += "<div>Total ore lucrate pe lună:</div>";
-            html += "<div style='color:#d4af37;text-align:left;'>" + formateazaMinuteOra(totalMinuteLucrate) + "</div>";
-            html += "</div>";
-
-            html += "</div>";
-
-            html += "<div style='width:280px;height:1px;background:rgba(212,175,55,0.9);margin:6px 0 0 10px;'></div>";
-
-            html += "<div style='height:10px;'></div>";
-
-            html += "<div style='padding:0 10px 10px 10px;font-family:Montserrat,Arial,sans-serif;'>";
-            html += "<div style='display:grid;grid-template-columns:210px 70px;align-items:center;color:#ffffff;font-size:12px;font-weight:900;'>";
-            html += "<div>Diferență:</div>";
-            html += "<div style='color:" + culoareDiferenta + ";text-align:left;'>" + diferentaText + "</div>";
-            html += "</div>";
-            html += "</div>";
-
-            const procentRealizat =
-                totalOreLucratoareMinute > 0
-                    ? ((totalMinuteLucrate / totalOreLucratoareMinute) * 100).toFixed(1)
-                    : "0.0";
-
-            html += "<div style='height:10px;'></div>";
-
-            html += "<div style='padding:0 10px 12px 10px;font-family:Montserrat,Arial,sans-serif;'>";
-            html += "<div style='display:grid;grid-template-columns:210px 70px;align-items:center;color:#ffffff;font-size:12px;font-weight:900;'>";
-            html += "<div>Procent:</div>";
-            html += "<div style='color:#2f7dff;text-align:left;font-weight:900;'>" + procentRealizat + "%</div>";
-            html += "</div>";
-            html += "</div>";
 
             grid.innerHTML = html;
 
