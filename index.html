@@ -423,6 +423,13 @@
             border-bottom: 1px solid rgba(212,175,55,0.9);
             height: 32px;
             line-height: 1.05;
+            font-weight: 900;
+        }
+
+        .all-employees-warning-cell {
+            background: linear-gradient(145deg, #ffe27a 0%, #d6a72d 56%, #b98208 100%);
+            color: #e00000;
+            font-weight: 900;
         }
 
         .all-employees-table .all-employees-name-head {
@@ -3767,7 +3774,7 @@
             if (esteZiLiberaLegala(dataText)) {
                 return {
                     text: "S.L",
-                    rosu: false
+                    rosu: true
                 };
             }
 
@@ -3947,7 +3954,7 @@
 
                     if (valoare) {
                         clasaCelula = rezultatCelula.rosu
-                            ? "all-employees-red-cell"
+                            ? "all-employees-warning-cell"
                             : "all-employees-value-cell";
                     }
 
