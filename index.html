@@ -432,6 +432,12 @@
             font-weight: 900;
         }
 
+        .all-employees-missing-cell {
+            background: #d10000;
+            color: #050505;
+            font-weight: 900;
+        }
+
         .all-employees-table .all-employees-name-head {
             position: sticky;
             left: 0;
@@ -3779,8 +3785,9 @@
             }
 
             return {
-                text: "",
-                rosu: false
+                text: "Lipsă pontaj",
+                rosu: false,
+                lipsaPontaj: true
             };
 
         }
@@ -3952,10 +3959,16 @@
 
                     let clasaCelula = "all-employees-empty-cell";
 
-                    if (valoare) {
+                    if (rezultatCelula.lipsaPontaj) {
+
+                        clasaCelula = "all-employees-missing-cell";
+
+                    } else if (valoare) {
+
                         clasaCelula = rezultatCelula.rosu
                             ? "all-employees-warning-cell"
                             : "all-employees-value-cell";
+
                     }
 
                     html +=
