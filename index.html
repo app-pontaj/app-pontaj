@@ -500,6 +500,49 @@
             font-family: 'Montserrat', Arial, sans-serif;
         }
 
+        .missing-days-filter-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 8px;
+            margin-top: 14px;
+        }
+
+        .missing-days-filter-button {
+            min-height: 38px;
+            border-radius: 10px;
+            border: 1.5px solid #d4af37;
+            background: linear-gradient(145deg, #141414 0%, #050505 100%);
+            color: #d4af37;
+            font-size: 12px;
+            font-weight: 900;
+            font-family: 'Montserrat', Arial, sans-serif;
+            cursor: pointer;
+        }
+
+        .missing-days-filter-button.active {
+            background: linear-gradient(145deg, #ffe27a 0%, #d6a72d 56%, #b98208 100%);
+            color: #050505;
+        }
+
+        .missing-days-select-area {
+            display: none;
+            margin-top: 10px;
+        }
+
+        .missing-days-select {
+            width: 100%;
+            min-height: 42px;
+            border-radius: 12px;
+            border: 1.5px solid #d4af37;
+            background: #111111;
+            color: #ffffff;
+            padding: 0 12px;
+            font-size: 13px;
+            font-weight: 800;
+            font-family: 'Montserrat', Arial, sans-serif;
+            outline: none;
+        }
+
         .missing-days-list {
             display: flex;
             flex-direction: column;
@@ -856,19 +899,61 @@
                 >
 
                     <div class="missing-days-header">
-                        <button
-                            class="report-back"
-                            onclick="inchidePaginaRaportZileFaraPontaj()"
-                        >
-                            ‹ Înapoi
-                        </button>
+                        <div class="report-top-row">
+                            <button
+                                class="report-back-modern"
+                                onclick="inchidePaginaRaportZileFaraPontaj()"
+                            >
+                                ‹ Înapoi
+                            </button>
 
-                        <div class="missing-days-title">
-                            Raport zile fără pontaj
+                            <div>
+                                <div class="missing-days-title" style="margin-top:0;text-align:left;">
+                                    Raport zile fără pontaj
+                                </div>
+
+                                <div class="missing-days-subtitle" style="text-align:left;">
+                                    Angajați cu lipsă pontaj
+                                </div>
+                            </div>
                         </div>
 
-                        <div class="missing-days-subtitle">
-                            Angajați cu lipsă pontaj
+                        <div class="missing-days-filter-row">
+                            <button
+                                class="missing-days-filter-button"
+                                id="missing-filter-angajat"
+                                onclick="seteazaFiltruZileFaraPontaj('angajat')"
+                            >
+                                Angajat
+                            </button>
+
+                            <button
+                                class="missing-days-filter-button"
+                                id="missing-filter-sectie"
+                                onclick="seteazaFiltruZileFaraPontaj('sectie')"
+                            >
+                                Secție
+                            </button>
+
+                            <button
+                                class="missing-days-filter-button active"
+                                id="missing-filter-toti"
+                                onclick="seteazaFiltruZileFaraPontaj('toti')"
+                            >
+                                Toți angajații
+                            </button>
+                        </div>
+
+                        <div
+                            class="missing-days-select-area"
+                            id="missing-days-select-area"
+                        >
+                            <select
+                                class="missing-days-select"
+                                id="missing-days-select"
+                                onchange="schimbaSelectieZileFaraPontaj()"
+                            >
+                            </select>
                         </div>
                     </div>
 
@@ -946,15 +1031,6 @@
                             <input
                                 type="checkbox"
                                 id="angajat-apare-rapoarte"
-                                checked
-                            >
-                        </div>
-
-                        <div class="employee-row">
-                            <span>Afișează lipsă pontaj</span>
-                            <input
-                                type="checkbox"
-                                id="angajat-afiseaza-lipsa-pontaj"
                                 checked
                             >
                         </div>
@@ -1502,7 +1578,6 @@
                 const status = angajat.activ ? "Activ" : "Inactiv";
                 const dataInactiv = angajat.data_inactiv ? " din " + angajat.data_inactiv : "";
                 const apareRapoarte = angajat.apare_in_rapoarte === false ? "Nu" : "Da";
-                const afiseazaLipsaPontaj = angajat.afiseaza_lipsa_pontaj === false ? "Nu" : "Da";
                 const regula0700 = angajat.regula_start_0700 ? "Da" : "Nu";
                 const pauzaMasa = angajat.pauza_masa ? "Da" : "Nu";
                 const pauzaMinute = angajat.pauza_minute || 0;
@@ -1512,7 +1587,6 @@
                 html += "<div class='employee-card-info'>";
                 html += status + dataInactiv + "<br>";
                 html += "Apare în rapoarte: " + apareRapoarte + "<br>";
-                html += "Afișează lipsă pontaj: " + afiseazaLipsaPontaj + "<br>";
                 html += "Regulă 07:00: " + regula0700 + "<br>";
                 html += "Pauză masă: " + pauzaMasa + " (" + pauzaMinute + " min)<br>";
                 html += "Secție: " + (angajat.sectie || "-");
@@ -1536,7 +1610,6 @@
             document.getElementById("angajat-activ").checked = !!angajat.activ;
             document.getElementById("angajat-data-inactiv").value = angajat.data_inactiv || "";
             document.getElementById("angajat-apare-rapoarte").checked = angajat.apare_in_rapoarte !== false;
-            document.getElementById("angajat-afiseaza-lipsa-pontaj").checked = angajat.afiseaza_lipsa_pontaj !== false;
             document.getElementById("angajat-regula-0700").checked = !!angajat.regula_start_0700;
             document.getElementById("angajat-pauza-masa").checked = !!angajat.pauza_masa;
             document.getElementById("angajat-pauza-minute").value = angajat.pauza_minute || 0;
@@ -1557,7 +1630,6 @@
             document.getElementById("angajat-activ").checked = true;
             document.getElementById("angajat-data-inactiv").value = "";
             document.getElementById("angajat-apare-rapoarte").checked = true;
-            document.getElementById("angajat-afiseaza-lipsa-pontaj").checked = true;
             document.getElementById("angajat-regula-0700").checked = false;
             document.getElementById("angajat-pauza-masa").checked = false;
             document.getElementById("angajat-pauza-minute").value = 0;
@@ -1573,7 +1645,6 @@
             const activ = document.getElementById("angajat-activ").checked;
             const dataInactiv = document.getElementById("angajat-data-inactiv").value || null;
             const apareRapoarte = document.getElementById("angajat-apare-rapoarte").checked;
-            const afiseazaLipsaPontaj = document.getElementById("angajat-afiseaza-lipsa-pontaj").checked;
             const regula0700 = document.getElementById("angajat-regula-0700").checked;
             const pauzaMasa = document.getElementById("angajat-pauza-masa").checked;
             const pauzaMinute = parseInt(document.getElementById("angajat-pauza-minute").value || "0", 10);
@@ -1606,7 +1677,6 @@
                 activ: activ,
                 data_inactiv: dataInactiv,
                 apare_in_rapoarte: apareRapoarte,
-                afiseaza_lipsa_pontaj: afiseazaLipsaPontaj,
                 regula_start_0700: regula0700,
                 pauza_masa: pauzaMasa,
                 pauza_minute: pauzaMinute
@@ -2280,6 +2350,117 @@
 
         }
 
+        // ===== DATE RAPORT ZILE FARA PONTAJ =====
+        let modFiltruZileFaraPontaj = "toti";
+        let selectieFiltruZileFaraPontaj = "";
+        let angajatiRaportZileFaraPontaj = [];
+        let pontajeRaportZileFaraPontaj = [];
+        let dataStartRaportZileFaraPontaj = null;
+        let dataStopRaportZileFaraPontaj = null;
+
+        // ===== SETARE FILTRU RAPORT ZILE FARA PONTAJ =====
+        function seteazaFiltruZileFaraPontaj(mod) {
+
+            modFiltruZileFaraPontaj = mod;
+            selectieFiltruZileFaraPontaj = "";
+
+            document.getElementById("missing-filter-angajat").classList.remove("active");
+            document.getElementById("missing-filter-sectie").classList.remove("active");
+            document.getElementById("missing-filter-toti").classList.remove("active");
+
+            document.getElementById("missing-filter-" + mod).classList.add("active");
+
+            pregatesteSelectieZileFaraPontaj();
+            afiseazaRaportZileFaraPontaj();
+
+        }
+
+        // ===== PREGATIRE SELECTIE ANGAJAT / SECTIE =====
+        function pregatesteSelectieZileFaraPontaj() {
+
+            const zonaSelectie = document.getElementById("missing-days-select-area");
+            const select = document.getElementById("missing-days-select");
+
+            select.innerHTML = "";
+
+            if (modFiltruZileFaraPontaj === "toti") {
+
+                zonaSelectie.style.display = "none";
+
+                return;
+
+            }
+
+            zonaSelectie.style.display = "block";
+
+            let optiuni = [];
+
+            if (modFiltruZileFaraPontaj === "angajat") {
+
+                optiuni = angajatiRaportZileFaraPontaj
+                    .filter(function(angajat) {
+                        return angajat.apare_in_rapoarte !== false;
+                    })
+                    .map(function(angajat) {
+                        return String(angajat.nume || "").trim();
+                    })
+                    .filter(function(nume) {
+                        return !!nume;
+                    })
+                    .sort(function(a, b) {
+                        return a.localeCompare(b, "ro");
+                    });
+
+                select.innerHTML = "<option value=''>Alege angajatul</option>";
+
+            }
+
+            if (modFiltruZileFaraPontaj === "sectie") {
+
+                const sectiiGasite = {};
+
+                angajatiRaportZileFaraPontaj.forEach(function(angajat) {
+
+                    if (angajat.apare_in_rapoarte === false) {
+                        return;
+                    }
+
+                    const sectie = String(angajat.sectie || "").trim();
+
+                    if (sectie) {
+                        sectiiGasite[sectie] = true;
+                    }
+
+                });
+
+                optiuni = Object.keys(sectiiGasite).sort(function(a, b) {
+                    return a.localeCompare(b, "ro");
+                });
+
+                select.innerHTML = "<option value=''>Alege secția</option>";
+
+            }
+
+            optiuni.forEach(function(optiune) {
+
+                select.innerHTML +=
+                    "<option value='" + optiune.replace(/'/g, "&#39;") + "'>" +
+                    optiune +
+                    "</option>";
+
+            });
+
+        }
+
+        // ===== SCHIMBARE SELECTIE RAPORT ZILE FARA PONTAJ =====
+        function schimbaSelectieZileFaraPontaj() {
+
+            selectieFiltruZileFaraPontaj = document.getElementById("missing-days-select").value;
+
+            afiseazaRaportZileFaraPontaj();
+
+        }
+
         // ===== INCARCARE RAPORT ZILE FARA PONTAJ DIN SUPABASE =====
         async function incarcaRaportZileFaraPontaj() {
 
@@ -2335,7 +2516,10 @@
 
             }
 
-            const toateDatelePontaj = pontaje
+            angajatiRaportZileFaraPontaj = angajati || [];
+            pontajeRaportZileFaraPontaj = pontaje || [];
+
+            const toateDatelePontaj = pontajeRaportZileFaraPontaj
                 .map(function(pontaj) {
                     return pontaj.data;
                 })
@@ -2352,23 +2536,50 @@
 
             }
 
-            const primaDataPontaj = toateDatelePontaj[0];
-            const ultimaDataPontaj = toateDatelePontaj[toateDatelePontaj.length - 1];
+            dataStartRaportZileFaraPontaj = creeazaDataDinText(toateDatelePontaj[0]);
+            dataStopRaportZileFaraPontaj = creeazaDataDinText(toateDatelePontaj[toateDatelePontaj.length - 1]);
 
-            const dataStart = creeazaDataDinText(primaDataPontaj);
-            const dataStop = creeazaDataDinText(ultimaDataPontaj);
+            pregatesteSelectieZileFaraPontaj();
+            afiseazaRaportZileFaraPontaj();
+
+        }
+
+        // ===== AFISARE RAPORT ZILE FARA PONTAJ =====
+        function afiseazaRaportZileFaraPontaj() {
+
+            const lista = document.getElementById("missing-days-list");
+
+            if (!dataStartRaportZileFaraPontaj || !dataStopRaportZileFaraPontaj) {
+
+                lista.innerHTML = "<div class='missing-days-empty'>Nu există date pentru raport.</div>";
+
+                return;
+
+            }
+
+            if (
+                modFiltruZileFaraPontaj !== "toti" &&
+                !selectieFiltruZileFaraPontaj
+            ) {
+
+                lista.innerHTML = "<div class='missing-days-empty'>Alege o opțiune pentru filtrare.</div>";
+
+                return;
+
+            }
 
             const pontajeDupaAngajatZi = {};
 
-            pontaje.forEach(function(pontaj) {
+            pontajeRaportZileFaraPontaj.forEach(function(pontaj) {
                 pontajeDupaAngajatZi[String(pontaj.nume || "").trim() + "|" + pontaj.data] = true;
             });
 
             let html = "";
 
-            (angajati || []).forEach(function(angajat) {
+            angajatiRaportZileFaraPontaj.forEach(function(angajat) {
 
                 const nume = String(angajat.nume || "").trim();
+                const sectie = String(angajat.sectie || "").trim();
 
                 if (!nume) {
                     return;
@@ -2378,10 +2589,28 @@
                     return;
                 }
 
-                const zileLipsa = [];
-                const dataCurenta = new Date(dataStart);
+                if (angajat.afiseaza_lipsa_pontaj === false) {
+                    return;
+                }
 
-                while (dataCurenta <= dataStop) {
+                if (
+                    modFiltruZileFaraPontaj === "angajat" &&
+                    nume !== selectieFiltruZileFaraPontaj
+                ) {
+                    return;
+                }
+
+                if (
+                    modFiltruZileFaraPontaj === "sectie" &&
+                    sectie !== selectieFiltruZileFaraPontaj
+                ) {
+                    return;
+                }
+
+                const zileLipsa = [];
+                const dataCurenta = new Date(dataStartRaportZileFaraPontaj);
+
+                while (dataCurenta <= dataStopRaportZileFaraPontaj) {
 
                     const dataText = formatDataPentruCheie(dataCurenta);
                     const ziSaptamana = dataCurenta.getDay();
@@ -2398,7 +2627,6 @@
                             dataText >= angajat.data_inactiv;
 
                         if (
-                            angajat.afiseaza_lipsa_pontaj !== false &&
                             !angajatInactivLaData &&
                             !pontajeDupaAngajatZi[nume + "|" + dataText]
                         ) {
@@ -2427,7 +2655,7 @@
             });
 
             if (html === "") {
-                html = "<div class='missing-days-empty'>Nu există zile fără pontaj în perioada importată.</div>";
+                html = "<div class='missing-days-empty'>Nu există zile fără pontaj pentru selecția aleasă.</div>";
             }
 
             lista.innerHTML = html;
@@ -2750,6 +2978,12 @@
                 return a.nume === angajatSelectatRaport;
             });
 
+            const estePaza =
+                String(angajat?.sectie || "")
+                    .trim()
+                    .toLowerCase()
+                    .includes("paza");
+
             let html = "";
 
             let totalMinuteLucrate = 0;
@@ -2839,7 +3073,7 @@
 
                 } else {
 
-                    if (angajat?.afiseaza_lipsa_pontaj === false) {
+                    if (estePaza) {
 
                         html += "<div class='monthly-value-cell monthly-normal'>";
                         html += "<div class='monthly-interval-cell'></div>";
