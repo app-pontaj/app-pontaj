@@ -508,10 +508,10 @@
 
         .missing-days-subtitle {
             color: #d4af37;
-            font-size: 11px;
+            font-size: 12px;
             font-weight: 800;
             text-align: center;
-            margin-top: 3px;
+            margin-top: 4px;
             font-family: 'Montserrat', Arial, sans-serif;
         }
 
@@ -579,22 +579,84 @@
 
         .missing-days-name {
             color: #ff2f2f;
-            font-size: 11px;
+            font-size: 13px;
             font-weight: 900;
-            margin-bottom: 2px;
+            margin-bottom: 3px;
             line-height: 1.05;
             font-family: 'Montserrat', Arial, sans-serif;
         }
 
         .missing-days-line {
             color: #d4af37;
-            font-size: 9px;
-            line-height: 1.18;
+            font-size: 11px;
+            line-height: 1.2;
             font-weight: 700;
             margin: 0;
             padding: 0;
             font-family: 'Montserrat', Arial, sans-serif;
         }
+
+        .missing-days-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            margin-top: 2px;
+        }
+
+        .missing-days-action-button {
+            min-width: 62px;
+            height: 22px;
+            border-radius: 7px;
+            border: 1px solid rgba(212,175,55,0.95);
+            background: linear-gradient(145deg, #ffe27a 0%, #d6a72d 56%, #b98208 100%);
+            color: #050505;
+            font-size: 9px;
+            font-weight: 900;
+            font-family: 'Montserrat', Arial, sans-serif;
+            cursor: pointer;
+        }
+
+        .missing-days-reason-box {
+            display: none;
+            margin-top: 5px;
+            padding-top: 4px;
+        }
+
+        .missing-days-reason-select {
+            width: 100%;
+            height: 30px;
+            border-radius: 8px;
+            border: 1px solid rgba(212,175,55,0.8);
+            background: #101010;
+            color: #ffffff;
+            padding: 0 8px;
+            font-size: 10px;
+            font-weight: 700;
+            font-family: 'Montserrat', Arial, sans-serif;
+        }
+
+        .missing-days-hours-row {
+            display: none;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+            margin-top: 5px;
+        }
+
+        .missing-days-hour-input {
+            width: 100%;
+            height: 30px;
+            border-radius: 8px;
+            border: 1px solid rgba(212,175,55,0.8);
+            background: #101010;
+            color: #ffffff;
+            text-align: center;
+            font-size: 11px;
+            font-weight: 800;
+            font-family: 'Montserrat', Arial, sans-serif;
+            outline: none;
+        }
+
 
         .missing-days-empty {
             color: #d4af37;
@@ -930,11 +992,11 @@
                             </button>
 
                             <div>
-                                <div class="missing-days-title" style="margin-top:0;text-align:left;">
+                                <div class="missing-days-title" style="margin-top:0;text-align:center;">
                                     Raport zile fără pontaj
                                 </div>
 
-                                <div class="missing-days-subtitle" style="text-align:left;">
+                                <div class="missing-days-subtitle" style="text-align:center;">
                                     Angajați cu lipsă pontaj
                                 </div>
                             </div>
@@ -2666,8 +2728,41 @@
                     html += "<div class='missing-days-card'>";
                     html += "<div class='missing-days-name'>" + nume + "</div>";
 
-                    zileLipsa.forEach(function(ziLipsa) {
+                    zileLipsa.forEach(function(ziLipsa, indexZi) {
+
+                        const idRand = nume.replace(/[^a-zA-Z0-9]/g, "") + "_" + indexZi;
+
+                        html += "<div class='missing-days-row'>";
+
                         html += "<div class='missing-days-line'>" + ziLipsa + "</div>";
+
+                        html += "<button class='missing-days-action-button' onclick=\"toggleMotivLipsaPontaj('" + idRand + "')\">MOTIV</button>";
+
+                        html += "</div>";
+
+                        html += "<div class='missing-days-reason-box' id='motiv-box-" + idRand + "'>";
+
+                        html += "<select class='missing-days-reason-select' id='motiv-select-" + idRand + "' onchange=\"schimbareMotivLipsaPontaj('" + idRand + "')\">";
+
+                        html += "<option value=''>Selectează motiv</option>";
+                        html += "<option value='C.O'>C.O</option>";
+                        html += "<option value='C.M'>C.M</option>";
+                        html += "<option value='Lipsa card'>Lipsă card</option>";
+                        html += "<option value='Lucru la distanta'>Lucru la distanță</option>";
+                        html += "<option value='Fara plata'>Fără plată</option>";
+
+                        html += "</select>";
+
+                        html += "<div class='missing-days-hours-row' id='ore-box-" + idRand + "'>";
+
+                        html += "<input class='missing-days-hour-input' placeholder='HH:MM' maxlength='5' oninput='formatOraInput(this,event)'>";
+
+                        html += "<input class='missing-days-hour-input' placeholder='HH:MM' maxlength='5' oninput='formatOraInput(this,event)'>";
+
+                        html += "</div>";
+
+                        html += "</div>";
+
                     });
 
                     html += "</div>";
@@ -3180,6 +3275,67 @@
 
         }
 
+
+
+
+
+        // ===== DESCHIDE MENIU MOTIV =====
+        function toggleMotivLipsaPontaj(id) {
+
+            const box = document.getElementById("motiv-box-" + id);
+
+            if (!box) {
+                return;
+            }
+
+            box.style.display =
+                box.style.display === "block"
+                    ? "none"
+                    : "block";
+
+        }
+
+        // ===== SCHIMBARE MOTIV =====
+        function schimbareMotivLipsaPontaj(id) {
+
+            const select = document.getElementById("motiv-select-" + id);
+            const oreBox = document.getElementById("ore-box-" + id);
+
+            if (!select || !oreBox) {
+                return;
+            }
+
+            if (select.value === "Lipsa card") {
+
+                oreBox.style.display = "grid";
+
+            } else {
+
+                oreBox.style.display = "none";
+
+            }
+
+        }
+
+        // ===== FORMAT HH:MM =====
+        function formatOraInput(element, event) {
+
+            let valoare = element.value.replace(/[^0-9]/g, "");
+
+            if (valoare.length >= 2) {
+                valoare = valoare.substring(0,2) + ":" + valoare.substring(2,4);
+            }
+
+            element.value = valoare;
+
+            if (
+                valoare.length === 2 &&
+                !valoare.includes(":")
+            ) {
+                element.value = valoare + ":";
+            }
+
+        }
 
 
         checkSession();
