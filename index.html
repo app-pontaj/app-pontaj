@@ -87,6 +87,38 @@
             font-weight: bold;
         }
 
+        .missing-counter-card {
+            width: 100%;
+            min-height: 74px;
+            border-radius: 18px;
+            border: 1px solid #ffd75a;
+            background: linear-gradient(145deg, #ffe27a 0%, #d6a72d 56%, #b98208 100%);
+            color: #050505;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 8px 0 14px;
+            box-shadow:
+                inset 0 1px 0 rgba(255,255,255,0.45),
+                0 6px 14px rgba(0,0,0,0.55);
+            font-family: 'Montserrat', Arial, sans-serif;
+        }
+
+        .missing-counter-title {
+            font-size: 14px;
+            font-weight: 900;
+            line-height: 1;
+            margin-bottom: 7px;
+        }
+
+        .missing-counter-number {
+            font-size: 28px;
+            font-weight: 900;
+            line-height: 1;
+            color: #e00000;
+        }
+
         .excel-preview {
             width: 92%;
             max-height: 180px;
@@ -1110,6 +1142,21 @@
                     </div>
 
                     <div
+                        class="missing-counter-card"
+                        onclick="deschidePaginaRaportZileFaraPontaj()"
+                    >
+                        <div class="missing-counter-title">
+                            Zile fără pontaj
+                        </div>
+                        <div
+                            class="missing-counter-number"
+                            id="missing-counter-number"
+                        >
+                            0
+                        </div>
+                    </div>
+
+                    <div
                         class="menu-card"
                         onclick="deschidePaginaAngajati()"
                     >
@@ -1711,6 +1758,8 @@
                 .toUpperCase();
 
             document.getElementById("user-avatar").innerHTML = initiale;
+
+            incarcaContorZileFaraPontaj();
 
         }
 
@@ -2690,6 +2739,152 @@
             return ziScurta + " " + zi + "." + luna;
 
         }
+
+        // ===== CONTOR ZILE FARA PONTAJ PE PAGINA PRINCIPALA =====
+        async function incarcaContorZileFaraPontaj() {
+
+            const cifra = document.getElementById("missing-counter-number");
+
+            if (!cifra) {
+                return;
+            }
+
+            cifra.innerHTML = "...";
+
+            const { data: angajati, error: eroareAngajati } = await supabaseClient
+                .from("angajati")
+                .select("*")
+                .order("nume", {
+                    ascending: true
+                });
+
+            if (eroareAngajati) {
+                cifra.innerHTML = "!";
+                return;
+            }
+
+            let toatePontajele = [];
+            let startLot = 0;
+            const marimeLot = 1000;
+
+            while (true) {
+
+                const { data: lotPontaje, error: eroarePontaje } = await supabaseClient
+                    .from("pontaj_zilnic")
+                    .select("nume,data,status_corectie")
+                    .order("data", {
+                        ascending: true
+                    })
+                    .range(startLot, startLot + marimeLot - 1);
+
+                if (eroarePontaje) {
+                    cifra.innerHTML = "!";
+                    return;
+                }
+
+                toatePontajele = toatePontajele.concat(lotPontaje || []);
+
+                if (!lotPontaje || lotPontaje.length < marimeLot) {
+                    break;
+                }
+
+                startLot += marimeLot;
+
+            }
+
+            const toateDatele = toatePontajele
+                .map(function(pontaj) {
+                    return pontaj.data;
+                })
+                .filter(function(dataText) {
+                    return !!dataText;
+                })
+                .sort();
+
+            if (!toateDatele.length) {
+                cifra.innerHTML = "0";
+                return;
+            }
+
+            const dataStart = creeazaDataDinText(toateDatele[0]);
+            const dataStop = creeazaDataDinText(toateDatele[toateDatele.length - 1]);
+
+            const pontajeDupaAngajatZi = {};
+
+            toatePontajele.forEach(function(pontaj) {
+
+                const cheie =
+                    String(pontaj.nume || "").trim().toUpperCase() +
+                    "|" +
+                    String(pontaj.data || "").trim();
+
+                pontajeDupaAngajatZi[cheie] = pontaj;
+
+            });
+
+            let totalLipsaPontaj = 0;
+
+            (angajati || []).forEach(function(angajat) {
+
+                const nume = String(angajat.nume || "").trim();
+
+                if (!nume) {
+                    return;
+                }
+
+                if (angajat.apare_in_rapoarte === false) {
+                    return;
+                }
+
+                if (angajat.afiseaza_lipsa_pontaj === false) {
+                    return;
+                }
+
+                const dataCurenta = new Date(dataStart);
+
+                while (dataCurenta <= dataStop) {
+
+                    const dataText = formatDataPentruCheie(dataCurenta);
+                    const ziSaptamana = dataCurenta.getDay();
+
+                    const esteWeekend =
+                        ziSaptamana === 0 ||
+                        ziSaptamana === 6;
+
+                    const angajatInactivLaData =
+                        angajat.activ === false &&
+                        angajat.data_inactiv &&
+                        dataText >= angajat.data_inactiv;
+
+                    if (
+                        !esteWeekend &&
+                        !esteZiLiberaLegala(dataText) &&
+                        !angajatInactivLaData
+                    ) {
+
+                        const cheieCautare =
+                            nume.trim().toUpperCase() +
+                            "|" +
+                            dataText;
+
+                        const pontajZi = pontajeDupaAngajatZi[cheieCautare];
+
+                        if (!pontajZi || !pontajZi.status_corectie && !pontajZi.data) {
+                            totalLipsaPontaj++;
+                        }
+
+                    }
+
+                    dataCurenta.setDate(dataCurenta.getDate() + 1);
+
+                }
+
+            });
+
+            cifra.innerHTML = String(totalLipsaPontaj);
+
+        }
+
 
         // ===== DESCHIDERE PAGINA RAPORT ZILE FARA PONTAJ =====
         async function deschidePaginaRaportZileFaraPontaj() {
