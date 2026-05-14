@@ -3988,7 +3988,8 @@
 
             if (
                 !esteWeekend &&
-                !esteZiLiberaLegala(dataText)
+                !esteZiLiberaLegala(dataText) &&
+                angajat?.afiseaza_lipsa_pontaj !== false
             ) {
 
                 return {
