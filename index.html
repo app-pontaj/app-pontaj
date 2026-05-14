@@ -2359,12 +2359,10 @@
                     const dataText = formatDataPentruCheie(dataObj);
 
                     if (ziSaptamana === 0 || ziSaptamana === 6) {
-                        dataCurenta.setDate(dataCurenta.getDate() + 1);
                         continue;
                     }
 
                     if (esteZiLiberaLegala(dataText)) {
-                        dataCurenta.setDate(dataCurenta.getDate() + 1);
                         continue;
                     }
 
