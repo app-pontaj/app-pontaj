@@ -2272,10 +2272,32 @@
 
             lista.innerHTML = "<div class='missing-days-empty'>Se încarcă raportul...</div>";
 
-            const anCurent = new Date().getFullYear();
-            const lunaCurenta = new Date().getMonth() + 1;
-            const primaZiLuna = anCurent + "-" + String(lunaCurenta).padStart(2, "0") + "-01";
-            const ultimaZiLuna = anCurent + "-" + String(lunaCurenta).padStart(2, "0") + "-" + String(new Date(anCurent, lunaCurenta, 0).getDate()).padStart(2, "0");
+            const { data: toatePontajele, error: eroareToatePontajele } = await supabaseClient
+                .from("pontaj_zilnic")
+                .select("data");
+
+            if (eroareToatePontajele || !toatePontajele || !toatePontajele.length) {
+
+                lista.innerHTML = "";
+
+                showMessage(
+                    "Nu există pontaje în Supabase",
+                    "error"
+                );
+
+                return;
+
+            }
+
+            const toateDatele = toatePontajele.map(function(item) {
+                return item.data;
+            }).sort();
+
+            const primaZiLuna = toateDatele[0];
+            const ultimaZiLuna = toateDatele[toateDatele.length - 1];
+
+            const dataStartObj = creeazaDataDinText(primaZiLuna);
+            const dataStopObj = creeazaDataDinText(ultimaZiLuna);
 
             const { data: angajati, error: eroareAngajati } = await supabaseClient
                 .from("angajati")
@@ -2350,11 +2372,11 @@
                 }
 
                 const zileLipsa = [];
-                const zileLuna = new Date(anCurent, lunaCurenta, 0).getDate();
+                const dataCurenta = new Date(dataStartObj);
 
-                for (let zi = 1; zi <= zileLuna; zi++) {
+                while (dataCurenta <= dataStopObj) {
 
-                    const dataObj = new Date(anCurent, lunaCurenta - 1, zi);
+                    const dataObj = new Date(dataCurenta);
                     const ziSaptamana = dataObj.getDay();
                     const dataText = formatDataPentruCheie(dataObj);
 
@@ -2367,12 +2389,15 @@
                     }
 
                     if (angajat.activ === false && angajat.data_inactiv && dataText >= angajat.data_inactiv) {
+                        dataCurenta.setDate(dataCurenta.getDate() + 1);
                         continue;
                     }
 
                     if (!pontajeDupaAngajatZi[nume + "|" + dataText]) {
                         zileLipsa.push(formatZiScurtaData(dataObj) + " — Lipsă pontaj");
                     }
+
+                    dataCurenta.setDate(dataCurenta.getDate() + 1);
 
                 }
 
