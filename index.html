@@ -3210,10 +3210,32 @@
 
             marcheazaLunaSelectata(luna);
 
-            if (modRaportSelectat !== "angajat" || !angajatSelectatRaport) {
+            if (modRaportSelectat === "angajat" && !angajatSelectatRaport) {
 
                 showMessage(
                     "Selectează angajatul",
+                    "error"
+                );
+
+                return;
+
+            }
+
+            if (modRaportSelectat === "toti") {
+
+                showMessage(
+                    "Raportul pentru toți angajații urmează să fie construit.",
+                    "success"
+                );
+
+                return;
+
+            }
+
+            if (modRaportSelectat !== "angajat") {
+
+                showMessage(
+                    "Alege tipul de raport",
                     "error"
                 );
 
