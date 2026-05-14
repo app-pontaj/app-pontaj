@@ -2293,7 +2293,11 @@
 
             let total = stop - start;
 
-            if (pauzaMasa) {
+            // ===== PAUZA MASA DOAR PESTE 4 ORE =====
+            if (
+                pauzaMasa &&
+                total >= 240
+            ) {
                 total -= Number(pauzaMinute || 0);
             }
 
