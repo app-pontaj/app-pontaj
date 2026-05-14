@@ -442,6 +442,13 @@
             font-weight: 900 !important;
         }
 
+        .monthly-manual-user {
+            color: #ffffff;
+            font-size: 8px;
+            font-weight: 500;
+            margin-left: 4px;
+        }
+
         .monthly-normal {
             background: rgba(255,255,255,0.06);
         }
@@ -3244,9 +3251,14 @@
 
                     totalMinuteLucrate += minuteCorectie;
 
+                    const modificatDe = pontaj.modificat_de
+                        ? "<span class='monthly-manual-user'>- " + pontaj.modificat_de + "</span>"
+                        : "";
+
                     html += "<div class='monthly-value-cell monthly-normal'>";
                     html += "<div class='monthly-interval-cell monthly-manual-correction'>" +
                         textCorectie +
+                        modificatDe +
                         "</div>";
                     html += "<div class='monthly-hours-cell'>" +
                         oreCorectie +
