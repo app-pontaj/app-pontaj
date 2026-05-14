@@ -337,6 +337,141 @@
         }
 
 
+        .all-employees-report-page {
+            width: 100%;
+            height: 100%;
+            padding: 8px 14px 10px;
+            overflow: hidden;
+            background: #050505;
+            display: none;
+        }
+
+        .all-employees-report-header {
+            width: 100%;
+            display: grid;
+            grid-template-columns: 70px 1fr;
+            column-gap: 12px;
+            align-items: start;
+            margin-bottom: 4px;
+        }
+
+        .all-employees-report-title {
+            color: #d4af37;
+            font-size: 15px;
+            font-weight: 900;
+            line-height: 1;
+            letter-spacing: 0.2px;
+            font-family: 'Montserrat', Arial, sans-serif;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .all-employees-report-month {
+            color: #ffffff;
+            font-size: 14px;
+            font-weight: 900;
+            line-height: 1;
+            margin-top: 2px;
+            font-family: 'Montserrat', Arial, sans-serif;
+        }
+
+        .all-employees-gold-line {
+            width: 100%;
+            height: 1px;
+            background: rgba(212,175,55,0.95);
+            margin-bottom: 6px;
+        }
+
+        .all-employees-table-wrap {
+            width: 100%;
+            height: calc(100% - 42px);
+            overflow: auto;
+            border: 1px solid rgba(212,175,55,0.88);
+            border-radius: 0 12px 12px 12px;
+            background: #050505;
+            box-shadow: 0 8px 18px rgba(0,0,0,0.55);
+        }
+
+        .all-employees-table {
+            border-collapse: separate;
+            border-spacing: 0;
+            font-family: 'Montserrat', Arial, sans-serif;
+            font-size: 9px;
+            font-weight: 900;
+            color: #050505;
+        }
+
+        .all-employees-table th,
+        .all-employees-table td {
+            min-width: 44px;
+            height: 26px;
+            border-right: 1px solid rgba(0,0,0,0.45);
+            border-bottom: 1px solid rgba(0,0,0,0.45);
+            text-align: center;
+            vertical-align: middle;
+            padding: 1px 3px;
+            white-space: nowrap;
+        }
+
+        .all-employees-table thead th {
+            position: sticky;
+            top: 0;
+            z-index: 5;
+            background: #050505;
+            color: #d4af37;
+            border-bottom: 1px solid rgba(212,175,55,0.9);
+            height: 32px;
+            line-height: 1.05;
+        }
+
+        .all-employees-table .all-employees-name-head {
+            position: sticky;
+            left: 0;
+            top: 0;
+            z-index: 7;
+            min-width: 88px;
+            background: #050505;
+            color: #d4af37;
+        }
+
+        .all-employees-table .all-employees-name-cell {
+            position: sticky;
+            left: 0;
+            z-index: 4;
+            min-width: 88px;
+            max-width: 88px;
+            background: linear-gradient(145deg, #ffe27a 0%, #d6a72d 56%, #b98208 100%);
+            color: #050505;
+            text-align: left;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-size: 8px;
+        }
+
+        .all-employees-value-cell {
+            background: linear-gradient(145deg, #ffe27a 0%, #d6a72d 56%, #b98208 100%);
+            color: #050505;
+        }
+
+        .all-employees-empty-cell {
+            background: rgba(255,255,255,0.06);
+            color: #d4af37;
+        }
+
+        .all-employees-day-small {
+            display: block;
+            font-size: 8px;
+            line-height: 1;
+        }
+
+        .all-employees-date-small {
+            display: block;
+            font-size: 8px;
+            line-height: 1;
+            margin-top: 2px;
+        }
+
         .monthly-report-page {
             width: 100%;
             height: 100%;
@@ -1344,6 +1479,50 @@
                     </div>
 
                 </div>
+
+                <!-- ===== PAGINA RAPORT LUNAR TOTI ANGAJATII ===== -->
+                <div
+                    class="all-employees-report-page"
+                    id="all-employees-report-page"
+                    style="display:none;"
+                >
+
+                    <div class="all-employees-report-header">
+
+                        <button
+                            class="monthly-back-button"
+                            onclick="inchideRaportLunarToti()"
+                        >
+                            ‹ Back
+                        </button>
+
+                        <div>
+                            <div
+                                class="all-employees-report-title"
+                                id="all-employees-report-title"
+                            >
+                                Toți angajații
+                            </div>
+
+                            <div
+                                class="all-employees-report-month"
+                                id="all-employees-report-month"
+                            >
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="all-employees-gold-line"></div>
+
+                    <div
+                        class="all-employees-table-wrap"
+                        id="all-employees-table-wrap"
+                    >
+                    </div>
+
+                </div>
+
 
                 <!-- ===== PAGINA RAPORT LUNAR ===== -->
                 <div
@@ -3223,10 +3402,7 @@
 
             if (modRaportSelectat === "toti") {
 
-                showMessage(
-                    "Raportul pentru toți angajații urmează să fie construit.",
-                    "success"
-                );
+                await deschideRaportLunarToti(luna, numeLuna);
 
                 return;
 
@@ -3506,6 +3682,230 @@
             grid.innerHTML = html;
 
         }
+
+        // ===== TEXT SIGUR PENTRU HTML =====
+        function escapeHtml(text) {
+
+            return String(text || "")
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#39;");
+
+        }
+
+        // ===== VALOARE CELULA RAPORT TOTI ANGAJATII =====
+        function valoareCelulaRaportToti(pontaj, dataText, angajat) {
+
+            if (pontaj && pontaj.status_corectie) {
+
+                if (pontaj.status_corectie === "C.O") {
+                    return "C.O";
+                }
+
+                if (pontaj.status_corectie === "C.M") {
+                    return "C.M";
+                }
+
+                if (pontaj.status_corectie === "Fără plată") {
+                    return "Fără plată";
+                }
+
+                if (pontaj.status_corectie === "Lucru la distanță") {
+                    return "08:00";
+                }
+
+                if (pontaj.status_corectie === "Lipsă card") {
+                    return calculeazaOreNete(
+                        pontaj.ora_intrare_manual,
+                        pontaj.ora_iesire_manual,
+                        angajat?.regula_start_0700,
+                        angajat?.pauza_masa,
+                        angajat?.pauza_minute
+                    );
+                }
+
+                return pontaj.status_corectie;
+
+            }
+
+            if (pontaj) {
+
+                return calculeazaOreNete(
+                    pontaj.ora_intrare,
+                    pontaj.ora_iesire,
+                    angajat?.regula_start_0700,
+                    angajat?.pauza_masa,
+                    angajat?.pauza_minute
+                );
+
+            }
+
+            if (esteZiLiberaLegala(dataText)) {
+                return "S.L";
+            }
+
+            return "";
+
+        }
+
+        // ===== DESCHIDE RAPORT LUNAR TOTI ANGAJATII =====
+        async function deschideRaportLunarToti(luna, numeLuna) {
+
+            document.getElementById("report-page").style.display = "none";
+            document.getElementById("all-employees-report-page").style.display = "block";
+
+            const anCurent = new Date().getFullYear();
+
+            document.getElementById("all-employees-report-title").innerHTML =
+                "Toți angajații";
+
+            document.getElementById("all-employees-report-month").innerHTML =
+                numeLunaComplet(luna) + " " + anCurent;
+
+            const container = document.getElementById("all-employees-table-wrap");
+
+            container.innerHTML =
+                "<div class='missing-days-empty'>Se încarcă raportul...</div>";
+
+            if (!listaAngajatiSupabase.length) {
+
+                const { data: angajati } = await supabaseClient
+                    .from("angajati")
+                    .select("*")
+                    .order("nume", {
+                        ascending: true
+                    });
+
+                listaAngajatiSupabase = angajati || [];
+
+            }
+
+            const primaZi =
+                anCurent +
+                "-" +
+                String(luna).padStart(2, "0") +
+                "-01";
+
+            const zileLuna = new Date(anCurent, luna, 0).getDate();
+
+            const ultimaZi =
+                anCurent +
+                "-" +
+                String(luna).padStart(2, "0") +
+                "-" +
+                String(zileLuna).padStart(2, "0");
+
+            const { data: pontaje, error } = await supabaseClient
+                .from("pontaj_zilnic")
+                .select("*")
+                .gte("data", primaZi)
+                .lte("data", ultimaZi);
+
+            if (error) {
+
+                container.innerHTML = "";
+
+                showMessage(
+                    "Eroare citire pontaj",
+                    "error"
+                );
+
+                return;
+
+            }
+
+            const pontajeDupaAngajatZi = {};
+
+            (pontaje || []).forEach(function(pontaj) {
+                pontajeDupaAngajatZi[String(pontaj.nume || "").trim() + "|" + pontaj.data] = pontaj;
+            });
+
+            const angajatiRaport = listaAngajatiSupabase
+                .filter(function(angajat) {
+                    return angajat.apare_in_rapoarte !== false;
+                })
+                .sort(function(a, b) {
+                    return String(a.nume || "").localeCompare(String(b.nume || ""), "ro");
+                });
+
+            let html = "";
+
+            html += "<table class='all-employees-table'>";
+            html += "<thead><tr>";
+            html += "<th class='all-employees-name-head'>Angajat</th>";
+
+            for (let zi = 1; zi <= zileLuna; zi++) {
+
+                const dataObj = new Date(anCurent, luna - 1, zi);
+                const ziSapt = ZILE_SCURTE[dataObj.getDay()];
+                const dataScurta =
+                    String(zi).padStart(2, "0") +
+                    "." +
+                    String(luna).padStart(2, "0");
+
+                html +=
+                    "<th>" +
+                    "<span class='all-employees-day-small'>" + ziSapt + "</span>" +
+                    "<span class='all-employees-date-small'>" + dataScurta + "</span>" +
+                    "</th>";
+
+            }
+
+            html += "</tr></thead>";
+            html += "<tbody>";
+
+            angajatiRaport.forEach(function(angajat) {
+
+                const nume = String(angajat.nume || "").trim();
+
+                if (!nume) {
+                    return;
+                }
+
+                html += "<tr>";
+                html += "<td class='all-employees-name-cell'>" + escapeHtml(nume) + "</td>";
+
+                for (let zi = 1; zi <= zileLuna; zi++) {
+
+                    const dataText =
+                        anCurent +
+                        "-" +
+                        String(luna).padStart(2, "0") +
+                        "-" +
+                        String(zi).padStart(2, "0");
+
+                    const pontaj = pontajeDupaAngajatZi[nume + "|" + dataText];
+
+                    const valoare = valoareCelulaRaportToti(pontaj, dataText, angajat);
+                    const clasaCelula = valoare ? "all-employees-value-cell" : "all-employees-empty-cell";
+
+                    html +=
+                        "<td class='" + clasaCelula + "'>" +
+                        escapeHtml(valoare) +
+                        "</td>";
+
+                }
+
+                html += "</tr>";
+
+            });
+
+            html += "</tbody></table>";
+
+            container.innerHTML = html;
+
+        }
+
+        // ===== INCHIDE RAPORT LUNAR TOTI ANGAJATII =====
+        function inchideRaportLunarToti() {
+
+            document.getElementById("all-employees-report-page").style.display = "none";
+            document.getElementById("report-page").style.display = "block";
+
+        }
+
 
         // ===== INCHIDE RAPORT LUNAR =====
         function inchideRaportLunar() {
