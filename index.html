@@ -3784,10 +3784,30 @@
                 };
             }
 
+            const dataObj = new Date(dataText + "T00:00:00");
+            const ziSaptamana = dataObj.getDay();
+
+            const esteWeekend =
+                ziSaptamana === 0 ||
+                ziSaptamana === 6;
+
+            if (
+                !esteWeekend &&
+                !esteZiLiberaLegala(dataText)
+            ) {
+
+                return {
+                    text: "Lipsă pontaj",
+                    rosu: false,
+                    lipsaPontaj: true
+                };
+
+            }
+
             return {
-                text: "Lipsă pontaj",
+                text: "",
                 rosu: false,
-                lipsaPontaj: true
+                lipsaPontaj: false
             };
 
         }
