@@ -2747,27 +2747,8 @@
                                     modificatDe: ""
                                 });
 
-                            } else if (pontajZi.status_corectie) {
-
-                                let textCorectie = formatZiScurtaData(dataCurenta) + " — " + pontajZi.status_corectie;
-
-                                if (pontajZi.status_corectie === "Lipsă card") {
-                                    textCorectie =
-                                        formatZiScurtaData(dataCurenta) +
-                                        " — " +
-                                        (pontajZi.ora_intrare_manual || "") +
-                                        " - " +
-                                        (pontajZi.ora_iesire_manual || "");
-                                }
-
-                                zileLipsa.push({
-                                    data: dataText,
-                                    text: textCorectie,
-                                    corectat: true,
-                                    modificatDe: pontajZi.modificat_de || ""
-                                });
-
                             }
+
 
                         }
 
