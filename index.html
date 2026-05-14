@@ -2272,11 +2272,6 @@
 
             lista.innerHTML = "<div class='missing-days-empty'>Se încarcă raportul...</div>";
 
-            const anCurent = new Date().getFullYear();
-            const lunaCurenta = new Date().getMonth() + 1;
-            const primaZiLuna = anCurent + "-" + String(lunaCurenta).padStart(2, "0") + "-01";
-            const ultimaZiLuna = anCurent + "-" + String(lunaCurenta).padStart(2, "0") + "-" + String(new Date(anCurent, lunaCurenta, 0).getDate()).padStart(2, "0");
-
             const { data: angajati, error: eroareAngajati } = await supabaseClient
                 .from("angajati")
                 .select("*")
@@ -2300,8 +2295,9 @@
             const { data: pontaje, error: eroarePontaje } = await supabaseClient
                 .from("pontaj_zilnic")
                 .select("nume,data")
-                .gte("data", primaZiLuna)
-                .lte("data", ultimaZiLuna);
+                .order("data", {
+                    ascending: true
+                });
 
             if (eroarePontaje) {
 
@@ -2316,9 +2312,40 @@
 
             }
 
+            if (!pontaje || !pontaje.length) {
+
+                lista.innerHTML = "<div class='missing-days-empty'>Nu există pontaje salvate în Supabase.</div>";
+
+                return;
+
+            }
+
+            const toateDatelePontaj = pontaje
+                .map(function(pontaj) {
+                    return pontaj.data;
+                })
+                .filter(function(dataText) {
+                    return !!dataText;
+                })
+                .sort();
+
+            if (!toateDatelePontaj.length) {
+
+                lista.innerHTML = "<div class='missing-days-empty'>Nu există date valide în pontaj.</div>";
+
+                return;
+
+            }
+
+            const primaDataPontaj = toateDatelePontaj[0];
+            const ultimaDataPontaj = toateDatelePontaj[toateDatelePontaj.length - 1];
+
+            const dataStart = creeazaDataDinText(primaDataPontaj);
+            const dataStop = creeazaDataDinText(ultimaDataPontaj);
+
             const pontajeDupaAngajatZi = {};
 
-            (pontaje || []).forEach(function(pontaj) {
+            pontaje.forEach(function(pontaj) {
                 pontajeDupaAngajatZi[String(pontaj.nume || "").trim() + "|" + pontaj.data] = true;
             });
 
@@ -2336,10 +2363,6 @@
                     return;
                 }
 
-                if (angajat.activ === false && angajat.data_inactiv && dataStopObj >= creeazaDataDinText(angajat.data_inactiv)) {
-                    return;
-                }
-
                 const estePaza = String(angajat.sectie || "")
                     .trim()
                     .toLowerCase()
@@ -2350,29 +2373,34 @@
                 }
 
                 const zileLipsa = [];
-                const zileLuna = new Date(anCurent, lunaCurenta, 0).getDate();
+                const dataCurenta = new Date(dataStart);
 
-                for (let zi = 1; zi <= zileLuna; zi++) {
+                while (dataCurenta <= dataStop) {
 
-                    const dataObj = new Date(anCurent, lunaCurenta - 1, zi);
-                    const ziSaptamana = dataObj.getDay();
-                    const dataText = formatDataPentruCheie(dataObj);
+                    const dataText = formatDataPentruCheie(dataCurenta);
+                    const ziSaptamana = dataCurenta.getDay();
 
-                    if (ziSaptamana === 0 || ziSaptamana === 6) {
-                        continue;
+                    if (
+                        ziSaptamana !== 0 &&
+                        ziSaptamana !== 6 &&
+                        !esteZiLiberaLegala(dataText)
+                    ) {
+
+                        const angajatInactivLaData =
+                            angajat.activ === false &&
+                            angajat.data_inactiv &&
+                            dataText >= angajat.data_inactiv;
+
+                        if (
+                            !angajatInactivLaData &&
+                            !pontajeDupaAngajatZi[nume + "|" + dataText]
+                        ) {
+                            zileLipsa.push(formatZiScurtaData(dataCurenta) + " — Lipsă pontaj");
+                        }
+
                     }
 
-                    if (esteZiLiberaLegala(dataText)) {
-                        continue;
-                    }
-
-                    if (angajat.activ === false && angajat.data_inactiv && dataText >= angajat.data_inactiv) {
-                        continue;
-                    }
-
-                    if (!pontajeDupaAngajatZi[nume + "|" + dataText]) {
-                        zileLipsa.push(formatZiScurtaData(dataObj) + " — Lipsă pontaj");
-                    }
+                    dataCurenta.setDate(dataCurenta.getDate() + 1);
 
                 }
 
@@ -2392,7 +2420,7 @@
             });
 
             if (html === "") {
-                html = "<div class='missing-days-empty'>Nu există zile fără pontaj în luna curentă.</div>";
+                html = "<div class='missing-days-empty'>Nu există zile fără pontaj în perioada importată.</div>";
             }
 
             lista.innerHTML = html;
