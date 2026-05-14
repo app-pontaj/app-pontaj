@@ -280,3 +280,60 @@ body{
     padding-left: 0 !important;
 }
 
+
+
+/* ===== MENIU RAPID PRIMA PAGINA ===== */
+
+.quick-menu-title{
+    color:#ffffff;
+    font-size:12px;
+    font-weight:900;
+    letter-spacing:0.6px;
+    margin-top:2px;
+    margin-bottom:6px;
+    font-family:Arial, Helvetica, sans-serif;
+}
+
+.quick-menu-row{
+    width:100%;
+    display:grid;
+    grid-template-columns:repeat(5, 1fr);
+    gap:5px;
+    margin-bottom:12px;
+}
+
+.quick-menu-card{
+    min-height:40px;
+    border-radius:9px;
+    border:1px solid #ffd75a;
+    background:linear-gradient(145deg, #ffe27a 0%, #d6a72d 56%, #b98208 100%);
+    color:#050505;
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.45),
+        0 4px 10px rgba(0,0,0,0.55);
+}
+
+.quick-menu-card-alert{
+    display:grid;
+    grid-template-columns:1fr auto;
+    align-items:center;
+    gap:3px;
+    padding:4px 5px;
+    cursor:pointer;
+}
+
+.quick-menu-label{
+    text-align:left;
+    font-size:8px;
+    font-weight:900;
+    line-height:1.05;
+}
+
+.quick-menu-number{
+    color:#e00000;
+    font-size:20px;
+    font-weight:900;
+    line-height:1;
+    min-width:25px;
+    text-align:right;
+}
