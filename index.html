@@ -459,6 +459,12 @@
             color: #d4af37;
         }
 
+        .all-employees-red-cell {
+            background: linear-gradient(145deg, #ffe27a 0%, #d6a72d 56%, #b98208 100%);
+            color: #e00000;
+            font-weight: 900;
+        }
+
         .all-employees-day-small {
             display: block;
             font-size: 8px;
@@ -3701,52 +3707,74 @@
             if (pontaj && pontaj.status_corectie) {
 
                 if (pontaj.status_corectie === "C.O") {
-                    return "C.O";
+                    return {
+                        text: "CO",
+                        rosu: true
+                    };
                 }
 
                 if (pontaj.status_corectie === "C.M") {
-                    return "C.M";
+                    return {
+                        text: "CM",
+                        rosu: true
+                    };
                 }
 
                 if (pontaj.status_corectie === "Fără plată") {
-                    return "Fără plată";
+                    return {
+                        text: "LIPSA",
+                        rosu: true
+                    };
                 }
 
                 if (pontaj.status_corectie === "Lucru la distanță") {
-                    return "08:00";
+                    return {
+                        text: "08:00",
+                        rosu: false
+                    };
                 }
 
                 if (pontaj.status_corectie === "Lipsă card") {
-                    return calculeazaOreNete(
-                        pontaj.ora_intrare_manual,
-                        pontaj.ora_iesire_manual,
-                        angajat?.regula_start_0700,
-                        angajat?.pauza_masa,
-                        angajat?.pauza_minute
-                    );
+                    return {
+                        text: calculeazaOreNete(
+                            pontaj.ora_intrare_manual,
+                            pontaj.ora_iesire_manual,
+                            angajat?.regula_start_0700,
+                            angajat?.pauza_masa,
+                            angajat?.pauza_minute
+                        ),
+                        rosu: false
+                    };
                 }
-
-                return pontaj.status_corectie;
 
             }
 
-            if (pontaj) {
+            if (pontaj && pontaj.ora_intrare && pontaj.ora_iesire) {
 
-                return calculeazaOreNete(
-                    pontaj.ora_intrare,
-                    pontaj.ora_iesire,
-                    angajat?.regula_start_0700,
-                    angajat?.pauza_masa,
-                    angajat?.pauza_minute
-                );
+                return {
+                    text: calculeazaOreNete(
+                        pontaj.ora_intrare,
+                        pontaj.ora_iesire,
+                        angajat?.regula_start_0700,
+                        angajat?.pauza_masa,
+                        angajat?.pauza_minute
+                    ),
+                    rosu: false
+                };
 
             }
 
             if (esteZiLiberaLegala(dataText)) {
-                return "S.L";
+                return {
+                    text: "S.L",
+                    rosu: false
+                };
             }
 
-            return "";
+            return {
+                text: "",
+                rosu: false
+            };
 
         }
 
@@ -3819,7 +3847,12 @@
             const pontajeDupaAngajatZi = {};
 
             (pontaje || []).forEach(function(pontaj) {
-                pontajeDupaAngajatZi[String(pontaj.nume || "").trim() + "|" + pontaj.data] = pontaj;
+                const cheiePontaj =
+                    String(pontaj.nume || "").trim().toUpperCase() +
+                    "|" +
+                    String(pontaj.data || "").trim();
+
+                pontajeDupaAngajatZi[cheiePontaj] = pontaj;
             });
 
             const angajatiRaport = listaAngajatiSupabase
@@ -3876,10 +3909,23 @@
                         "-" +
                         String(zi).padStart(2, "0");
 
-                    const pontaj = pontajeDupaAngajatZi[nume + "|" + dataText];
+                    const cheieCautare =
+                        nume.trim().toUpperCase() +
+                        "|" +
+                        dataText;
 
-                    const valoare = valoareCelulaRaportToti(pontaj, dataText, angajat);
-                    const clasaCelula = valoare ? "all-employees-value-cell" : "all-employees-empty-cell";
+                    const pontaj = pontajeDupaAngajatZi[cheieCautare];
+
+                    const rezultatCelula = valoareCelulaRaportToti(pontaj, dataText, angajat);
+                    const valoare = rezultatCelula.text;
+
+                    let clasaCelula = "all-employees-empty-cell";
+
+                    if (valoare) {
+                        clasaCelula = rezultatCelula.rosu
+                            ? "all-employees-red-cell"
+                            : "all-employees-value-cell";
+                    }
 
                     html +=
                         "<td class='" + clasaCelula + "'>" +
