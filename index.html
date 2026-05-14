@@ -3825,13 +3825,37 @@
                 "-" +
                 String(zileLuna).padStart(2, "0");
 
-            const { data: pontaje, error } = await supabaseClient
-                .from("pontaj_zilnic")
-                .select("*")
-                .gte("data", primaZi)
-                .lte("data", ultimaZi);
+            // ===== CITIRE COMPLETA PONTAJ LUNA, IN LOTURI =====
+            let toatePontajeleLunii = [];
+            let startLot = 0;
+            const marimeLot = 1000;
+            let eroareCitirePontaj = null;
 
-            if (error) {
+            while (true) {
+
+                const { data: lotPontaje, error } = await supabaseClient
+                    .from("pontaj_zilnic")
+                    .select("*")
+                    .gte("data", primaZi)
+                    .lte("data", ultimaZi)
+                    .range(startLot, startLot + marimeLot - 1);
+
+                if (error) {
+                    eroareCitirePontaj = error;
+                    break;
+                }
+
+                toatePontajeleLunii = toatePontajeleLunii.concat(lotPontaje || []);
+
+                if (!lotPontaje || lotPontaje.length < marimeLot) {
+                    break;
+                }
+
+                startLot += marimeLot;
+
+            }
+
+            if (eroareCitirePontaj) {
 
                 container.innerHTML = "";
 
@@ -3846,7 +3870,7 @@
 
             const pontajeDupaAngajatZi = {};
 
-            (pontaje || []).forEach(function(pontaj) {
+            toatePontajeleLunii.forEach(function(pontaj) {
                 const cheiePontaj =
                     String(pontaj.nume || "").trim().toUpperCase() +
                     "|" +
@@ -3915,26 +3939,6 @@
                         dataText;
 
                     const pontaj = pontajeDupaAngajatZi[cheieCautare];
-
-                    // ===== DEBUG ALEXA MARIA =====
-                    if (
-                        nume.trim().toUpperCase() === "ALEXA MARIA" &&
-                        dataText === "2026-04-01"
-                    ) {
-
-                        console.log("=== DEBUG ALEXA MARIA ===");
-                        console.log("CHEIE CAUTATA:", cheieCautare);
-                        console.log("PONTAJ GASIT:", pontaj);
-
-                        Object.keys(pontajeDupaAngajatZi).forEach(function(cheie) {
-
-                            if (cheie.includes("ALEXA")) {
-                                console.log("CHEIE EXISTENTA:", cheie);
-                            }
-
-                        });
-
-                    }
 
                     const rezultatCelula = valoareCelulaRaportToti(pontaj, dataText, angajat);
                     const valoare = rezultatCelula.text;
