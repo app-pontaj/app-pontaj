@@ -1052,6 +1052,22 @@
             font-weight: bold;
         }
 
+
+        /* ===== AJUSTARI MENIU RAPID ===== */
+        .quick-menu-label {
+            font-size: 120% !important;
+            line-height: 1.05 !important;
+            font-weight: 900 !important;
+        }
+
+        .quick-menu-number,
+        .quick-menu-date {
+            -webkit-text-stroke: 0.45px #000000;
+            text-shadow:
+                0 0 1px #000000,
+                0 0 1px #000000;
+        }
+
     </style>
 
 </head>
@@ -1306,25 +1322,6 @@
                     >
                         <span class="menu-icon">📊</span>
                         <span class="menu-text">Rapoarte</span>
-                        <span class="menu-arrow">›</span>
-                    </div>
-
-                    <div
-                        class="menu-card"
-                        onclick="deschidePaginaRaportZileFaraPontaj()"
-                    >
-                        <span class="menu-icon">⚠</span>
-                        <span class="menu-text">Raport zile fără pontaj</span>
-                        <span class="menu-arrow">›</span>
-                    </div>
-
-                    <!-- ===== IMPORT PONTAJ ===== -->
-                    <div
-                        class="menu-card"
-                        onclick="document.getElementById('fisier-pontaj').click()"
-                    >
-                        <span class="menu-icon">☁</span>
-                        <span class="menu-text">Import pontaj</span>
                         <span class="menu-arrow">›</span>
                     </div>
 
@@ -5032,17 +5029,4 @@
 
 </html>
 
-
-.quick-menu-number{
-    -webkit-text-stroke:0.6px #000000;
-    text-shadow:
-        0 0 1px #000000,
-        0 0 1px #000000;
-}
-
-
-
-.quick-menu-label{
-    font-size:120% !important;
-}
 
