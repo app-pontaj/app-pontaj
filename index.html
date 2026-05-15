@@ -7,7 +7,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title><span style="color:#d4af37;">PONTAJ</span></title>
+    <title>PONTAJ</title>
 
     <!-- ===== INSTALARE APLICATIE ===== -->
     <link rel="manifest" href="manifest.json">
@@ -1052,6 +1052,204 @@
             font-weight: bold;
         }
 
+    
+        /* ===== LOGIN SI POPUP - VARIANTA FINALA ===== */
+
+        .premium-header .header-title,
+        .header-title{
+            color:#d4af37 !important;
+        }
+
+        #login-box{
+            width:100% !important;
+            padding:0 22px !important;
+            margin-top:70px !important;
+            display:flex !important;
+            flex-direction:column !important;
+            align-items:center !important;
+            gap:12px !important;
+            box-sizing:border-box !important;
+        }
+
+        #login-box > div[style*="position:relative"]{
+            width:100% !important;
+        }
+
+        #login-user-results{
+            top:44px !important;
+            border-radius:12px !important;
+            background:#080808 !important;
+            border:1px solid rgba(212,175,55,0.65) !important;
+            box-shadow:0 10px 22px rgba(0,0,0,0.70) !important;
+        }
+
+        #login-user-results div{
+            font-size:12px !important;
+            color:#d4af37 !important;
+            background:#0b0b0b !important;
+        }
+
+        #login-box .login-input{
+            width:100% !important;
+            height:39px !important;
+            min-height:39px !important;
+            max-height:39px !important;
+            box-sizing:border-box !important;
+            display:block !important;
+            border-radius:13px !important;
+            border:1.5px solid rgba(255,217,91,0.95) !important;
+            background:linear-gradient(145deg,#ffe071 0%,#d4af37 58%,#b8860b 100%) !important;
+            color:#050505 !important;
+            font-size:12.5px !important;
+            font-weight:800 !important;
+            letter-spacing:0.15px !important;
+            padding:0 42px 0 13px !important;
+            margin:0 !important;
+            outline:none !important;
+            font-family:Arial, Helvetica, sans-serif !important;
+            box-shadow:
+                inset 0 1px 0 rgba(255,255,255,0.45),
+                0 5px 12px rgba(0,0,0,0.46) !important;
+        }
+
+        #login-box .login-input::placeholder{
+            color:#4a4a4a !important;
+            font-size:10.5px !important;
+            font-weight:600 !important;
+            opacity:1 !important;
+        }
+
+        #login-box .password-wrap{
+            width:100% !important;
+            position:relative !important;
+            margin:0 !important;
+            padding:0 !important;
+            box-sizing:border-box !important;
+        }
+
+        #login-box .password-toggle{
+            position:absolute !important;
+            right:13px !important;
+            top:50% !important;
+            transform:translateY(-50%) !important;
+            color:#050505 !important;
+            font-size:14px !important;
+            line-height:1 !important;
+        }
+
+        #magic-word-wrap{
+            width:100% !important;
+            margin:0 !important;
+            padding:0 !important;
+        }
+
+        #magic-word-wrap > div:last-child{
+            color:#b7b7b7 !important;
+            font-size:7.8px !important;
+            font-weight:500 !important;
+            font-style:italic !important;
+            line-height:1.2 !important;
+            margin:-5px 0 0 7px !important;
+            padding:0 !important;
+        }
+
+        #login-box input[type="checkbox"]{
+            width:15px !important;
+            height:15px !important;
+            accent-color:#d4af37 !important;
+        }
+
+        #login-box input[type="checkbox"] + span{
+            color:#ffffff !important;
+            font-size:10.5px !important;
+            font-weight:800 !important;
+        }
+
+        #login-button,
+        #create-account-button{
+            width:100% !important;
+            height:50px !important;
+            min-height:50px !important;
+            border-radius:19px !important;
+            font-size:14px !important;
+            font-weight:900 !important;
+            color:#ffffff !important;
+            letter-spacing:0.25px !important;
+            background:linear-gradient(145deg,rgba(255,255,255,0.10),rgba(0,0,0,0.98)) !important;
+            border:1px solid rgba(255,255,255,0.10) !important;
+            box-shadow:
+                inset 0 1px 0 rgba(255,255,255,0.07),
+                0 8px 20px rgba(0,0,0,0.62) !important;
+            margin-top:2px !important;
+        }
+
+        .custom-message{
+            width:230px !important;
+            max-width:74vw !important;
+            padding:15px 14px 13px !important;
+            border-radius:22px !important;
+            background:
+                radial-gradient(circle at top,rgba(212,175,55,0.18),transparent 40%),
+                linear-gradient(145deg,#171717 0%,#050505 100%) !important;
+            border:1.5px solid rgba(212,175,55,0.78) !important;
+            box-shadow:
+                0 0 24px rgba(212,175,55,0.20),
+                0 14px 28px rgba(0,0,0,0.72) !important;
+        }
+
+        .custom-message-icon{
+            font-size:27px !important;
+            margin-bottom:7px !important;
+            color:#d4af37 !important;
+        }
+
+        .custom-message-text{
+            font-size:15px !important;
+            line-height:1.16 !important;
+            font-weight:900 !important;
+            color:#d4af37 !important;
+        }
+
+        .success-text{
+            color:#d4af37 !important;
+        }
+
+        .error-text{
+            color:#ff3333 !important;
+        }
+
+        .message-button,
+        .success-button,
+        .error-button{
+            width:82px !important;
+            height:35px !important;
+            padding:0 !important;
+            margin-top:13px !important;
+            border-radius:13px !important;
+            border:0 !important;
+            background:linear-gradient(145deg,#ffe071 0%,#d4af37 58%,#b8860b 100%) !important;
+            color:#050505 !important;
+            font-size:14px !important;
+            font-weight:900 !important;
+            box-shadow:
+                inset 0 1px 0 rgba(255,255,255,0.44),
+                0 6px 14px rgba(0,0,0,0.56) !important;
+        }
+
+        .password-match-ok{
+            border:2px solid #00c853 !important;
+            box-shadow:
+                inset 0 1px 0 rgba(255,255,255,0.45),
+                0 0 10px rgba(0,200,83,0.42) !important;
+        }
+
+        .password-match-error{
+            border:2px solid #ff1744 !important;
+            box-shadow:
+                inset 0 1px 0 rgba(255,255,255,0.45),
+                0 0 10px rgba(255,23,68,0.42) !important;
+        }
+
 </style>
 
 </head>
@@ -1306,6 +1504,25 @@
                     >
                         <span class="menu-icon">📊</span>
                         <span class="menu-text">Rapoarte</span>
+                        <span class="menu-arrow">›</span>
+                    </div>
+
+                    <div
+                        class="menu-card"
+                        onclick="deschidePaginaRaportZileFaraPontaj()"
+                    >
+                        <span class="menu-icon">⚠</span>
+                        <span class="menu-text">Raport zile fără pontaj</span>
+                        <span class="menu-arrow">›</span>
+                    </div>
+
+                    <!-- ===== IMPORT PONTAJ ===== -->
+                    <div
+                        class="menu-card"
+                        onclick="document.getElementById('fisier-pontaj').click()"
+                    >
+                        <span class="menu-icon">☁</span>
+                        <span class="menu-text">Import pontaj</span>
                         <span class="menu-arrow">›</span>
                     </div>
 
@@ -5039,7 +5256,3 @@
 </body>
 
 </html>
-
-
-
-
