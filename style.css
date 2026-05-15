@@ -330,10 +330,26 @@ body{
 }
 
 .quick-menu-number{
-    color:#F40009;
+    color:#ff0000;
     font-size:14px;
     font-weight:900;
     line-height:1;
     min-width:25px;
     text-align:right;
 }
+
+
+.quick-menu-number-blue{
+    color:#005BFF !important;
+}
+
+
+.quick-menu-date{
+    color:#ff0000;
+    font-size:11px;
+    font-weight:400;
+    line-height:1;
+    min-width:30px;
+    text-align:right;
+}
+
