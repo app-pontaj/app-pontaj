@@ -1939,7 +1939,7 @@
 
             const { data, error } = await supabaseClient
                 .from("angajati")
-                .select("nume,activ,apare_in_rapoarte")
+                .select("nume")
                 .order("nume", {
                     ascending: true
                 });
@@ -1953,23 +1953,25 @@
 
             }
 
+            function curataTextLogin(text) {
+                return String(text || "")
+                    .trim()
+                    .toLowerCase()
+                    .normalize("NFD")
+                    .replace(/[\u0300-\u036f]/g, "");
+            }
+
+            const cautareCurata = curataTextLogin(textCautare);
+
             const rezultate = (data || []).filter(function(angajat) {
 
                 if (!angajat.nume) {
                     return false;
                 }
 
-                if (angajat.activ === false) {
-                    return false;
-                }
+                const numeCurat = curataTextLogin(angajat.nume);
 
-                if (angajat.apare_in_rapoarte === false) {
-                    return false;
-                }
-
-                return String(angajat.nume || "")
-                    .toLowerCase()
-                    .includes(textCautare);
+                return numeCurat.includes(cautareCurata);
 
             });
 
