@@ -1157,6 +1157,20 @@
                             >👁</span>
                         </div>
 
+                        <div
+                            style="
+                                color:#cfcfcf;
+                                font-size:10px;
+                                font-style:italic;
+                                margin-top:-4px;
+                                margin-bottom:8px;
+                                padding-left:4px;
+                                line-height:1.2;
+                            "
+                        >
+                            Minim 4 caractere, fara spatii.
+                        </div>
+
                     </div>
 
                     <div
@@ -1893,7 +1907,7 @@
         }
 
         
-        // ===== AUTOCOMPLETE LOGIN =====
+        // ===== AUTOCOMPLETE LOGIN DIN ANGAJATI =====
         async function cautaUtilizatoriLogin() {
 
             const textCautare = document
@@ -1913,16 +1927,37 @@
 
             }
 
-            const { data } = await supabaseClient
-                .from("utilizatori")
-                .select("nume,parola")
+            const { data, error } = await supabaseClient
+                .from("angajati")
+                .select("nume,activ,apare_in_rapoarte")
                 .order("nume", {
                     ascending: true
                 });
 
-            const rezultate = (data || []).filter(function(user) {
+            if (error) {
 
-                return String(user.nume || "")
+                lista.style.display = "none";
+                lista.innerHTML = "";
+
+                return;
+
+            }
+
+            const rezultate = (data || []).filter(function(angajat) {
+
+                if (!angajat.nume) {
+                    return false;
+                }
+
+                if (angajat.activ === false) {
+                    return false;
+                }
+
+                if (angajat.apare_in_rapoarte === false) {
+                    return false;
+                }
+
+                return String(angajat.nume || "")
                     .toLowerCase()
                     .includes(textCautare);
 
@@ -1939,13 +1974,13 @@
 
             let html = "";
 
-            rezultate.forEach(function(user) {
+            rezultate.forEach(function(angajat) {
 
                 html +=
                     "<div style='padding:12px;border-bottom:1px solid rgba(255,255,255,0.08);cursor:pointer;color:#ffffff;font-weight:700;' onclick='selecteazaUtilizatorLogin(" +
-                    JSON.stringify(user.nume) +
+                    JSON.stringify(angajat.nume) +
                     ")'>" +
-                    user.nume +
+                    angajat.nume +
                     "</div>";
 
             });
@@ -1956,11 +1991,57 @@
         }
 
         // ===== SELECTARE USER LOGIN =====
-        function selecteazaUtilizatorLogin(nume) {
+        async function selecteazaUtilizatorLogin(nume) {
 
             document.getElementById("nume").value = nume;
 
             document.getElementById("login-user-results").style.display = "none";
+
+            await pregatesteLoginPentruNume(nume);
+
+        }
+
+        // ===== PREGATIRE FORMULAR DUPA NUME =====
+        async function pregatesteLoginPentruNume(nume) {
+
+            const parola2Wrap = document.getElementById("password2-wrap");
+            const magicWrap = document.getElementById("magic-word-wrap");
+            const forgotBox = document.getElementById("forgot-password");
+
+            if (forgotBox) {
+                forgotBox.checked = false;
+            }
+
+            if (magicWrap) {
+                magicWrap.style.display = "none";
+            }
+
+            if (parola2Wrap) {
+                parola2Wrap.style.display = "none";
+            }
+
+            const { data } = await supabaseClient
+                .from("utilizatori")
+                .select("*")
+                .eq("nume", nume)
+                .maybeSingle();
+
+            if (!data || !data.parola) {
+
+                if (parola2Wrap) {
+                    parola2Wrap.style.display = "block";
+                }
+
+                if (magicWrap) {
+                    magicWrap.style.display = "block";
+                }
+
+                showMessage(
+                    "Creeaza parola pentru primul acces",
+                    "success"
+                );
+
+            }
 
         }
 
@@ -1972,28 +2053,39 @@
             document.getElementById("magic-word-wrap").style.display =
                 bifat ? "block" : "none";
 
+            document.getElementById("password2-wrap").style.display =
+                bifat ? "block" : "none";
+
+        }
+
+        // ===== VALIDARE CUVANT MAGIC =====
+        function cuvantMagicValid(text) {
+
+            const valoare = String(text || "");
+
+            return valoare.length >= 4 && !/\s/.test(valoare);
+
         }
 
 
         // ===== LOGIN USER =====
         async function loginUser() {
 
-            const nume = document.getElementById("nume").value;
-
+            const nume = document.getElementById("nume").value.trim();
             const password = document.getElementById("password").value;
-
             const password2 = document.getElementById("password2").value;
+            const cuvantMagic = document.getElementById("magic-word")
+                ? document.getElementById("magic-word").value.trim()
+                : "";
 
-            const { data, error } = await supabaseClient
-                .from("utilizatori")
-                .select("*")
-                .eq("nume", nume)
-                .single();
+            const forgotPassword = document.getElementById("forgot-password")
+                ? document.getElementById("forgot-password").checked
+                : false;
 
-            if (error || !data) {
+            if (!nume) {
 
                 showMessage(
-                    "Utilizator inexistent",
+                    "Alege numele din lista",
                     "error"
                 );
 
@@ -2001,15 +2093,58 @@
 
             }
 
-            // ===== PRIMA LOGARE =====
-            if (!data.parola || data.parola === "") {
+            const { data: angajatGasit } = await supabaseClient
+                .from("angajati")
+                .select("nume")
+                .eq("nume", nume)
+                .maybeSingle();
 
-                document.getElementById("password2-wrap").style.display = "block";
+            if (!angajatGasit) {
 
-                if (password2 === "") {
+                showMessage(
+                    "Alege numele exact din lista",
+                    "error"
+                );
+
+                return;
+
+            }
+
+            const { data, error } = await supabaseClient
+                .from("utilizatori")
+                .select("*")
+                .eq("nume", nume)
+                .maybeSingle();
+
+            // ===== RECUPERARE PAROLA =====
+            if (forgotPassword) {
+
+                if (error || !data) {
 
                     showMessage(
-                        "Repeta parola",
+                        "Cont inexistent",
+                        "error"
+                    );
+
+                    return;
+
+                }
+
+                if (!cuvantMagic || data.cuvant_magic !== cuvantMagic) {
+
+                    showMessage(
+                        "Cuvant magic gresit",
+                        "error"
+                    );
+
+                    return;
+
+                }
+
+                if (!password || !password2) {
+
+                    showMessage(
+                        "Completeaza noua parola",
                         "error"
                     );
 
@@ -2028,14 +2163,14 @@
 
                 }
 
-                const { error: saveError } = await supabaseClient
+                const { error: updateError } = await supabaseClient
                     .from("utilizatori")
                     .update({
                         parola: password
                     })
                     .eq("id", data.id);
 
-                if (saveError) {
+                if (updateError) {
 
                     showMessage(
                         "Eroare salvare parola",
@@ -2049,7 +2184,81 @@
                 showMainMenu(data);
 
                 showMessage(
-                    "Parola salvata",
+                    "Parola schimbata",
+                    "success"
+                );
+
+                return;
+
+            }
+
+            // ===== CONT NOU =====
+            if (error || !data || !data.parola) {
+
+                document.getElementById("password2-wrap").style.display = "block";
+                document.getElementById("magic-word-wrap").style.display = "block";
+
+                if (!password || !password2) {
+
+                    showMessage(
+                        "Completeaza parola",
+                        "error"
+                    );
+
+                    return;
+
+                }
+
+                if (password !== password2) {
+
+                    showMessage(
+                        "Parole diferite",
+                        "error"
+                    );
+
+                    return;
+
+                }
+
+                if (!cuvantMagicValid(cuvantMagic)) {
+
+                    showMessage(
+                        "Cuvantul magic trebuie sa aiba minim 4 caractere si fara spatii",
+                        "error"
+                    );
+
+                    return;
+
+                }
+
+                const dateContNou = {
+                    nume: nume,
+                    parola: password,
+                    cuvant_magic: cuvantMagic,
+                    acces: "Angajat"
+                };
+
+                const { data: contCreat, error: insertError } = await supabaseClient
+                    .from("utilizatori")
+                    .insert(dateContNou)
+                    .select()
+                    .single();
+
+                if (insertError) {
+
+                    showMessage(
+                        "Eroare creare cont",
+                        "error"
+                    );
+
+                    return;
+
+                }
+
+                showMainMenu(contCreat);
+
+                showMessage(
+                    "Cont creat",
                     "success"
                 );
 
