@@ -151,7 +151,7 @@
         }
 
         #login-box {
-            margin-top: 24px !important;
+            margin-top: 78px !important;
         }
 
         .password-wrap {
@@ -1080,12 +1080,34 @@
                     id="login-box"
                 >
 
-                    <input
-                        type="text"
-                        id="nume"
-                        placeholder="Nume utilizator"
-                        class="login-input"
-                    >
+                    <div style="position:relative;width:100%;">
+
+                        <input
+                            type="text"
+                            id="nume"
+                            placeholder="Alege numele din lista"
+                            class="login-input"
+                            autocomplete="off"
+                            oninput="cautaUtilizatoriLogin()"
+                        >
+
+                        <div
+                            id="login-user-results"
+                            style="
+                                display:none;
+                                position:absolute;
+                                top:52px;
+                                left:0;
+                                width:100%;
+                                background:#101010;
+                                border:1px solid rgba(212,175,55,0.45);
+                                border-radius:14px;
+                                overflow:hidden;
+                                z-index:999;
+                            "
+                        ></div>
+
+                    </div>
 
                     <div class="password-wrap">
                         <input
@@ -1115,6 +1137,49 @@
                             class="password-toggle"
                             onclick="togglePassword('password2', this)"
                         >👁</span>
+                    </div>
+
+                    <div
+                        id="magic-word-wrap"
+                        style="display:none;width:100%;"
+                    >
+
+                        <div class="password-wrap">
+                            <input
+                                type="password"
+                                id="magic-word"
+                                placeholder="Cuvant magic recuperare parola"
+                                class="login-input"
+                            >
+                            <span
+                                class="password-toggle"
+                                onclick="togglePassword('magic-word', this)"
+                            >👁</span>
+                        </div>
+
+                    </div>
+
+                    <div
+                        style="
+                            width:100%;
+                            display:flex;
+                            align-items:center;
+                            gap:8px;
+                            margin-top:2px;
+                            margin-bottom:8px;
+                            color:#ffffff;
+                            font-size:12px;
+                            font-weight:700;
+                        "
+                    >
+                        <input
+                            type="checkbox"
+                            id="forgot-password"
+                            onchange="toggleForgotPassword()"
+                            style="width:18px;height:18px;accent-color:#d4af37;"
+                        >
+
+                        <span>Am uitat parola</span>
                     </div>
 
                     <button
@@ -1826,6 +1891,89 @@
             }
 
         }
+
+        
+        // ===== AUTOCOMPLETE LOGIN =====
+        async function cautaUtilizatoriLogin() {
+
+            const textCautare = document
+                .getElementById("nume")
+                .value
+                .trim()
+                .toLowerCase();
+
+            const lista = document.getElementById("login-user-results");
+
+            if (!textCautare || textCautare.length < 1) {
+
+                lista.style.display = "none";
+                lista.innerHTML = "";
+
+                return;
+
+            }
+
+            const { data } = await supabaseClient
+                .from("utilizatori")
+                .select("nume,parola")
+                .order("nume", {
+                    ascending: true
+                });
+
+            const rezultate = (data || []).filter(function(user) {
+
+                return String(user.nume || "")
+                    .toLowerCase()
+                    .includes(textCautare);
+
+            });
+
+            if (!rezultate.length) {
+
+                lista.style.display = "none";
+                lista.innerHTML = "";
+
+                return;
+
+            }
+
+            let html = "";
+
+            rezultate.forEach(function(user) {
+
+                html +=
+                    "<div style='padding:12px;border-bottom:1px solid rgba(255,255,255,0.08);cursor:pointer;color:#ffffff;font-weight:700;' onclick='selecteazaUtilizatorLogin(" +
+                    JSON.stringify(user.nume) +
+                    ")'>" +
+                    user.nume +
+                    "</div>";
+
+            });
+
+            lista.innerHTML = html;
+            lista.style.display = "block";
+
+        }
+
+        // ===== SELECTARE USER LOGIN =====
+        function selecteazaUtilizatorLogin(nume) {
+
+            document.getElementById("nume").value = nume;
+
+            document.getElementById("login-user-results").style.display = "none";
+
+        }
+
+        // ===== FORGOT PASSWORD =====
+        function toggleForgotPassword() {
+
+            const bifat = document.getElementById("forgot-password").checked;
+
+            document.getElementById("magic-word-wrap").style.display =
+                bifat ? "block" : "none";
+
+        }
+
 
         // ===== LOGIN USER =====
         async function loginUser() {
