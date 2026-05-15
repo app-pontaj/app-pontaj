@@ -1180,7 +1180,23 @@
                             </div>
                         </div>
 
-                        <div class="quick-menu-card"></div>
+                        <div
+                            class="quick-menu-card quick-menu-card-alert"
+                            onclick="deschidePaginaImportPontaj()"
+                        >
+                            <div class="quick-menu-label">
+                                <div>Import</div>
+                                <div>pontaj</div>
+                            </div>
+
+                            <div
+                                class="quick-menu-date"
+                                id="quick-import-date"
+                            >
+                                --
+                            </div>
+                        </div>
+
                         <div class="quick-menu-card"></div>
 
                     </div>
@@ -1781,6 +1797,7 @@
 
             incarcaContorZileFaraPontaj();
             incarcaContorAngajati();
+            incarcaUltimaDataImport();
 
         }
 
@@ -1935,6 +1952,46 @@
 
         }
 
+
+
+        // ===== ULTIMA DATA IMPORT PONTAJ =====
+        async function incarcaUltimaDataImport() {
+
+            const camp = document.getElementById("quick-import-date");
+
+            if (!camp) {
+                return;
+            }
+
+            camp.innerHTML = "--";
+
+            const { data, error } = await supabaseClient
+                .from("pontaj_zilnic")
+                .select("data")
+                .order("data", {
+                    ascending: false
+                })
+                .limit(1);
+
+            if (error || !data || !data.length) {
+                return;
+            }
+
+            const dataImport = data[0].data;
+
+            if (!dataImport) {
+                return;
+            }
+
+            const parti = String(dataImport).split("-");
+
+            if (parti.length !== 3) {
+                return;
+            }
+
+            camp.innerHTML = parti[2] + "." + parti[1];
+
+        }
 
 
         // ===== CONTOR ANGAJATI PE MENIU RAPID =====
