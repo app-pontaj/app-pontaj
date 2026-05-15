@@ -1198,9 +1198,19 @@
 
                     <button
                         class="menu-card"
+                        id="login-button"
                         onclick="loginUser()"
                     >
                         LOGIN
+                    </button>
+
+                    <button
+                        class="menu-card"
+                        id="create-account-button"
+                        onclick="creeazaContNou()"
+                        style="display:none;"
+                    >
+                        CREARE CONT
                     </button>
 
                 </div>
@@ -2007,6 +2017,15 @@
             const parola2Wrap = document.getElementById("password2-wrap");
             const magicWrap = document.getElementById("magic-word-wrap");
             const forgotBox = document.getElementById("forgot-password");
+            const loginButton = document.getElementById("login-button");
+            const createButton = document.getElementById("create-account-button");
+
+            document.getElementById("password").value = "";
+            document.getElementById("password2").value = "";
+
+            if (document.getElementById("magic-word")) {
+                document.getElementById("magic-word").value = "";
+            }
 
             if (forgotBox) {
                 forgotBox.checked = false;
@@ -2018,6 +2037,14 @@
 
             if (parola2Wrap) {
                 parola2Wrap.style.display = "none";
+            }
+
+            if (loginButton) {
+                loginButton.style.display = "block";
+            }
+
+            if (createButton) {
+                createButton.style.display = "none";
             }
 
             const { data } = await supabaseClient
@@ -2036,8 +2063,16 @@
                     magicWrap.style.display = "block";
                 }
 
+                if (loginButton) {
+                    loginButton.style.display = "none";
+                }
+
+                if (createButton) {
+                    createButton.style.display = "block";
+                }
+
                 showMessage(
-                    "Creeaza parola pentru primul acces",
+                    "Creeaza cont pentru primul acces",
                     "success"
                 );
 
@@ -2055,6 +2090,17 @@
 
             document.getElementById("password2-wrap").style.display =
                 bifat ? "block" : "none";
+
+            const loginButton = document.getElementById("login-button");
+            const createButton = document.getElementById("create-account-button");
+
+            if (loginButton) {
+                loginButton.style.display = "block";
+            }
+
+            if (createButton) {
+                createButton.style.display = "none";
+            }
 
         }
 
@@ -2093,16 +2139,16 @@
 
             }
 
-            const { data: angajatGasit } = await supabaseClient
-                .from("angajati")
-                .select("nume")
+            const { data, error } = await supabaseClient
+                .from("utilizatori")
+                .select("*")
                 .eq("nume", nume)
                 .maybeSingle();
 
-            if (!angajatGasit) {
+            if (error || !data || !data.parola) {
 
                 showMessage(
-                    "Alege numele exact din lista",
+                    "Contul nu exista. Apasa CREARE CONT.",
                     "error"
                 );
 
@@ -2110,25 +2156,8 @@
 
             }
 
-            const { data, error } = await supabaseClient
-                .from("utilizatori")
-                .select("*")
-                .eq("nume", nume)
-                .maybeSingle();
-
             // ===== RECUPERARE PAROLA =====
             if (forgotPassword) {
-
-                if (error || !data) {
-
-                    showMessage(
-                        "Cont inexistent",
-                        "error"
-                    );
-
-                    return;
-
-                }
 
                 if (!cuvantMagic || data.cuvant_magic !== cuvantMagic) {
 
@@ -2181,84 +2210,15 @@
 
                 }
 
-                showMainMenu(data);
+                const userActualizat = {
+                    ...data,
+                    parola: password
+                };
+
+                showMainMenu(userActualizat);
 
                 showMessage(
                     "Parola schimbata",
-                    "success"
-                );
-
-                return;
-
-            }
-
-            // ===== CONT NOU =====
-            if (error || !data || !data.parola) {
-
-                document.getElementById("password2-wrap").style.display = "block";
-                document.getElementById("magic-word-wrap").style.display = "block";
-
-                if (!password || !password2) {
-
-                    showMessage(
-                        "Completeaza parola",
-                        "error"
-                    );
-
-                    return;
-
-                }
-
-                if (password !== password2) {
-
-                    showMessage(
-                        "Parole diferite",
-                        "error"
-                    );
-
-                    return;
-
-                }
-
-                if (!cuvantMagicValid(cuvantMagic)) {
-
-                    showMessage(
-                        "Cuvantul magic trebuie sa aiba minim 4 caractere si fara spatii",
-                        "error"
-                    );
-
-                    return;
-
-                }
-
-                const dateContNou = {
-                    nume: nume,
-                    parola: password,
-                    cuvant_magic: cuvantMagic,
-                    acces: "Angajat"
-                };
-
-                const { data: contCreat, error: insertError } = await supabaseClient
-                    .from("utilizatori")
-                    .insert(dateContNou)
-                    .select()
-                    .single();
-
-                if (insertError) {
-
-                    showMessage(
-                        "Eroare creare cont",
-                        "error"
-                    );
-
-                    return;
-
-                }
-
-                showMainMenu(contCreat);
-
-                showMessage(
-                    "Cont creat",
                     "success"
                 );
 
@@ -2282,6 +2242,144 @@
 
             showMessage(
                 "Login reusit",
+                "success"
+            );
+
+        }
+
+        // ===== CREARE CONT NOU =====
+        async function creeazaContNou() {
+
+            const nume = document.getElementById("nume").value.trim();
+            const password = document.getElementById("password").value;
+            const password2 = document.getElementById("password2").value;
+            const cuvantMagic = document.getElementById("magic-word")
+                ? document.getElementById("magic-word").value.trim()
+                : "";
+
+            if (!nume) {
+
+                showMessage(
+                    "Alege numele din lista",
+                    "error"
+                );
+
+                return;
+
+            }
+
+            const { data: angajatGasit } = await supabaseClient
+                .from("angajati")
+                .select("nume")
+                .eq("nume", nume)
+                .maybeSingle();
+
+            if (!angajatGasit) {
+
+                showMessage(
+                    "Alege numele exact din lista",
+                    "error"
+                );
+
+                return;
+
+            }
+
+            const { data: contExistent } = await supabaseClient
+                .from("utilizatori")
+                .select("*")
+                .eq("nume", nume)
+                .maybeSingle();
+
+            if (contExistent && contExistent.parola) {
+
+                showMessage(
+                    "Contul exista deja. Foloseste LOGIN.",
+                    "error"
+                );
+
+                await pregatesteLoginPentruNume(nume);
+
+                return;
+
+            }
+
+            if (!password || !password2) {
+
+                showMessage(
+                    "Completeaza parola",
+                    "error"
+                );
+
+                return;
+
+            }
+
+            if (password !== password2) {
+
+                showMessage(
+                    "Parole diferite",
+                    "error"
+                );
+
+                return;
+
+            }
+
+            if (!cuvantMagicValid(cuvantMagic)) {
+
+                showMessage(
+                    "Cuvantul magic trebuie sa aiba minim 4 caractere si fara spatii",
+                    "error"
+                );
+
+                return;
+
+            }
+
+            const dateContNou = {
+                nume: nume,
+                parola: password,
+                cuvant_magic: cuvantMagic,
+                acces: "Angajat"
+            };
+
+            let rezultat;
+
+            if (contExistent && contExistent.id) {
+
+                rezultat = await supabaseClient
+                    .from("utilizatori")
+                    .update(dateContNou)
+                    .eq("id", contExistent.id)
+                    .select()
+                    .single();
+
+            } else {
+
+                rezultat = await supabaseClient
+                    .from("utilizatori")
+                    .insert(dateContNou)
+                    .select()
+                    .single();
+
+            }
+
+            if (rezultat.error) {
+
+                showMessage(
+                    "Eroare creare cont",
+                    "error"
+                );
+
+                return;
+
+            }
+
+            showMainMenu(rezultat.data);
+
+            showMessage(
+                "Cont creat",
                 "success"
             );
 
