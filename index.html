@@ -1064,11 +1064,18 @@
             width:100% !important;
             padding:0 22px !important;
             margin-top:70px !important;
-            display:flex !important;
             flex-direction:column !important;
             align-items:center !important;
             gap:12px !important;
             box-sizing:border-box !important;
+        }
+
+        #login-box.login-visible{
+            display:flex !important;
+        }
+
+        #login-box.login-hidden{
+            display:none !important;
         }
 
         #login-box > div[style*="position:relative"]{
@@ -1274,7 +1281,7 @@
 
                 <!-- ===== LOGIN ===== -->
                 <div
-                    class="main-menu"
+                    class="main-menu login-visible"
                     id="login-box"
                 >
 
@@ -2068,7 +2075,10 @@
                 JSON.stringify(userData)
             );
 
-            document.getElementById("login-box").style.display = "none";
+            const loginBox = document.getElementById("login-box");
+
+            loginBox.classList.remove("login-visible");
+            loginBox.classList.add("login-hidden");
 
             document.getElementById("main-menu").style.display = "flex";
 
