@@ -1164,19 +1164,25 @@
                             </div>
                         </div>
 
-                        <div class="quick-menu-card"></div>
+                        <div
+                            class="quick-menu-card quick-menu-card-alert"
+                            onclick="deschidePaginaAngajati()"
+                        >
+                            <div class="quick-menu-label">
+                                <div>Angajati</div>
+                            </div>
+
+                            <div
+                                class="quick-menu-number quick-menu-number-blue"
+                                id="quick-employees-number"
+                            >
+                                0
+                            </div>
+                        </div>
+
                         <div class="quick-menu-card"></div>
                         <div class="quick-menu-card"></div>
 
-                    </div>
-
-                    <div
-                        class="menu-card"
-                        onclick="deschidePaginaAngajati()"
-                    >
-                        <span class="menu-icon">👥</span>
-                        <span class="menu-text">Angajati</span>
-                        <span class="menu-arrow">›</span>
                     </div>
 
                     <div class="menu-card">
@@ -1774,6 +1780,7 @@
             document.getElementById("user-avatar").innerHTML = initiale;
 
             incarcaContorZileFaraPontaj();
+            incarcaContorAngajati();
 
         }
 
@@ -1928,6 +1935,35 @@
 
         }
 
+
+
+        // ===== CONTOR ANGAJATI PE MENIU RAPID =====
+        async function incarcaContorAngajati() {
+
+            const cifra = document.getElementById("quick-employees-number");
+
+            if (!cifra) {
+                return;
+            }
+
+            cifra.innerHTML = "...";
+
+            const { data, error } = await supabaseClient
+                .from("angajati")
+                .select("id,apare_in_rapoarte,activ");
+
+            if (error) {
+                cifra.innerHTML = "!";
+                return;
+            }
+
+            const totalAngajati = (data || []).filter(function(angajat) {
+                return angajat.apare_in_rapoarte !== false && angajat.activ !== false;
+            }).length;
+
+            cifra.innerHTML = String(totalAngajati);
+
+        }
 
 
         // ===== DATE ANGAJATI =====
