@@ -150,6 +150,10 @@
             margin-top: 8px;
         }
 
+        #login-box {
+            margin-top: 24px !important;
+        }
+
         .password-wrap {
             position: relative;
             width: 100%;
@@ -3169,12 +3173,36 @@
 
             }
 
-            const { data: pontaje, error: eroarePontaje } = await supabaseClient
-                .from("pontaj_zilnic")
-                .select("nume,data,status_corectie,ora_intrare_manual,ora_iesire_manual,modificat_de,modificat_la")
-                .order("data", {
-                    ascending: true
-                });
+            // ===== CITIRE COMPLETA PONTAJ, IN LOTURI =====
+            let toatePontajele = [];
+            let startLotPontaje = 0;
+            const marimeLotPontaje = 1000;
+            let eroarePontaje = null;
+
+            while (true) {
+
+                const { data: lotPontaje, error } = await supabaseClient
+                    .from("pontaj_zilnic")
+                    .select("nume,data,status_corectie,ora_intrare_manual,ora_iesire_manual,modificat_de,modificat_la")
+                    .order("data", {
+                        ascending: true
+                    })
+                    .range(startLotPontaje, startLotPontaje + marimeLotPontaje - 1);
+
+                if (error) {
+                    eroarePontaje = error;
+                    break;
+                }
+
+                toatePontajele = toatePontajele.concat(lotPontaje || []);
+
+                if (!lotPontaje || lotPontaje.length < marimeLotPontaje) {
+                    break;
+                }
+
+                startLotPontaje += marimeLotPontaje;
+
+            }
 
             if (eroarePontaje) {
 
@@ -3189,7 +3217,7 @@
 
             }
 
-            if (!pontaje || !pontaje.length) {
+            if (!toatePontajele.length) {
 
                 lista.innerHTML = "<div class='missing-days-empty'>Nu există pontaje salvate în Supabase.</div>";
 
@@ -3198,7 +3226,7 @@
             }
 
             angajatiRaportZileFaraPontaj = angajati || [];
-            pontajeRaportZileFaraPontaj = pontaje || [];
+            pontajeRaportZileFaraPontaj = toatePontajele || [];
 
             const toateDatelePontaj = pontajeRaportZileFaraPontaj
                 .map(function(pontaj) {
@@ -3252,7 +3280,12 @@
             const pontajeDupaAngajatZi = {};
 
             pontajeRaportZileFaraPontaj.forEach(function(pontaj) {
-                pontajeDupaAngajatZi[String(pontaj.nume || "").trim() + "|" + pontaj.data] = pontaj;
+                const cheiePontaj =
+                    String(pontaj.nume || "").trim().toUpperCase() +
+                    "|" +
+                    String(pontaj.data || "").trim();
+
+                pontajeDupaAngajatZi[cheiePontaj] = pontaj;
             });
 
             let html = "";
@@ -3309,7 +3342,12 @@
 
                         if (!angajatInactivLaData) {
 
-                            const pontajZi = pontajeDupaAngajatZi[nume + "|" + dataText];
+                            const cheieCautare =
+                                nume.trim().toUpperCase() +
+                                "|" +
+                                dataText;
+
+                            const pontajZi = pontajeDupaAngajatZi[cheieCautare];
 
                             if (!pontajZi) {
 
