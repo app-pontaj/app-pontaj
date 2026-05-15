@@ -340,14 +340,14 @@ body{
 
 
 .quick-menu-number-blue{
-    color:#005BFF !important;
+    color:#003CFF !important;
 }
 
 
 .quick-menu-date{
     color:#ff0000;
     font-size:11px;
-    font-weight:400;
+    font-weight:900;
     line-height:1;
     min-width:30px;
     text-align:right;
