@@ -1182,7 +1182,7 @@
 
                         <div
                             class="quick-menu-card quick-menu-card-alert"
-                            onclick="deschidePaginaImportPontaj()"
+                            onclick="document.getElementById('fisier-pontaj').click()"
                         >
                             <div class="quick-menu-label">
                                 <div>Import</div>
@@ -2273,16 +2273,17 @@
                         defval: ""
                     });
 
-                    afiseazaPrimeleRanduri(randuri);
-
                     ultimImportRanduri = randuri;
 
                     await salveazaPontajZilnic(randuri);
 
                     showMessage(
-                        "Fisier citit: " + fisier.name,
+                        "Import finalizat",
                         "success"
                     );
+
+                    incarcaUltimaDataImport();
+                    incarcaContorZileFaraPontaj();
 
                 } catch (error) {
 
