@@ -1148,7 +1148,7 @@
                             <input
                                 type="password"
                                 id="magic-word"
-                                placeholder="Cuvant magic recuperare parola"
+                                placeholder="Cuvant schimbare parola"
                                 class="login-input"
                             >
                             <span
@@ -5005,6 +5005,33 @@
 
         }
 
+
+        // ===== CONFIRMARE VIZUALA PAROLE IDENTICE =====
+        document.addEventListener("input", function() {
+
+            const parola1 = document.getElementById("password");
+            const parola2 = document.getElementById("password2");
+
+            if (!parola1 || !parola2) {
+                return;
+            }
+
+            parola2.classList.remove("password-match-ok");
+            parola2.classList.remove("password-match-error");
+
+            if (!parola2.value) {
+                return;
+            }
+
+            if (parola1.value === parola2.value) {
+                parola2.classList.add("password-match-ok");
+            } else {
+                parola2.classList.add("password-match-error");
+            }
+
+        });
+
+
         checkSession();
 
     </script>
@@ -5015,115 +5042,4 @@
 
 
 
-
-<style>
-
-/* ===== LOGIN PREMIUM ===== */
-
-.login-input{
-    background:#d4af37 !important;
-    color:#000000 !important;
-    font-weight:900 !important;
-    height:46px !important;
-    border-radius:14px !important;
-    border:2px solid rgba(255,215,0,0.45) !important;
-    font-size:18px !important;
-    padding-left:14px !important;
-}
-
-.login-input::placeholder{
-    color:#111111 !important;
-    font-weight:800 !important;
-}
-
-.password-wrap{
-    margin-bottom:14px !important;
-}
-
-.password-toggle{
-    color:#000000 !important;
-    font-size:22px !important;
-    right:16px !important;
-}
-
-/* ===== POPUP PREMIUM ===== */
-
-.custom-popup,
-.popup-box,
-.message-popup{
-    background:linear-gradient(180deg,#111111,#000000) !important;
-    border:2px solid rgba(212,175,55,0.55) !important;
-    border-radius:28px !important;
-    width:320px !important;
-    max-width:82vw !important;
-    box-shadow:0 0 30px rgba(212,175,55,0.18) !important;
-}
-
-.custom-popup .popup-text,
-.popup-box .popup-text,
-.message-popup .popup-text{
-    color:#d4af37 !important;
-    font-size:28px !important;
-    font-weight:900 !important;
-    line-height:1.2 !important;
-}
-
-.custom-popup button,
-.popup-box button,
-.message-popup button{
-    background:#d4af37 !important;
-    color:#000000 !important;
-    border:none !important;
-    border-radius:18px !important;
-    font-weight:900 !important;
-    min-width:120px !important;
-    height:52px !important;
-    font-size:22px !important;
-}
-
-/* ===== CONFIRMARE PAROLE ===== */
-
-.password-match-ok{
-    border:3px solid #00c853 !important;
-    box-shadow:0 0 12px rgba(0,200,83,0.45) !important;
-}
-
-.password-match-error{
-    border:3px solid #ff1744 !important;
-    box-shadow:0 0 12px rgba(255,23,68,0.45) !important;
-}
-
-</style>
-
-<script>
-
-document.addEventListener("input", function(){
-
-    const p1 = document.getElementById("password");
-    const p2 = document.getElementById("password2");
-
-    if(!p1 || !p2){
-        return;
-    }
-
-    p2.classList.remove("password-match-ok");
-    p2.classList.remove("password-match-error");
-
-    if(!p2.value){
-        return;
-    }
-
-    if(p1.value === p2.value){
-
-        p2.classList.add("password-match-ok");
-
-    } else {
-
-        p2.classList.add("password-match-error");
-
-    }
-
-});
-
-</script>
 
