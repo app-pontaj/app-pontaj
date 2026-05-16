@@ -1064,18 +1064,11 @@
             width:100% !important;
             padding:0 22px !important;
             margin-top:70px !important;
+            display:flex !important;
             flex-direction:column !important;
             align-items:center !important;
             gap:12px !important;
             box-sizing:border-box !important;
-        }
-
-        #login-box.login-visible{
-            display:flex !important;
-        }
-
-        #login-box.login-hidden{
-            display:none !important;
         }
 
         #login-box > div[style*="position:relative"]{
@@ -1281,7 +1274,7 @@
 
                 <!-- ===== LOGIN ===== -->
                 <div
-                    class="main-menu login-visible"
+                    class="main-menu"
                     id="login-box"
                 >
 
@@ -1520,16 +1513,6 @@
                     >
                         <span class="menu-icon">⚠</span>
                         <span class="menu-text">Raport zile fără pontaj</span>
-                        <span class="menu-arrow">›</span>
-                    </div>
-
-                    <!-- ===== IMPORT PONTAJ ===== -->
-                    <div
-                        class="menu-card"
-                        onclick="document.getElementById('fisier-pontaj').click()"
-                    >
-                        <span class="menu-icon">☁</span>
-                        <span class="menu-text">Import pontaj</span>
                         <span class="menu-arrow">›</span>
                     </div>
 
@@ -2075,10 +2058,7 @@
                 JSON.stringify(userData)
             );
 
-            const loginBox = document.getElementById("login-box");
-
-            loginBox.classList.remove("login-visible");
-            loginBox.classList.add("login-hidden");
+            document.getElementById("login-box").style.display = "none";
 
             document.getElementById("main-menu").style.display = "flex";
 
