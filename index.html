@@ -1499,12 +1499,9 @@
 
                     </div>
 
-                    <div
-                        class="menu-card"
-                        onclick="deschidePontajeleMele()"
-                    >
+                    <div class="menu-card">
                         <span class="menu-icon">📅</span>
-                        <span class="menu-text">Pontajele mele</span>
+                        <span class="menu-text">Raport luna curenta</span>
                         <span class="menu-arrow">›</span>
                     </div>
 
@@ -3353,63 +3350,6 @@
 
 
 
-        // ===== DESCHIDERE PONTAJELE MELE =====
-        async function deschidePontajeleMele() {
-
-            if (!utilizatorLogat || !utilizatorLogat.nume) {
-
-                showMessage(
-                    "Utilizator nelogat",
-                    "error"
-                );
-
-                return;
-
-            }
-
-            modRaportSelectat = "angajat";
-            angajatSelectatRaport = utilizatorLogat.nume;
-
-            document.querySelector(".premium-header").style.display = "none";
-            document.querySelector(".premium-line").style.display = "none";
-
-            document.getElementById("main-menu").style.display = "none";
-            document.getElementById("report-page").style.display = "block";
-
-            const randFiltre = document.querySelector(".report-filter-row");
-
-            if (randFiltre) {
-                randFiltre.style.display = "";
-            }
-
-            afiseazaAniRaport();
-
-            const zonaCautare = document.getElementById("employee-search-area");
-            const randFiltre = document.querySelector(".report-filter-row");
-
-            if (zonaCautare) {
-                zonaCautare.style.display = "none";
-            }
-
-            if (randFiltre) {
-                randFiltre.style.display = "none";
-            }
-
-            if (!listaAngajatiSupabase.length) {
-
-                const { data } = await supabaseClient
-                    .from("angajati")
-                    .select("*")
-                    .order("nume", {
-                        ascending: true
-                    });
-
-                listaAngajatiSupabase = data || [];
-
-            }
-
-        }
-
         // ===== DESCHIDERE PAGINA RAPORT TEST =====
         async function deschidePaginaRaportTest() {
 
@@ -3442,17 +3382,6 @@
 
             document.getElementById("report-page").style.display = "none";
             document.getElementById("main-menu").style.display = "flex";
-
-            const zonaCautare = document.getElementById("employee-search-area");
-            const randFiltre = document.querySelector(".report-filter-row");
-
-            if (zonaCautare) {
-                zonaCautare.style.display = "none";
-            }
-
-            if (randFiltre) {
-                randFiltre.style.display = "";
-            }
 
             document.querySelector(".premium-header").style.display = "flex";
             document.querySelector(".premium-line").style.display = "block";
