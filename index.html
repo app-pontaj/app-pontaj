@@ -2010,6 +2010,9 @@
         // ===== DATE UTILIZATOR LOGAT =====
         let utilizatorLogat = null;
 
+        // ===== SECTII PERMISE UTILIZATOR LOGAT =====
+        let sectiiPermiseUtilizator = [];
+
         // ===== DATE ULTIM IMPORT PENTRU RAPOARTE TEST =====
         let ultimImportRanduri = [];
 
@@ -2055,10 +2058,55 @@
 
         }
 
+        // ===== INCARCARE SECTII PERMISE UTILIZATOR =====
+        async function incarcaSectiiPermiseUtilizator(userData) {
+
+            sectiiPermiseUtilizator = [];
+
+            if (!userData || !userData.nume) {
+                return;
+            }
+
+            const rol = String(userData.rol || "").trim().toUpperCase();
+            const acces = String(userData.acces || "").trim().toUpperCase();
+
+            if (rol === "ADMIN" || acces === "TOTAL") {
+                sectiiPermiseUtilizator = ["__TOATE__"];
+                return;
+            }
+
+            if (rol !== "SEF" && acces !== "DEPARTAMENT") {
+                return;
+            }
+
+            const { data, error } = await supabaseClient
+                .from("acces_sectii")
+                .select("sectie")
+                .eq("nume_utilizator", userData.nume);
+
+            if (error) {
+                sectiiPermiseUtilizator = [];
+                return;
+            }
+
+            sectiiPermiseUtilizator = (data || [])
+                .map(function(rand) {
+                    return String(rand.sectie || "").trim();
+                })
+                .filter(function(sectie) {
+                    return !!sectie;
+                });
+
+        }
+
         // ===== AFISARE MENIU PRINCIPAL =====
-        function showMainMenu(userData) {
+        async function showMainMenu(userData) {
 
             utilizatorLogat = userData;
+
+            await incarcaSectiiPermiseUtilizator(userData);
+
+            userData.sectii_permise = sectiiPermiseUtilizator;
 
             localStorage.setItem(
                 "utilizatorLogat",
@@ -2415,7 +2463,7 @@
                     parola: password
                 };
 
-                showMainMenu(userActualizat);
+                await showMainMenu(userActualizat);
 
                 showMessage(
                     "Parola schimbata",
@@ -2438,7 +2486,7 @@
 
             }
 
-            showMainMenu(data);
+            await showMainMenu(data);
 
             showMessage(
                 "Login reusit",
@@ -2577,7 +2625,7 @@
 
             }
 
-            showMainMenu(rezultat.data);
+            await showMainMenu(rezultat.data);
 
             showMessage(
                 "Cont creat",
@@ -2587,7 +2635,7 @@
         }
 
         // ===== VERIFICARE SESIUNE =====
-        function checkSession() {
+        async function checkSession() {
 
             const userSalvat = localStorage.getItem("utilizatorLogat");
 
@@ -2595,7 +2643,7 @@
 
                 const userData = JSON.parse(userSalvat);
 
-                showMainMenu(userData);
+                await showMainMenu(userData);
 
             }
 
