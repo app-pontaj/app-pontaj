@@ -3370,6 +3370,18 @@
                 return true;
             }
 
+            const numeAngajat = String(angajat?.nume || "")
+                .trim()
+                .toUpperCase();
+
+            const numeUtilizator = String(utilizatorLogat?.nume || "")
+                .trim()
+                .toUpperCase();
+
+            if (numeAngajat && numeAngajat === numeUtilizator) {
+                return true;
+            }
+
             if (!esteSefDepartament()) {
                 return true;
             }
@@ -3937,7 +3949,10 @@
 
                 optiuni = angajatiRaportZileFaraPontaj
                     .filter(function(angajat) {
-                        return angajat.apare_in_rapoarte !== false;
+                        return (
+                            angajat.apare_in_rapoarte !== false &&
+                            angajatInSectiiPermise(angajat)
+                        );
                     })
                     .map(function(angajat) {
                         return String(angajat.nume || "").trim();
@@ -3960,6 +3975,10 @@
                 angajatiRaportZileFaraPontaj.forEach(function(angajat) {
 
                     if (angajat.apare_in_rapoarte === false) {
+                        return;
+                    }
+
+                    if (!angajatInSectiiPermise(angajat)) {
                         return;
                     }
 
@@ -4157,6 +4176,10 @@
                 }
 
                 if (angajat.afiseaza_lipsa_pontaj === false) {
+                    return;
+                }
+
+                if (!angajatInSectiiPermise(angajat)) {
                     return;
                 }
 
@@ -4416,6 +4439,10 @@
                     return false;
                 }
 
+                if (!angajatInSectiiPermise(angajat)) {
+                    return false;
+                }
+
                 return String(angajat.nume || "")
                     .toLowerCase()
                     .includes(textCautare);
@@ -4449,6 +4476,21 @@
 
                 showMessage(
                     "Poti vedea doar pontajele tale",
+                    "error"
+                );
+
+                return;
+
+            }
+
+            const angajatVerificat = listaAngajatiSupabase.find(function(angajat) {
+                return String(angajat.nume || "").trim() === String(nume || "").trim();
+            });
+
+            if (!angajatInSectiiPermise(angajatVerificat)) {
+
+                showMessage(
+                    "Nu ai acces la acest angajat",
                     "error"
                 );
 
@@ -5267,7 +5309,10 @@
 
             const angajatiRaport = listaAngajatiSupabase
                 .filter(function(angajat) {
-                    return angajat.apare_in_rapoarte !== false;
+                    return (
+                        angajat.apare_in_rapoarte !== false &&
+                        angajatInSectiiPermise(angajat)
+                    );
                 })
                 .sort(function(a, b) {
                     return String(a.nume || "").localeCompare(String(b.nume || ""), "ro");
