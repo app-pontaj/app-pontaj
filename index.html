@@ -3348,7 +3348,14 @@
             const rol = String(utilizatorLogat?.rol || "").trim().toUpperCase();
             const acces = String(utilizatorLogat?.acces || "").trim().toUpperCase();
 
-            return rol === "ADMIN" || acces === "TOTAL";
+            return (
+                rol === "ADMIN" ||
+                acces === "TOTAL" ||
+                (
+                    rol === "SEF" &&
+                    acces === "DEPARTAMENT"
+                )
+            );
 
         }
 
