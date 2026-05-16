@@ -3352,6 +3352,45 @@
 
         }
 
+
+        // ===== VERIFICARE DACA ESTE SEF DE DEPARTAMENT =====
+        function esteSefDepartament() {
+
+            const rol = String(utilizatorLogat?.rol || "").trim().toUpperCase();
+            const acces = String(utilizatorLogat?.acces || "").trim().toUpperCase();
+
+            return rol === "SEF" && acces === "DEPARTAMENT";
+
+        }
+
+        // ===== FILTRARE PE SECTII PERMISE =====
+        function angajatInSectiiPermise(angajat) {
+
+            if (areAccesTotalRapoarte()) {
+                return true;
+            }
+
+            if (!esteSefDepartament()) {
+                return true;
+            }
+
+            const sectieAngajat = String(angajat?.sectie || "")
+                .trim()
+                .toUpperCase();
+
+            return sectiiPermiseUtilizator.some(function(sectie) {
+
+                return (
+                    String(sectie || "")
+                        .trim()
+                        .toUpperCase() === sectieAngajat
+                );
+
+            });
+
+        }
+
+
         // ===== VERIFICARE DACA ESTE ANGAJAT SIMPLU =====
         function esteAngajatSimplu() {
 
@@ -4773,6 +4812,17 @@
             const angajat = listaAngajatiSupabase.find(function(a) {
                 return a.nume === angajatSelectatRaport;
             });
+
+            if (!angajatInSectiiPermise(angajat)) {
+
+                showMessage(
+                    "Nu ai acces la acest angajat",
+                    "error"
+                );
+
+                return;
+
+            }
 
             const estePaza =
                 String(angajat?.sectie || "")
