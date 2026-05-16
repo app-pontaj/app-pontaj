@@ -2099,6 +2099,38 @@
 
         }
 
+
+        // ===== CONTROL MENIU DUPA ROL =====
+        function aplicaRestrictiiMeniu(userData) {
+
+            const rol = String(userData.rol || "").trim().toUpperCase();
+            const acces = String(userData.acces || "").trim().toUpperCase();
+
+            const esteAngajat =
+                rol === "ANGAJAT" &&
+                acces === "ANGAJAT";
+
+            const carduri = document.querySelectorAll(".menu-card");
+
+            carduri.forEach(function(card) {
+
+                const textCard = (card.innerText || "").toUpperCase();
+
+                if (
+                    esteAngajat &&
+                    (
+                        textCard.includes("IMPORT PONTAJ") ||
+                        textCard.includes("ANGAJATI") ||
+                        textCard.includes("LIPSA PONTAJ")
+                    )
+                ) {
+                    card.style.display = "none";
+                }
+
+            });
+
+        }
+
         // ===== AFISARE MENIU PRINCIPAL =====
         async function showMainMenu(userData) {
 
@@ -2107,6 +2139,8 @@
             await incarcaSectiiPermiseUtilizator(userData);
 
             userData.sectii_permise = sectiiPermiseUtilizator;
+
+            aplicaRestrictiiMeniu(userData);
 
             localStorage.setItem(
                 "utilizatorLogat",
