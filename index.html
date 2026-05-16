@@ -1499,7 +1499,10 @@
 
                     </div>
 
-                    <div class="menu-card">
+                    <div
+                        class="menu-card"
+                        onclick="deschideRaportLunaCurentaAngajat()"
+                    >
                         <span class="menu-icon">📅</span>
                         <span class="menu-text">Raport luna curenta</span>
                         <span class="menu-arrow">›</span>
@@ -4197,6 +4200,7 @@
         // ===== SELECTIE RAPORT =====
         let modRaportSelectat = "";
         let angajatSelectatRaport = "";
+        let raportLunaCurentaDinMeniu = false;
 
         // ===== MOD CAUTARE ANGAJAT =====
         function activeazaCautareAngajat() {
@@ -4507,6 +4511,39 @@
 
         }
 
+        // ===== DESCHIDE RAPORT LUNA CURENTA PENTRU ANGAJAT =====
+        async function deschideRaportLunaCurentaAngajat() {
+
+            if (!utilizatorLogat || !utilizatorLogat.nume) {
+
+                showMessage(
+                    "Utilizator nelogat",
+                    "error"
+                );
+
+                return;
+
+            }
+
+            raportLunaCurentaDinMeniu = true;
+            modRaportSelectat = "angajat";
+            angajatSelectatRaport = utilizatorLogat.nume;
+
+            document.querySelector(".premium-header").style.display = "none";
+            document.querySelector(".premium-line").style.display = "none";
+
+            document.getElementById("main-menu").style.display = "none";
+            document.getElementById("report-page").style.display = "none";
+
+            const lunaCurenta = new Date().getMonth() + 1;
+
+            await deschideRaportLunar(
+                lunaCurenta,
+                numeLunaComplet(lunaCurenta)
+            );
+
+        }
+
         // ===== DESCHIDE RAPORT LUNAR =====
         async function deschideRaportLunar(luna, numeLuna) {
 
@@ -4573,6 +4610,40 @@
                 .select("*")
                 .eq("nume", angajatSelectatRaport);
 
+            const primaZiLuna =
+                anCurent +
+                "-" +
+                String(luna).padStart(2, "0") +
+                "-01";
+
+            const ultimaZiLuna =
+                anCurent +
+                "-" +
+                String(luna).padStart(2, "0") +
+                "-" +
+                String(zileLuna).padStart(2, "0");
+
+            const { data: ultimPontajImportat } = await supabaseClient
+                .from("pontaj_zilnic")
+                .select("data")
+                .gte("data", primaZiLuna)
+                .lte("data", ultimaZiLuna)
+                .order("data", {
+                    ascending: false
+                })
+                .limit(1);
+
+            let ultimaZiAfisata = zileLuna;
+
+            if (
+                raportLunaCurentaDinMeniu &&
+                ultimPontajImportat &&
+                ultimPontajImportat.length &&
+                ultimPontajImportat[0].data
+            ) {
+                ultimaZiAfisata = Number(String(ultimPontajImportat[0].data).slice(8, 10));
+            }
+
             const angajat = listaAngajatiSupabase.find(function(a) {
                 return a.nume === angajatSelectatRaport;
             });
@@ -4588,7 +4659,7 @@
             let totalMinuteLucrate = 0;
             let totalZileLucratoare = 0;
 
-            for (let zi = 1; zi <= zileLuna; zi++) {
+            for (let zi = 1; zi <= ultimaZiAfisata; zi++) {
 
                 const dataText =
                     anCurent +
@@ -5126,6 +5197,20 @@
         function inchideRaportLunar() {
 
             document.getElementById("monthly-report-page").style.display = "none";
+
+            if (raportLunaCurentaDinMeniu) {
+
+                raportLunaCurentaDinMeniu = false;
+
+                document.getElementById("main-menu").style.display = "flex";
+
+                document.querySelector(".premium-header").style.display = "flex";
+                document.querySelector(".premium-line").style.display = "block";
+
+                return;
+
+            }
+
             document.getElementById("report-page").style.display = "block";
 
         }
