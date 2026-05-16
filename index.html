@@ -2110,18 +2110,30 @@
                 rol === "ANGAJAT" &&
                 acces === "ANGAJAT";
 
-            const carduri = document.querySelectorAll(".menu-card");
+            const quickTitle = document.querySelector(".quick-menu-title");
+            const quickRow = document.querySelector(".quick-menu-row");
+            const carduriMeniu = document.querySelectorAll("#main-menu > .menu-card");
 
-            carduri.forEach(function(card) {
+            if (quickTitle) {
+                quickTitle.style.display = esteAngajat ? "none" : "";
+            }
+
+            if (quickRow) {
+                quickRow.style.display = esteAngajat ? "none" : "";
+            }
+
+            carduriMeniu.forEach(function(card) {
 
                 const textCard = (card.innerText || "").toUpperCase();
+
+                card.style.display = "";
 
                 if (
                     esteAngajat &&
                     (
-                        textCard.includes("IMPORT PONTAJ") ||
-                        textCard.includes("ANGAJATI") ||
-                        textCard.includes("LIPSA PONTAJ")
+                        textCard.includes("RAPOARTE") ||
+                        textCard.includes("ZILE FĂRĂ PONTAJ") ||
+                        textCard.includes("ZILE FARA PONTAJ")
                     )
                 ) {
                     card.style.display = "none";
