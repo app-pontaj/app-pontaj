@@ -3342,6 +3342,27 @@
 
 
 
+        // ===== VERIFICARE DREPT TOTAL RAPOARTE =====
+        function areAccesTotalRapoarte() {
+
+            const rol = String(utilizatorLogat?.rol || "").trim().toUpperCase();
+            const acces = String(utilizatorLogat?.acces || "").trim().toUpperCase();
+
+            return rol === "ADMIN" || acces === "TOTAL";
+
+        }
+
+        // ===== VERIFICARE DACA ESTE ANGAJAT SIMPLU =====
+        function esteAngajatSimplu() {
+
+            const rol = String(utilizatorLogat?.rol || "").trim().toUpperCase();
+            const acces = String(utilizatorLogat?.acces || "").trim().toUpperCase();
+
+            return rol === "ANGAJAT" && acces === "ANGAJAT";
+
+        }
+
+
         // ===== DESCHIDERE PAGINA RAPORT TEST =====
         async function deschidePaginaRaportTest() {
 
@@ -3350,6 +3371,54 @@
 
             document.getElementById("main-menu").style.display = "none";
             document.getElementById("report-page").style.display = "block";
+
+            const randFiltre = document.querySelector(".report-filter-row");
+            const zonaCautare = document.getElementById("employee-search-area");
+            const inputCautare = document.getElementById("employee-search-input");
+            const rezultateCautare = document.getElementById("employee-search-results");
+
+            if (esteAngajatSimplu()) {
+
+                modRaportSelectat = "angajat";
+                angajatSelectatRaport = utilizatorLogat.nume;
+
+                if (randFiltre) {
+                    randFiltre.style.display = "none";
+                }
+
+                if (zonaCautare) {
+                    zonaCautare.style.display = "block";
+                }
+
+                if (inputCautare) {
+                    inputCautare.value = utilizatorLogat.nume;
+                    inputCautare.disabled = true;
+                }
+
+                if (rezultateCautare) {
+                    rezultateCautare.innerHTML = "";
+                }
+
+            } else {
+
+                if (randFiltre) {
+                    randFiltre.style.display = "";
+                }
+
+                if (zonaCautare) {
+                    zonaCautare.style.display = "none";
+                }
+
+                if (inputCautare) {
+                    inputCautare.value = "";
+                    inputCautare.disabled = false;
+                }
+
+                if (rezultateCautare) {
+                    rezultateCautare.innerHTML = "";
+                }
+
+            }
 
             afiseazaAniRaport();
 
@@ -3368,6 +3437,7 @@
             }
 
         }
+
 
         // ===== INCHIDERE PAGINA RAPORT TEST =====
         function inchidePaginaRaportTest() {
@@ -4215,6 +4285,17 @@
         // ===== MOD TOTI ANGAJATII =====
         function activeazaTotiAngajatii() {
 
+            if (!areAccesTotalRapoarte()) {
+
+                showMessage(
+                    "Nu ai acces la toti angajatii",
+                    "error"
+                );
+
+                return;
+
+            }
+
             modRaportSelectat = "toti";
 
             document
@@ -4230,6 +4311,7 @@
                 .style.display = "none";
 
         }
+
 
         // ===== VERIFICARE ANGAJAT PERMIS IN RAPOARTE =====
         function esteAngajatPermisInRapoarte(nume) {
@@ -4261,6 +4343,10 @@
 
         // ===== CAUTARE LIVE ANGAJATI =====
         function cautaAngajatiLive() {
+
+            if (esteAngajatSimplu()) {
+                return;
+            }
 
             const textCautare = document
                 .getElementById("employee-search-input")
@@ -4316,6 +4402,20 @@
 
         // ===== SELECTARE ANGAJAT RAPORT =====
         function selecteazaAngajatRaport(nume) {
+
+            if (
+                esteAngajatSimplu() &&
+                String(nume || "").trim() !== String(utilizatorLogat?.nume || "").trim()
+            ) {
+
+                showMessage(
+                    "Poti vedea doar pontajele tale",
+                    "error"
+                );
+
+                return;
+
+            }
 
             if (!esteAngajatPermisInRapoarte(nume)) {
 
@@ -4559,6 +4659,11 @@
 
             marcheazaLunaSelectata(luna);
 
+            if (esteAngajatSimplu()) {
+                modRaportSelectat = "angajat";
+                angajatSelectatRaport = utilizatorLogat.nume;
+            }
+
             if (modRaportSelectat === "angajat" && !angajatSelectatRaport) {
 
                 showMessage(
@@ -4571,6 +4676,17 @@
             }
 
             if (modRaportSelectat === "toti") {
+
+                if (!areAccesTotalRapoarte()) {
+
+                    showMessage(
+                        "Nu ai acces la toti angajatii",
+                        "error"
+                    );
+
+                    return;
+
+                }
 
                 await deschideRaportLunarToti(luna, numeLuna);
 
