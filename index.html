@@ -3386,6 +3386,8 @@
             document.getElementById("report-page").style.display = "none";
             document.getElementById("main-menu").style.display = "flex";
 
+            raportLunaCurentaDinMeniu = false;
+
             document.querySelector(".premium-header").style.display = "flex";
             document.querySelector(".premium-line").style.display = "block";
 
@@ -4511,7 +4513,7 @@
 
         }
 
-        // ===== DESCHIDE RAPORT LUNA CURENTA PENTRU ANGAJAT =====
+        // ===== DESCHIDE RAPOARTELE PE LUNI PENTRU ANGAJAT =====
         async function deschideRaportLunaCurentaAngajat() {
 
             if (!utilizatorLogat || !utilizatorLogat.nume) {
@@ -4533,14 +4535,33 @@
             document.querySelector(".premium-line").style.display = "none";
 
             document.getElementById("main-menu").style.display = "none";
-            document.getElementById("report-page").style.display = "none";
+            document.getElementById("report-page").style.display = "block";
 
-            const lunaCurenta = new Date().getMonth() + 1;
+            const zonaCautare = document.getElementById("employee-search-area");
+            const randFiltre = document.querySelector(".report-filter-row");
 
-            await deschideRaportLunar(
-                lunaCurenta,
-                numeLunaComplet(lunaCurenta)
-            );
+            if (zonaCautare) {
+                zonaCautare.style.display = "none";
+            }
+
+            if (randFiltre) {
+                randFiltre.style.display = "none";
+            }
+
+            afiseazaAniRaport();
+
+            if (!listaAngajatiSupabase.length) {
+
+                const { data } = await supabaseClient
+                    .from("angajati")
+                    .select("*")
+                    .order("nume", {
+                        ascending: true
+                    });
+
+                listaAngajatiSupabase = data || [];
+
+            }
 
         }
 
