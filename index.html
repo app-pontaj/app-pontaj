@@ -3672,67 +3672,8 @@ function deschideZonaAngajatNou() {
 
         }
 
-        // ===== AFISARE ANGAJATI =====
-        function afiseazaAngajati() {
 
-            const lista = document.getElementById("employees-list");
-
-            if (!listaAngajatiSupabase.length) {
-
-                lista.innerHTML = "<div class='report-empty'>Nu există angajați salvați.</div>";
-
-                return;
-
-            }
-
-            let html = "";
-
-            listaAngajatiSupabase.forEach(function(angajat, index) {
-
-                const status = angajat.activ ? "Activ" : "Inactiv";
-                const dataInactiv = angajat.data_inactiv ? " din " + angajat.data_inactiv : "";
-                const apareRapoarte = angajat.apare_in_rapoarte === false ? "Nu" : "Da";
-                const regula0700 = angajat.regula_start_0700 ? "Da" : "Nu";
-                const pauzaMasa = angajat.pauza_masa ? "Da" : "Nu";
-                const pauzaMinute = angajat.pauza_minute || 0;
-
-                html += "<div class='employee-card' onclick='editeazaAngajat(" + index + ")'>";
-                html += "<div class='employee-card-name'>" + angajat.nume + "</div>";
-                html += "<div class='employee-card-info'>";
-                html += status + dataInactiv + "<br>";
-                html += "Apare în rapoarte: " + apareRapoarte + "<br>";
-                html += "Regulă 07:00: " + regula0700 + "<br>";
-                html += "Pauză masă: " + pauzaMasa + " (" + pauzaMinute + " min)<br>";
-                html += "Secție: " + (angajat.sectie || "-") + "<br>";
-
-                const detaliiUtilizator = await obtineDetaliiUtilizatorCard(
-                    angajat.nume || ""
-                );
-
-                html += "Rol: " + (detaliiUtilizator.rol || "-") + "<br>";
-                html += "Acces: " + (detaliiUtilizator.acces || "-");
-
-                if (
-                    detaliiUtilizator.sectiiSef &&
-                    detaliiUtilizator.sectiiSef.length
-                ) {
-
-                    html += "<br>Secții șef: " +
-                        detaliiUtilizator.sectiiSef.join(", ");
-
-                }
-
-                html += "</div>";
-                html += "</div>";
-
-            });
-
-            lista.innerHTML = html;
-
-        }
-
-        
-        // ===== DETALII UTILIZATOR CARD =====
+        // ===== DETALII UTILIZATOR CARD ANGAJAT =====
         async function obtineDetaliiUtilizatorCard(numeAngajat) {
 
             const rezultat = {
@@ -3748,10 +3689,8 @@ function deschideZonaAngajatNou() {
                 .maybeSingle();
 
             if (utilizator) {
-
                 rezultat.rol = utilizator.rol || "-";
                 rezultat.acces = utilizator.acces || "-";
-
             }
 
             const { data: sectii } = await supabaseClient
@@ -3760,14 +3699,71 @@ function deschideZonaAngajatNou() {
                 .eq("nume_utilizator", numeAngajat);
 
             rezultat.sectiiSef = (sectii || []).map(function(rand) {
-                return rand.sectie;
+                return String(rand.sectie || "").trim();
+            }).filter(function(sectie) {
+                return !!sectie;
             });
 
             return rezultat;
 
         }
 
-// ===== EDITARE ANGAJAT =====
+        // ===== AFISARE ANGAJATI =====
+        async function afiseazaAngajati() {
+
+            const lista = document.getElementById("employees-list");
+
+            if (!listaAngajatiSupabase.length) {
+
+                lista.innerHTML = "<div class='report-empty'>Nu există angajați salvați.</div>";
+
+                return;
+
+            }
+
+            let html = "";
+
+            for (let index = 0; index < listaAngajatiSupabase.length; index++) {
+
+                const angajat = listaAngajatiSupabase[index];
+
+                const status = angajat.activ ? "Activ" : "Inactiv";
+                const dataInactiv = angajat.data_inactiv ? " din " + angajat.data_inactiv : "";
+                const apareRapoarte = angajat.apare_in_rapoarte === false ? "Nu" : "Da";
+                const regula0700 = angajat.regula_start_0700 ? "Da" : "Nu";
+                const pauzaMasa = angajat.pauza_masa ? "Da" : "Nu";
+                const pauzaMinute = angajat.pauza_minute || 0;
+
+                const detaliiUtilizator = await obtineDetaliiUtilizatorCard(
+                    angajat.nume || ""
+                );
+
+                const sectiiSefText =
+                    detaliiUtilizator.sectiiSef.length
+                        ? detaliiUtilizator.sectiiSef.join(", ")
+                        : "-";
+
+                html += "<div class='employee-card' onclick='editeazaAngajat(" + index + ")'>";
+                html += "<div class='employee-card-name'>" + escapeHtml(angajat.nume || "") + "</div>";
+                html += "<div class='employee-card-info'>";
+                html += status + dataInactiv + "<br>";
+                html += "Apare în rapoarte: " + apareRapoarte + "<br>";
+                html += "Regulă 07:00: " + regula0700 + "<br>";
+                html += "Pauză masă: " + pauzaMasa + " (" + pauzaMinute + " min)<br>";
+                html += "Secție: " + escapeHtml(angajat.sectie || "-") + "<br>";
+                html += "Rol: " + escapeHtml(detaliiUtilizator.rol || "-") + "<br>";
+                html += "Acces: " + escapeHtml(detaliiUtilizator.acces || "-") + "<br>";
+                html += "Secții șef: " + escapeHtml(sectiiSefText);
+                html += "</div>";
+                html += "</div>";
+
+            }
+
+            lista.innerHTML = html;
+
+        }
+
+        // ===== EDITARE ANGAJAT =====
         async function editeazaAngajat(index) {
 
             const angajat = listaAngajatiSupabase[index];
