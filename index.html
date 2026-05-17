@@ -1387,6 +1387,74 @@
                 0 0 10px rgba(255,23,68,0.42) !important;
         }
 
+
+        /* ===== ANGAJATI - COMPACT SI CLAR ===== */
+        .employees-page {
+            padding: 8px 12px 10px !important;
+        }
+
+        .employees-header {
+            min-height: 76px !important;
+            padding-bottom: 8px !important;
+        }
+
+        .employees-title {
+            font-size: 20px !important;
+        }
+
+        .employees-subtitle {
+            font-size: 11px !important;
+            margin-top: 2px !important;
+        }
+
+        .employee-section-title {
+            font-size: 14px !important;
+            margin-bottom: 8px !important;
+        }
+
+        .employee-form {
+            padding: 10px !important;
+            margin: 10px 0 10px !important;
+            border-radius: 16px !important;
+        }
+
+        .employee-input {
+            min-height: 34px !important;
+            margin-bottom: 7px !important;
+            font-size: 12px !important;
+            border-radius: 11px !important;
+        }
+
+        .employee-row {
+            margin: 5px 0 !important;
+            font-size: 11px !important;
+            gap: 8px !important;
+        }
+
+        .employee-row .employee-input {
+            width: 145px !important;
+            min-height: 32px !important;
+            margin-bottom: 0 !important;
+            font-size: 11px !important;
+            padding: 0 8px !important;
+        }
+
+        .employee-actions {
+            margin-top: 10px !important;
+            gap: 8px !important;
+        }
+
+        .employee-button {
+            min-height: 38px !important;
+            border-radius: 14px !important;
+            font-size: 13px !important;
+        }
+
+        #angajat-data-inactiv-wrap {
+            display: none;
+        }
+
+
 </style>
 
 </head>
@@ -1902,39 +1970,34 @@
                             </select>
 
                             <div class="employee-row">
-                                <span>Activ</span>
-                                <input
-                                    type="checkbox"
-                                    id="angajat-activ"
-                                    checked
-                                >
-                            </div>
-
-                            <input
-                                type="date"
-                                id="angajat-data-inactiv"
-                                class="employee-input"
-                                title="Data inactivare"
-                            >
-
-                            <div class="employee-row">
-                                <span>Apare în rapoarte</span>
-                                <input
-                                    type="checkbox"
-                                    id="angajat-apare-rapoarte"
-                                    checked
-                                >
-                            </div>
-
-                            <div class="employee-row">
                                 <span>Status angajat</span>
                                 <select
                                     id="angajat-status"
                                     class="employee-input"
-                                    style="margin-bottom:0;width:160px;min-height:34px;"
+                                    onchange="actualizeazaCampDataInactiv()"
                                 >
                                     <option value="Activ">Activ</option>
                                     <option value="Inactiv">Inactiv</option>
+                                </select>
+                            </div>
+
+                            <div id="angajat-data-inactiv-wrap">
+                                <input
+                                    type="date"
+                                    id="angajat-data-inactiv"
+                                    class="employee-input"
+                                    title="Inactiv începând cu data"
+                                >
+                            </div>
+
+                            <div class="employee-row">
+                                <span>Apare în rapoarte</span>
+                                <select
+                                    id="angajat-apare-rapoarte"
+                                    class="employee-input"
+                                >
+                                    <option value="Da">Da</option>
+                                    <option value="Nu">Nu</option>
                                 </select>
                             </div>
 
@@ -1943,7 +2006,6 @@
                                 <select
                                     id="angajat-apare-pontaj"
                                     class="employee-input"
-                                    style="margin-bottom:0;width:160px;min-height:34px;"
                                 >
                                     <option value="Da">Da</option>
                                     <option value="Nu">Nu</option>
@@ -1955,7 +2017,6 @@
                                 <select
                                     id="angajat-rol"
                                     class="employee-input"
-                                    style="margin-bottom:0;width:160px;min-height:34px;"
                                 >
                                     <option value="Angajat">Angajat</option>
                                     <option value="Sef departament">Sef departament</option>
@@ -1969,7 +2030,6 @@
                                 <select
                                     id="angajat-acces"
                                     class="employee-input"
-                                    style="margin-bottom:0;width:160px;min-height:34px;"
                                 >
                                     <option value="Personal">Personal</option>
                                     <option value="Departament">Departament</option>
@@ -1995,12 +2055,9 @@
                             </div>
 
                             <input
-                                type="number"
+                                type="hidden"
                                 id="angajat-pauza-minute"
-                                class="employee-input"
-                                placeholder="Minute pauză masă"
-                                min="0"
-                                value="0"
+                                value="30"
                             >
 
                             <div class="employee-actions">
@@ -3407,15 +3464,17 @@
                 const apareRapoarte = angajat.apare_in_rapoarte === false ? "Nu" : "Da";
                 const regula0700 = angajat.regula_start_0700 ? "Da" : "Nu";
                 const pauzaMasa = angajat.pauza_masa ? "Da" : "Nu";
-                const pauzaMinute = angajat.pauza_minute || 0;
+                const rolAngajat = angajat.rol || "-";
+                const accesAngajat = angajat.acces || "-";
 
                 html += "<div class='employee-card' onclick='editeazaAngajat(" + index + ")'>";
                 html += "<div class='employee-card-name'>" + angajat.nume + "</div>";
                 html += "<div class='employee-card-info'>";
                 html += status + dataInactiv + "<br>";
                 html += "Apare în rapoarte: " + apareRapoarte + "<br>";
+                html += "Rol: " + rolAngajat + " · Acces: " + accesAngajat + "<br>";
                 html += "Regulă 07:00: " + regula0700 + "<br>";
-                html += "Pauză masă: " + pauzaMasa + " (" + pauzaMinute + " min)<br>";
+                html += "Pauză masă 30 min: " + pauzaMasa + "<br>";
                 html += "Secție: " + (angajat.sectie || "-");
                 html += "</div>";
                 html += "</div>";
@@ -3440,12 +3499,16 @@
             }
 
             document.getElementById("angajat-sectie").value = angajat.sectie || "";
-            document.getElementById("angajat-activ").checked = !!angajat.activ;
+            document.getElementById("angajat-status").value = angajat.activ === false ? "Inactiv" : "Activ";
             document.getElementById("angajat-data-inactiv").value = angajat.data_inactiv || "";
-            document.getElementById("angajat-apare-rapoarte").checked = angajat.apare_in_rapoarte !== false;
+            document.getElementById("angajat-apare-rapoarte").value = angajat.apare_in_rapoarte === false ? "Nu" : "Da";
+            document.getElementById("angajat-apare-pontaj").value = "Da";
+            document.getElementById("angajat-rol").value = angajat.rol || "Angajat";
+            document.getElementById("angajat-acces").value = angajat.acces || "Personal";
             document.getElementById("angajat-regula-0700").checked = !!angajat.regula_start_0700;
             document.getElementById("angajat-pauza-masa").checked = !!angajat.pauza_masa;
-            document.getElementById("angajat-pauza-minute").value = angajat.pauza_minute || 0;
+            document.getElementById("angajat-pauza-minute").value = 30;
+            actualizeazaCampDataInactiv();
 
             showMessage(
                 "Angajat încărcat pentru editare",
@@ -3454,18 +3517,44 @@
 
         }
 
+
+        // ===== AFISARE DATA INACTIVARE DOAR PENTRU STATUS INACTIV =====
+        function actualizeazaCampDataInactiv() {
+
+            const status = document.getElementById("angajat-status");
+            const zonaData = document.getElementById("angajat-data-inactiv-wrap");
+            const dataInactiv = document.getElementById("angajat-data-inactiv");
+
+            if (!status || !zonaData || !dataInactiv) {
+                return;
+            }
+
+            if (status.value === "Inactiv") {
+                zonaData.style.display = "block";
+            } else {
+                zonaData.style.display = "none";
+                dataInactiv.value = "";
+            }
+
+        }
+
+
         // ===== RESETARE FORMULAR ANGAJAT =====
         function reseteazaFormularAngajat() {
 
             document.getElementById("angajat-id").value = "";
             document.getElementById("angajat-nume").value = "";
             document.getElementById("angajat-sectie").value = "";
-            document.getElementById("angajat-activ").checked = true;
+            document.getElementById("angajat-status").value = "Activ";
             document.getElementById("angajat-data-inactiv").value = "";
-            document.getElementById("angajat-apare-rapoarte").checked = true;
+            document.getElementById("angajat-apare-rapoarte").value = "Da";
+            document.getElementById("angajat-apare-pontaj").value = "Da";
+            document.getElementById("angajat-rol").value = "Angajat";
+            document.getElementById("angajat-acces").value = "Personal";
             document.getElementById("angajat-regula-0700").checked = false;
             document.getElementById("angajat-pauza-masa").checked = false;
-            document.getElementById("angajat-pauza-minute").value = 0;
+            document.getElementById("angajat-pauza-minute").value = 30;
+            actualizeazaCampDataInactiv();
 
         }
 
@@ -3482,12 +3571,15 @@
                 const id = document.getElementById("angajat-id").value;
                 const nume = document.getElementById("angajat-nume").value.trim();
                 const sectie = document.getElementById("angajat-sectie").value.trim();
-                const activ = document.getElementById("angajat-activ").checked;
-                const dataInactiv = document.getElementById("angajat-data-inactiv").value || null;
-                const apareRapoarte = document.getElementById("angajat-apare-rapoarte").checked;
+                const statusAngajat = document.getElementById("angajat-status").value;
+                const activ = statusAngajat !== "Inactiv";
+                const dataInactiv = activ ? null : (document.getElementById("angajat-data-inactiv").value || null);
+                const apareRapoarte = document.getElementById("angajat-apare-rapoarte").value === "Da";
+                const rolAngajat = document.getElementById("angajat-rol").value;
+                const accesAngajat = document.getElementById("angajat-acces").value;
                 const regula0700 = document.getElementById("angajat-regula-0700").checked;
                 const pauzaMasa = document.getElementById("angajat-pauza-masa").checked;
-                const pauzaMinute = parseInt(document.getElementById("angajat-pauza-minute").value || "0", 10);
+                const pauzaMinute = pauzaMasa ? 30 : 0;
 
                 if (!nume) {
 
@@ -3514,7 +3606,7 @@
                 if (!activ && !dataInactiv) {
 
                     showMessage(
-                        "Alege data inactivării",
+                        "Alege data de la care angajatul devine inactiv",
                         "error"
                     );
 
@@ -3528,6 +3620,8 @@
                     activ: activ,
                     data_inactiv: dataInactiv,
                     apare_in_rapoarte: apareRapoarte,
+                    rol: rolAngajat,
+                    acces: accesAngajat,
                     regula_start_0700: regula0700,
                     pauza_masa: pauzaMasa,
                     pauza_minute: pauzaMinute
