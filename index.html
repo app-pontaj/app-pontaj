@@ -1693,7 +1693,6 @@
 
                 </div>
 
-                
                 <!-- ===== PAGINA ANGAJATI ===== -->
                 <div
                     class="employees-page"
@@ -1721,128 +1720,164 @@
                         </div>
 
                         <div class="employees-subtitle">
-                            Administrare angajați
+                            Fișe angajați și reguli de calcul
                         </div>
 
                     </div>
 
-                    <div class="employee-admin-section">
+                    <div class="employee-form">
 
-                        <div class="employee-admin-card">
+                        <div class="report-card" style="margin-bottom:20px;">
+                            <div class="report-name" style="margin-bottom:10px;">
+                                Angajat nou
+                            </div>
 
-                            <div class="employee-admin-title">
+                            <div class="report-date">
+                                Creează fișă nouă angajat
+                            </div>
+
+                            <button
+                                class="employee-button"
+                                style="margin-top:18px;width:100%;"
+                                onclick="document.getElementById('employee-new-area').style.display='block';"
+                            >
+                                Deschide formular
+                            </button>
+                        </div>
+
+                        <div
+                            id="employee-new-area"
+                            style="display:none;"
+                        >
+
+                            <input
+                                type="hidden"
+                                id="angajat-id"
+                            >
+
+                            <input
+                                type="text"
+                                id="angajat-nume"
+                                class="employee-input"
+                                placeholder="Nume angajat"
+                            >
+
+                            <input
+                                type="text"
+                                id="angajat-sectie"
+                                class="employee-input"
+                                placeholder="Secție"
+                            >
+
+                            <div class="employee-row">
+                                <span>Activ</span>
+                                <input
+                                    type="checkbox"
+                                    id="angajat-activ"
+                                    checked
+                                >
+                            </div>
+
+                            <input
+                                type="date"
+                                id="angajat-data-inactiv"
+                                class="employee-input"
+                                title="Data inactivare"
+                            >
+
+                            <div class="employee-row">
+                                <span>Apare în rapoarte</span>
+                                <input
+                                    type="checkbox"
+                                    id="angajat-apare-rapoarte"
+                                    checked
+                                >
+                            </div>
+
+                            <div class="employee-row">
+                                <span>Start înainte de 07:00 devine 07:00</span>
+                                <input
+                                    type="checkbox"
+                                    id="angajat-regula-0700"
+                                >
+                            </div>
+
+                            <div class="employee-row">
+                                <span>Se scade pauza de masă</span>
+                                <input
+                                    type="checkbox"
+                                    id="angajat-pauza-masa"
+                                >
+                            </div>
+
+                            <input
+                                type="number"
+                                id="angajat-pauza-minute"
+                                class="employee-input"
+                                placeholder="Minute pauză masă"
+                                min="0"
+                                value="0"
+                            >
+
+                            <div class="employee-actions">
+                                <button
+                                    class="employee-button"
+                                    onclick="reseteazaFormularAngajat()"
+                                >
+                                    Nou
+                                </button>
+
+                                <button
+                                    class="employee-button"
+                                    onclick="salveazaAngajat()"
+                                >
+                                    Salvează
+                                </button>
+                            </div>
+
+                        </div>
+
+                        <div class="report-card" style="margin-top:20px;margin-bottom:20px;">
+                            <div class="report-name" style="margin-bottom:10px;">
                                 Caută angajat
+                            </div>
+
+                            <div class="report-date">
+                                Selectează și deschide fișa unui angajat
                             </div>
 
                             <select
                                 class="employee-input"
                                 id="employee-search-select"
+                                style="margin-top:18px;"
                             >
-                                <option value="">
-                                    Selectează angajat
-                                </option>
+                                <option>Selectează angajat</option>
                             </select>
-
-                            <button
-                                class="employee-save-button"
-                            >
-                                Deschide fișa
-                            </button>
 
                         </div>
 
-                        <div class="employee-admin-card">
-
-                            <div class="employee-admin-title">
+                        <div class="report-card" style="margin-bottom:20px;">
+                            <div class="report-name" style="margin-bottom:10px;">
                                 Toți angajații
                             </div>
 
-                            <div
-                                class="employees-list"
-                                id="employees-list"
-                            >
+                            <div class="report-date">
+                                Afișează lista completă cu toate fișele
                             </div>
-
                         </div>
-
-                        <div class="employee-admin-card">
-
-                            <div class="employee-admin-title">
-                                Angajat nou
-                            </div>
-
-                            <div class="employee-form">
-
-                                <input
-                                    type="text"
-                                    id="angajat-nume"
-                                    class="employee-input"
-                                    placeholder="Nume angajat"
-                                >
-
-                                <input
-                                    type="text"
-                                    id="angajat-sectie"
-                                    class="employee-input"
-                                    placeholder="Secție"
-                                >
-
-                                <div class="employee-row">
-                                    <span>Activ</span>
-                                    <input
-                                        type="checkbox"
-                                        id="angajat-activ"
-                                        checked
-                                    >
-                                </div>
-
-                                <div class="employee-row">
-                                    <span>Apare în rapoarte</span>
-                                    <input
-                                        type="checkbox"
-                                        id="angajat-apare-rapoarte"
-                                        checked
-                                    >
-                                </div>
-
-                                <div class="employee-row">
-                                    <span>Regula 07:00</span>
-                                    <input
-                                        type="checkbox"
-                                        id="angajat-regula-0700"
-                                    >
-                                </div>
-
-                                <div class="employee-row">
-                                    <span>Pauză masă</span>
-                                    <input
-                                        type="checkbox"
-                                        id="angajat-pauza-masa"
-                                    >
-                                </div>
-
-                                <input
-                                    type="number"
-                                    id="angajat-pauza-minute"
-                                    class="employee-input"
-                                    placeholder="Minute pauză"
-                                >
-
-                                <button
-                                    class="employee-save-button"
-                                >
-                                    Salvează angajat
-                                </button>
-
-                            </div>
-
                         </div>
 
                     </div>
 
+                    <div
+                        class="employees-list"
+                        id="employees-list"
+                    >
+                    </div>
+
                 </div>
 
-<!-- ===== PAGINA RAPORT TEST ===== -->
+                <!-- ===== PAGINA RAPORT TEST ===== -->
                 <div
                     class="report-page"
                     id="report-page"
