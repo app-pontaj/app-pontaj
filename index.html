@@ -1503,7 +1503,7 @@
                         onclick="deschidePaginaRaportTest()"
                     >
                         <span class="menu-icon">📊</span>
-                        <span class="menu-text style="color:#d4af37;"" style="color:#d4af37;">Rapoarte</span>
+                        <span class="menu-text" style="color:#d4af37;">Rapoarte</span>
                         <span class="menu-arrow">›</span>
                     </div>
 
@@ -2775,22 +2775,24 @@
 
             const { data, error } = await supabaseClient
                 .from("angajati")
-                .select("id,apare_in_rapoarte,activ");
+                .select("id,nume,sectie,apare_in_rapoarte,activ")
+                .order("nume", {
+                    ascending: true
+                });
 
             if (error) {
                 cifra.innerHTML = "!";
                 return;
             }
 
-            const totalAngajati = listaAngajatiSupabase.filter(function(angajat) {
+            const totalAngajati = (data || []).filter(function(angajat) {
 
                 if (angajat.apare_in_rapoarte === false) {
                     return false;
                 }
 
-                return angajatInSectiiPermise(angajat);
-
-            }).length;
+                if (angajat.activ === false) {
+                    return false;
                 }
 
                 return angajatInSectiiPermise(angajat);
@@ -3859,10 +3861,6 @@
                 }
 
                 if (angajat.apare_in_rapoarte === false) {
-                    return;
-                }
-
-                if (!angajatInSectiiPermise(angajat)) {
                     return;
                 }
 
