@@ -660,6 +660,13 @@
             padding-left: 5px;
         }
 
+        .monthly-interval-clickable {
+            cursor: pointer;
+            text-decoration: underline;
+            text-decoration-color: rgba(212,175,55,0.65);
+            text-underline-offset: 2px;
+        }
+
         .monthly-hours-cell {
             color: #d4af37;
             font-size: 11px;
@@ -2366,6 +2373,15 @@
         function closeMessage() {
 
             document.getElementById("custom-message").style.display = "none";
+
+            const button = document.getElementById("message-button");
+
+            if (button) {
+                button.innerHTML = "OK";
+                button.onclick = closeMessage;
+            }
+
+            pontajDeStersDinRaport = null;
 
         }
 
@@ -5937,7 +5953,11 @@ function deschideZonaAngajatNou() {
                     }
 
                     html += "<div class='monthly-value-cell monthly-normal'>";
-                    html += "<div class='monthly-interval-cell'>" +
+                    html += "<div class='monthly-interval-cell monthly-interval-clickable' onclick=\"cereStergerePontajZi('" +
+                        escapeHtml(angajatSelectatRaport).replace(/'/g, "\\'") +
+                        "','" +
+                        dataText +
+                        "')\">" +
                         intervalPontat +
                         "</div>";
                     html += "<div class='monthly-hours-cell'>" +
@@ -6032,6 +6052,83 @@ function deschideZonaAngajatNou() {
             html += "</div>";
 
             grid.innerHTML = html;
+
+        }
+
+
+        // ===== STERGERE PONTAJ DIN RAPORT LUNAR =====
+        let pontajDeStersDinRaport = null;
+
+        function cereStergerePontajZi(numeAngajat, dataText) {
+
+            pontajDeStersDinRaport = {
+                nume: numeAngajat,
+                data: dataText
+            };
+
+            const box = document.getElementById("custom-message");
+            const messageText = document.getElementById("message-text");
+            const icon = document.getElementById("message-icon");
+            const button = document.getElementById("message-button");
+
+            box.style.display = "block";
+
+            icon.innerHTML = "!";
+            messageText.className = "custom-message-text error-text";
+            messageText.innerHTML =
+                "Ștergi pontajul din această zi?<br>Ziua va deveni FARA PONTAJ.";
+
+            button.className = "message-button error-button";
+            button.innerHTML = "ȘTERGE";
+            button.onclick = confirmaStergerePontajZi;
+
+        }
+
+        async function confirmaStergerePontajZi() {
+
+            if (!pontajDeStersDinRaport) {
+                closeMessage();
+                return;
+            }
+
+            const nume = pontajDeStersDinRaport.nume;
+            const dataText = pontajDeStersDinRaport.data;
+
+            const { error } = await supabaseClient
+                .from("pontaj_zilnic")
+                .delete()
+                .eq("nume", nume)
+                .eq("data", dataText);
+
+            pontajDeStersDinRaport = null;
+
+            const button = document.getElementById("message-button");
+
+            button.innerHTML = "OK";
+            button.onclick = closeMessage;
+
+            if (error) {
+
+                showMessage(
+                    "Eroare ștergere pontaj",
+                    "error"
+                );
+
+                return;
+
+            }
+
+            showMessage(
+                "Pontaj șters. Ziua apare acum fără pontaj.",
+                "success"
+            );
+
+            await deschideRaportLunar(
+                Number(document.querySelector(".month-card.active-month")?.dataset?.luna || new Date().getMonth() + 1),
+                ""
+            );
+
+            incarcaContorZileFaraPontaj();
 
         }
 
