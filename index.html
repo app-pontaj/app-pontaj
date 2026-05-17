@@ -2112,7 +2112,29 @@
             }
 
             if (quickRow) {
-                quickRow.style.display = esteAngajat ? "none" : "";
+
+                if (esteAngajat) {
+                    quickRow.style.display = "none";
+                } else {
+                    quickRow.style.display = "";
+                }
+
+                if (esteSefDepartament()) {
+
+                    quickRow.querySelectorAll(".quick-menu-card").forEach(function(card) {
+
+                        const textCard = (card.innerText || "").toUpperCase();
+
+                        if (textCard.includes("IMPORT")) {
+                            card.style.display = "none";
+                        } else {
+                            card.style.display = "";
+                        }
+
+                    });
+
+                }
+
             }
 
             carduriMeniu.forEach(function(card) {
@@ -4764,7 +4786,10 @@
 
             if (modRaportSelectat === "toti") {
 
-                if (!areAccesTotalRapoarte()) {
+                if (
+                    !areAccesTotalRapoarte() &&
+                    !esteSefDepartament()
+                ) {
 
                     showMessage(
                         "Nu ai acces la toti angajatii",
