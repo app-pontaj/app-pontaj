@@ -667,6 +667,193 @@
             text-underline-offset: 2px;
         }
 
+
+        /* ===== RAPORT DIFERENTE 2026 ===== */
+        .year-diff-page {
+            width: 100%;
+            height: 100%;
+            padding: 8px 14px 10px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            background: #050505;
+            display: none;
+            box-sizing: border-box;
+        }
+
+        .year-diff-header {
+            position: sticky;
+            top: 0;
+            background: #050505;
+            padding: 0 0 10px 0;
+            z-index: 999;
+            border-bottom: 1px solid rgba(212,175,55,0.70);
+            box-shadow: 0 12px 18px #050505;
+        }
+
+        .year-diff-header::before {
+            content: "";
+            position: absolute;
+            left: -14px;
+            right: -14px;
+            top: -20px;
+            height: 28px;
+            background: #050505;
+            z-index: -1;
+        }
+
+        .year-diff-title {
+            color: #ffffff;
+            font-size: 17px;
+            font-weight: 900;
+            text-align: center;
+            line-height: 1.05;
+            font-family: 'Montserrat', Arial, sans-serif;
+        }
+
+        .year-diff-subtitle {
+            color: #d4af37;
+            font-size: 11px;
+            font-weight: 800;
+            text-align: center;
+            margin-top: 4px;
+            font-family: 'Montserrat', Arial, sans-serif;
+        }
+
+        .year-diff-filter-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .year-diff-filter-button {
+            min-height: 38px;
+            border-radius: 10px;
+            border: 1.5px solid #d4af37;
+            background: linear-gradient(145deg, #141414 0%, #050505 100%);
+            color: #d4af37;
+            font-size: 12px;
+            font-weight: 900;
+            font-family: 'Montserrat', Arial, sans-serif;
+            cursor: pointer;
+        }
+
+        .year-diff-filter-button.active {
+            background: linear-gradient(145deg, #ffe27a 0%, #d6a72d 56%, #b98208 100%);
+            color: #050505;
+        }
+
+        .year-diff-select-area {
+            display: none;
+            margin-top: 10px;
+        }
+
+        .year-diff-select {
+            width: 100%;
+            min-height: 40px;
+            border-radius: 12px;
+            border: 1.5px solid #d4af37;
+            background: #111111;
+            color: #ffffff;
+            padding: 0 12px;
+            font-size: 13px;
+            font-weight: 800;
+            font-family: 'Montserrat', Arial, sans-serif;
+            outline: none;
+        }
+
+        .year-diff-table-wrap {
+            width: 100%;
+            overflow: auto;
+            margin-top: 12px;
+            border: 1px solid rgba(212,175,55,0.88);
+            border-radius: 0 12px 12px 12px;
+            background: #050505;
+            box-shadow: 0 8px 18px rgba(0,0,0,0.55);
+        }
+
+        .year-diff-table {
+            border-collapse: separate;
+            border-spacing: 0;
+            min-width: 720px;
+            width: 100%;
+            font-family: 'Montserrat', Arial, sans-serif;
+            font-size: 9px;
+            font-weight: 900;
+            color: #ffffff;
+        }
+
+        .year-diff-table th,
+        .year-diff-table td {
+            min-width: 46px;
+            height: 34px;
+            border-right: 1px solid rgba(212,175,55,0.55);
+            border-bottom: 1px solid rgba(212,175,55,0.35);
+            text-align: center;
+            vertical-align: middle;
+            padding: 2px 4px;
+            white-space: nowrap;
+            background: rgba(255,255,255,0.05);
+        }
+
+        .year-diff-table th {
+            position: sticky;
+            top: 0;
+            z-index: 3;
+            background: #050505;
+            color: #d4af37;
+            line-height: 1.2;
+        }
+
+        .year-diff-name-head {
+            position: sticky;
+            left: 0;
+            z-index: 5 !important;
+            min-width: 115px !important;
+            text-align: left !important;
+            background: #050505 !important;
+        }
+
+        .year-diff-name-cell {
+            position: sticky;
+            left: 0;
+            z-index: 2;
+            min-width: 115px !important;
+            max-width: 115px !important;
+            text-align: left !important;
+            background: linear-gradient(145deg, #ffe27a 0%, #d6a72d 56%, #b98208 100%) !important;
+            color: #050505 !important;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .year-diff-total-head,
+        .year-diff-total-cell {
+            min-width: 64px !important;
+            font-weight: 900;
+        }
+
+        .year-diff-positive {
+            color: #00d26a !important;
+        }
+
+        .year-diff-negative {
+            color: #ff3333 !important;
+        }
+
+        .year-diff-empty {
+            color: transparent !important;
+        }
+
+        .year-diff-loading {
+            color: #d4af37;
+            font-size: 13px;
+            font-weight: 900;
+            text-align: center;
+            padding: 26px 0;
+            font-family: 'Montserrat', Arial, sans-serif;
+        }
+
         .monthly-hours-cell {
             color: #d4af37;
             font-size: 11px;
@@ -1654,6 +1841,16 @@
                         <span class="menu-arrow">›</span>
                     </div>
 
+
+                    <div
+                        class="menu-card"
+                        onclick="deschidePaginaRaportDiferente2026()"
+                    >
+                        <span class="menu-icon">∑</span>
+                        <span class="menu-text" style="color:#d4af37;">Raport diferențe 2026</span>
+                        <span class="menu-arrow">›</span>
+                    </div>
+
                     <!-- ===== SELECTOR FISIER PONTAJ ===== -->
                     <input
                         type="file"
@@ -1704,6 +1901,76 @@
 
                 </div>
 
+
+
+
+                <!-- ===== PAGINA RAPORT DIFERENTE 2026 ===== -->
+                <div
+                    class="year-diff-page"
+                    id="year-diff-page"
+                    style="display:none;"
+                >
+
+                    <div class="year-diff-header">
+
+                        <div class="report-top-row">
+                            <button
+                                class="report-back-modern"
+                                onclick="inchidePaginaRaportDiferente2026()"
+                            >
+                                ‹ BACK
+                            </button>
+
+                            <div>
+                                <div class="year-diff-title">
+                                    Raport diferențe 2026
+                                </div>
+
+                                <div class="year-diff-subtitle">
+                                    Ore lucrate - ore lucrătoare
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="year-diff-filter-row">
+                            <button
+                                class="year-diff-filter-button"
+                                id="year-diff-filter-angajat"
+                                onclick="seteazaModRaportDiferente2026('angajat')"
+                            >
+                                Angajat
+                            </button>
+
+                            <button
+                                class="year-diff-filter-button active"
+                                id="year-diff-filter-toti"
+                                onclick="seteazaModRaportDiferente2026('toti')"
+                            >
+                                Toți angajații
+                            </button>
+                        </div>
+
+                        <div
+                            class="year-diff-select-area"
+                            id="year-diff-select-area"
+                        >
+                            <select
+                                class="year-diff-select"
+                                id="year-diff-select"
+                                onchange="schimbaAngajatRaportDiferente2026()"
+                            >
+                            </select>
+                        </div>
+
+                    </div>
+
+                    <div
+                        class="year-diff-table-wrap"
+                        id="year-diff-table-wrap"
+                    >
+                    </div>
+
+                </div>
 
 
                 <!-- ===== PAGINA RAPORT ZILE FARA PONTAJ ===== -->
@@ -4875,6 +5142,454 @@ function deschideZonaAngajatNou() {
 
         }
 
+
+
+        // ===== RAPORT DIFERENTE 2026 =====
+        let modRaportDiferente2026 = "toti";
+        let angajatRaportDiferente2026 = "";
+
+        const LUNI_RAPORT_DIFERENTE = [
+            { numar: 1, text: "Ian" },
+            { numar: 2, text: "Feb" },
+            { numar: 3, text: "Mar" },
+            { numar: 4, text: "Apr" },
+            { numar: 5, text: "Mai" },
+            { numar: 6, text: "Iun" },
+            { numar: 7, text: "Iul" },
+            { numar: 8, text: "Aug" },
+            { numar: 9, text: "Sep" },
+            { numar: 10, text: "Oct" },
+            { numar: 11, text: "Nov" },
+            { numar: 12, text: "Dec" }
+        ];
+
+        async function deschidePaginaRaportDiferente2026() {
+
+            document.querySelector(".premium-header").style.display = "none";
+            document.querySelector(".premium-line").style.display = "none";
+
+            document.getElementById("main-menu").style.display = "none";
+            document.getElementById("year-diff-page").style.display = "block";
+
+            if (!listaAngajatiSupabase.length) {
+
+                const { data } = await supabaseClient
+                    .from("angajati")
+                    .select("*")
+                    .order("nume", {
+                        ascending: true
+                    });
+
+                listaAngajatiSupabase = data || [];
+
+            }
+
+            if (esteAngajatSimplu()) {
+                modRaportDiferente2026 = "angajat";
+                angajatRaportDiferente2026 = utilizatorLogat.nume;
+            } else {
+                modRaportDiferente2026 = "toti";
+                angajatRaportDiferente2026 = "";
+            }
+
+            pregatesteSelectAngajatRaportDiferente2026();
+            marcheazaButoaneRaportDiferente2026();
+
+            await afiseazaRaportDiferente2026();
+
+        }
+
+        function inchidePaginaRaportDiferente2026() {
+
+            document.getElementById("year-diff-page").style.display = "none";
+            document.getElementById("main-menu").style.display = "flex";
+
+            document.querySelector(".premium-header").style.display = "flex";
+            document.querySelector(".premium-line").style.display = "block";
+
+        }
+
+        async function seteazaModRaportDiferente2026(mod) {
+
+            if (
+                mod === "toti" &&
+                !areAccesTotalRapoarte() &&
+                !esteSefDepartament()
+            ) {
+
+                showMessage(
+                    "Nu ai acces la toți angajații",
+                    "error"
+                );
+
+                return;
+
+            }
+
+            modRaportDiferente2026 = mod;
+
+            if (mod === "toti") {
+                angajatRaportDiferente2026 = "";
+            }
+
+            if (
+                mod === "angajat" &&
+                esteAngajatSimplu()
+            ) {
+                angajatRaportDiferente2026 = utilizatorLogat.nume;
+            }
+
+            pregatesteSelectAngajatRaportDiferente2026();
+            marcheazaButoaneRaportDiferente2026();
+
+            await afiseazaRaportDiferente2026();
+
+        }
+
+        function marcheazaButoaneRaportDiferente2026() {
+
+            const btnAngajat = document.getElementById("year-diff-filter-angajat");
+            const btnToti = document.getElementById("year-diff-filter-toti");
+            const zonaSelect = document.getElementById("year-diff-select-area");
+
+            if (btnAngajat) {
+                btnAngajat.classList.toggle("active", modRaportDiferente2026 === "angajat");
+            }
+
+            if (btnToti) {
+                btnToti.classList.toggle("active", modRaportDiferente2026 === "toti");
+                btnToti.style.display = esteAngajatSimplu() ? "none" : "";
+            }
+
+            if (zonaSelect) {
+                zonaSelect.style.display =
+                    modRaportDiferente2026 === "angajat" && !esteAngajatSimplu()
+                        ? "block"
+                        : "none";
+            }
+
+        }
+
+        function pregatesteSelectAngajatRaportDiferente2026() {
+
+            const select = document.getElementById("year-diff-select");
+
+            if (!select) {
+                return;
+            }
+
+            let html = "<option value=''>Alege angajat</option>";
+
+            listaAngajatiSupabase
+                .filter(function(angajat) {
+                    return (
+                        angajat.apare_in_rapoarte !== false &&
+                        angajatInSectiiPermise(angajat)
+                    );
+                })
+                .forEach(function(angajat) {
+
+                    const nume = String(angajat.nume || "").trim();
+
+                    if (!nume) {
+                        return;
+                    }
+
+                    html +=
+                        "<option value='" +
+                        escapeHtml(nume) +
+                        "'>" +
+                        escapeHtml(nume) +
+                        "</option>";
+
+                });
+
+            select.innerHTML = html;
+
+            if (angajatRaportDiferente2026) {
+                select.value = angajatRaportDiferente2026;
+            }
+
+        }
+
+        async function schimbaAngajatRaportDiferente2026() {
+
+            const select = document.getElementById("year-diff-select");
+
+            angajatRaportDiferente2026 = select ? select.value : "";
+
+            await afiseazaRaportDiferente2026();
+
+        }
+
+        function diferentaMinuteLuna2026(angajat, pontajeLuna, luna) {
+
+            if (!pontajeLuna.length) {
+                return null;
+            }
+
+            let totalMinuteLucrate = 0;
+            let totalZileLucratoare = 0;
+            const an = 2026;
+            const zileLuna = new Date(an, luna, 0).getDate();
+
+            for (let zi = 1; zi <= zileLuna; zi++) {
+
+                const dataText =
+                    an +
+                    "-" +
+                    String(luna).padStart(2, "0") +
+                    "-" +
+                    String(zi).padStart(2, "0");
+
+                const dataObj = new Date(an, luna - 1, zi);
+
+                const weekend =
+                    dataObj.getDay() === 0 ||
+                    dataObj.getDay() === 6;
+
+                const sarbatoare = esteZiLiberaLegala(dataText);
+
+                if (!weekend && !sarbatoare) {
+                    totalZileLucratoare++;
+                }
+
+                const pontaj = pontajeLuna.find(function(p) {
+                    return p.data === dataText;
+                });
+
+                if (!pontaj) {
+                    continue;
+                }
+
+                if (pontaj.status_corectie) {
+
+                    if (
+                        pontaj.status_corectie === "C.O" ||
+                        pontaj.status_corectie === "Lucru la distanță"
+                    ) {
+                        totalMinuteLucrate += 480;
+                    }
+
+                    if (pontaj.status_corectie === "Lipsă card") {
+
+                        const oreCorectie = calculeazaOreNete(
+                            pontaj.ora_intrare_manual,
+                            pontaj.ora_iesire_manual,
+                            angajat?.regula_start_0700,
+                            angajat?.pauza_masa,
+                            angajat?.pauza_minute
+                        );
+
+                        if (
+                            oreCorectie &&
+                            !oreCorectie.startsWith("-")
+                        ) {
+                            totalMinuteLucrate += transformaOraMinute(oreCorectie);
+                        }
+
+                    }
+
+                    continue;
+
+                }
+
+                if (
+                    pontaj.ora_intrare &&
+                    pontaj.ora_iesire
+                ) {
+
+                    const oreNete = calculeazaOreNete(
+                        pontaj.ora_intrare,
+                        pontaj.ora_iesire,
+                        angajat?.regula_start_0700,
+                        angajat?.pauza_masa,
+                        angajat?.pauza_minute
+                    );
+
+                    if (
+                        oreNete &&
+                        !oreNete.startsWith("-")
+                    ) {
+                        totalMinuteLucrate += transformaOraMinute(oreNete);
+                    }
+
+                }
+
+            }
+
+            return totalMinuteLucrate - (totalZileLucratoare * 8 * 60);
+
+        }
+
+        function formateazaDiferentaRaport2026(minute) {
+
+            if (minute === null || minute === undefined) {
+                return "";
+            }
+
+            const semn = minute < 0 ? "-" : "";
+            const absolut = Math.abs(minute);
+            const ore = Math.floor(absolut / 60);
+            const min = absolut % 60;
+
+            return semn + ore + ":" + String(min).padStart(2, "0");
+
+        }
+
+        async function afiseazaRaportDiferente2026() {
+
+            const container = document.getElementById("year-diff-table-wrap");
+
+            if (!container) {
+                return;
+            }
+
+            container.innerHTML = "<div class='year-diff-loading'>Se încarcă raportul...</div>";
+
+            let angajatiRaport = listaAngajatiSupabase
+                .filter(function(angajat) {
+                    return (
+                        angajat.apare_in_rapoarte !== false &&
+                        angajatInSectiiPermise(angajat)
+                    );
+                });
+
+            if (modRaportDiferente2026 === "angajat") {
+
+                if (!angajatRaportDiferente2026) {
+
+                    container.innerHTML =
+                        "<div class='year-diff-loading'>Alege angajatul.</div>";
+
+                    return;
+
+                }
+
+                angajatiRaport = angajatiRaport.filter(function(angajat) {
+                    return String(angajat.nume || "").trim() === String(angajatRaportDiferente2026 || "").trim();
+                });
+
+            }
+
+            const { data: pontaje, error } = await supabaseClient
+                .from("pontaj_zilnic")
+                .select("*")
+                .gte("data", "2026-01-01")
+                .lte("data", "2026-12-31");
+
+            if (error) {
+
+                container.innerHTML = "";
+
+                showMessage(
+                    "Eroare citire pontaj",
+                    "error"
+                );
+
+                return;
+
+            }
+
+            const pontajeDupaAngajat = {};
+
+            (pontaje || []).forEach(function(pontaj) {
+
+                const nume = String(pontaj.nume || "").trim();
+
+                if (!pontajeDupaAngajat[nume]) {
+                    pontajeDupaAngajat[nume] = [];
+                }
+
+                pontajeDupaAngajat[nume].push(pontaj);
+
+            });
+
+            let html = "";
+
+            html += "<table class='year-diff-table'>";
+            html += "<thead><tr>";
+            html += "<th class='year-diff-name-head'>Angajat</th>";
+
+            LUNI_RAPORT_DIFERENTE.forEach(function(luna) {
+                html += "<th>" + luna.text + "<br>2026</th>";
+            });
+
+            html += "<th class='year-diff-total-head'>Total<br>2026</th>";
+            html += "</tr></thead>";
+            html += "<tbody>";
+
+            angajatiRaport.forEach(function(angajat) {
+
+                const nume = String(angajat.nume || "").trim();
+
+                if (!nume) {
+                    return;
+                }
+
+                let totalAn = 0;
+                let areCelPutinOLuna = false;
+
+                html += "<tr>";
+                html += "<td class='year-diff-name-cell'>" + escapeHtml(nume) + "</td>";
+
+                LUNI_RAPORT_DIFERENTE.forEach(function(luna) {
+
+                    const pontajeAngajatLuna = (pontajeDupaAngajat[nume] || []).filter(function(pontaj) {
+                        return String(pontaj.data || "").slice(5, 7) === String(luna.numar).padStart(2, "0");
+                    });
+
+                    const diferenta = diferentaMinuteLuna2026(
+                        angajat,
+                        pontajeAngajatLuna,
+                        luna.numar
+                    );
+
+                    if (diferenta === null) {
+
+                        html += "<td class='year-diff-empty'></td>";
+
+                        return;
+
+                    }
+
+                    areCelPutinOLuna = true;
+                    totalAn += diferenta;
+
+                    const clasa =
+                        diferenta < 0
+                            ? "year-diff-negative"
+                            : "year-diff-positive";
+
+                    html +=
+                        "<td class='" + clasa + "'>" +
+                        formateazaDiferentaRaport2026(diferenta) +
+                        "</td>";
+
+                });
+
+                if (areCelPutinOLuna) {
+
+                    html +=
+                        "<td class='year-diff-total-cell year-diff-negative'>" +
+                        formateazaDiferentaRaport2026(totalAn) +
+                        "</td>";
+
+                } else {
+
+                    html += "<td class='year-diff-total-cell'></td>";
+
+                }
+
+                html += "</tr>";
+
+            });
+
+            html += "</tbody></table>";
+
+            container.innerHTML = html;
+
+        }
 
         // ===== DESCHIDERE PAGINA RAPORT ZILE FARA PONTAJ =====
         async function deschidePaginaRaportZileFaraPontaj() {
