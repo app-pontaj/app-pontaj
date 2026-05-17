@@ -1387,71 +1387,6 @@
                 0 0 10px rgba(255,23,68,0.42) !important;
         }
 
-        /* ===== COMPACTARE FORMULAR ANGAJATI ===== */
-        .employee-form {
-            padding: 10px !important;
-            margin: 10px 0 10px !important;
-        }
-
-        .employee-input {
-            min-height: 34px !important;
-            height: 34px !important;
-            margin-bottom: 7px !important;
-            font-size: 11px !important;
-            border-radius: 10px !important;
-        }
-
-        .employee-row {
-            margin: 5px 0 !important;
-            font-size: 10px !important;
-            gap: 8px !important;
-        }
-
-        .employee-row .employee-input {
-            width: 150px !important;
-            min-height: 30px !important;
-            height: 30px !important;
-            margin-bottom: 0 !important;
-            font-size: 10px !important;
-        }
-
-        .employee-actions {
-            margin-top: 10px !important;
-            gap: 8px !important;
-        }
-
-        .employee-button {
-            min-height: 36px !important;
-            border-radius: 13px !important;
-            font-size: 12px !important;
-        }
-
-        .employee-section-title {
-            margin-bottom: 8px !important;
-            font-size: 13px !important;
-        }
-
-        .employee-date-hidden {
-            display: none !important;
-        }
-
-        .employee-date-label {
-            color: #ffffff;
-            font-size: 10px;
-            font-weight: 800;
-            margin: 4px 0 4px 0;
-            font-family: 'Montserrat', Arial, sans-serif;
-        }
-
-        .employee-actions-three {
-            grid-template-columns: 1fr 1fr 1fr !important;
-        }
-
-        .employee-form.locked input,
-        .employee-form.locked select {
-            opacity: 0.70;
-        }
-
 </style>
 
 </head>
@@ -1939,6 +1874,13 @@
                         id="employee-new-area"
                     >
 
+                        <button
+                            class="employee-section-back"
+                            onclick="revinoLaMeniuAngajati()"
+                        >
+                            ‹ BACK
+                        </button>
+
                         <div class="employee-section-title">
                             Angajat nou
                         </div>
@@ -1957,88 +1899,36 @@
                                 placeholder="Nume angajat"
                             >
 
-                            <select
+                            <input
+                                type="text"
                                 id="angajat-sectie"
                                 class="employee-input"
+                                placeholder="Secție"
                             >
-                                <option value="">
-                                    Selectează secția
-                                </option>
-                            </select>
 
                             <div class="employee-row">
-                                <span>Status angajat</span>
-                                <select
-                                    id="angajat-status"
-                                    class="employee-input"
-                                    onchange="actualizeazaStatusAngajatUI()"
-                                >
-                                    <option value="Activ">Activ</option>
-                                    <option value="Inactiv">Inactiv</option>
-                                </select>
-                            </div>
-
-                            <div
-                                id="angajat-data-inactiv-box"
-                                class="employee-date-hidden"
-                            >
-                                <div class="employee-date-label">
-                                    Inactiv începând cu data
-                                </div>
-
+                                <span>Activ</span>
                                 <input
-                                    type="date"
-                                    id="angajat-data-inactiv"
-                                    class="employee-input"
-                                    title="Data inactivare"
+                                    type="checkbox"
+                                    id="angajat-activ"
+                                    checked
                                 >
                             </div>
+
+                            <input
+                                type="date"
+                                id="angajat-data-inactiv"
+                                class="employee-input"
+                                title="Data inactivare"
+                            >
 
                             <div class="employee-row">
                                 <span>Apare în rapoarte</span>
-                                <select
+                                <input
+                                    type="checkbox"
                                     id="angajat-apare-rapoarte"
-                                    class="employee-input"
+                                    checked
                                 >
-                                    <option value="Da">Da</option>
-                                    <option value="Nu">Nu</option>
-                                </select>
-                            </div>
-
-                            <div class="employee-row">
-                                <span>Apare în pontaje</span>
-                                <select
-                                    id="angajat-apare-pontaj"
-                                    class="employee-input"
-                                >
-                                    <option value="Da">Da</option>
-                                    <option value="Nu">Nu</option>
-                                </select>
-                            </div>
-
-                            <div class="employee-row">
-                                <span>Rol</span>
-                                <select
-                                    id="angajat-rol"
-                                    class="employee-input"
-                                >
-                                    <option value="Angajat">Angajat</option>
-                                    <option value="Sef departament">Sef departament</option>
-                                    <option value="Management">Management</option>
-                                    <option value="Admin">Admin</option>
-                                </select>
-                            </div>
-
-                            <div class="employee-row">
-                                <span>Acces</span>
-                                <select
-                                    id="angajat-acces"
-                                    class="employee-input"
-                                >
-                                    <option value="Personal">Personal</option>
-                                    <option value="Departament">Departament</option>
-                                    <option value="Full">Full</option>
-                                </select>
                             </div>
 
                             <div class="employee-row">
@@ -2057,34 +1947,26 @@
                                 >
                             </div>
 
-                            <div
-                                class="employee-actions"
-                                id="employee-actions-row"
+                            <input
+                                type="number"
+                                id="angajat-pauza-minute"
+                                class="employee-input"
+                                placeholder="Minute pauză masă"
+                                min="0"
+                                value="0"
                             >
+
+                            <div class="employee-actions">
                                 <button
-                                    type="button"
                                     class="employee-button"
-                                    id="angajat-nou-button"
                                     onclick="reseteazaFormularAngajat()"
                                 >
                                     Nou
                                 </button>
 
                                 <button
-                                    type="button"
                                     class="employee-button"
-                                    id="angajat-edit-button"
-                                    onclick="activeazaEditareAngajat()"
-                                    style="display:none;"
-                                >
-                                    Edit
-                                </button>
-
-                                <button
-                                    type="button"
-                                    class="employee-button"
-                                    id="angajat-save-button"
-                                    onclick="salveazaAngajat(event)"
+                                    onclick="salveazaAngajat()"
                                 >
                                     Salvează
                                 </button>
@@ -3210,9 +3092,6 @@
         // ===== DATE ANGAJATI =====
         let listaAngajatiSupabase = [];
 
-        // ===== LISTA SECTII DIN SUPABASE =====
-        let listaSectiiAngajatiSupabase = [];
-
 
         // ===== PAGINA ANGAJATI - MENIU 3 CASETE =====
         function ascundeZoneAngajati() {
@@ -3242,8 +3121,6 @@
 
         function revinoLaMeniuAngajati() {
 
-            mutaFormularAngajatInZona("employee-new-area");
-
             ascundeZoneAngajati();
 
             const meniu = document.getElementById("employees-menu-box");
@@ -3254,34 +3131,10 @@
 
         }
 
-        function mutaFormularAngajatInZona(idZona) {
-
-            const zona = document.getElementById(idZona);
-            const campId = document.getElementById("angajat-id");
-
-            if (!zona || !campId) {
-                return;
-            }
-
-            const formular = campId.closest(".employee-form");
-
-            if (!formular) {
-                return;
-            }
-
-            if (formular.parentElement !== zona) {
-                zona.appendChild(formular);
-            }
-
-        }
-
         function deschideZonaAngajatNou() {
 
             ascundeZoneAngajati();
-            mutaFormularAngajatInZona("employee-new-area");
-            umpleSelectSectiiAngajat();
             reseteazaFormularAngajat();
-            seteazaFormularAngajatPentruNou();
 
             document.getElementById("employee-new-area").style.display = "block";
 
@@ -3291,12 +3144,6 @@
 
             ascundeZoneAngajati();
             umpleSelectAngajatiAdministrare();
-
-            const box = document.getElementById("employee-selected-form");
-
-            if (box) {
-                box.style.display = "none";
-            }
 
             document.getElementById("employee-search-area-admin").style.display = "block";
 
@@ -3337,7 +3184,7 @@
 
         }
 
-        async function selecteazaAngajatDinAdministrare() {
+        function selecteazaAngajatDinAdministrare() {
 
             const select = document.getElementById("employee-search-select");
             const box = document.getElementById("employee-selected-form");
@@ -3346,19 +3193,20 @@
 
                 if (box) {
                     box.style.display = "none";
+                    box.innerHTML = "";
                 }
 
                 return;
 
             }
 
+            editeazaAngajat(Number(select.value));
+
             box.style.display = "block";
-
-            mutaFormularAngajatInZona("employee-selected-form");
-
-            await editeazaAngajat(Number(select.value), true);
-
-            seteazaFormularAngajatPentruFisa(false);
+            box.innerHTML =
+                "<div class='employee-card-info'>" +
+                "Fișa este încărcată pentru editare în formularul Angajat nou." +
+                "</div>";
 
         }
 
@@ -3428,59 +3276,7 @@
 
             listaAngajatiSupabase = data || [];
 
-            actualizeazaListaSectiiAngajati();
-
             afiseazaAngajati();
-
-        }
-
-        // ===== ACTUALIZARE LISTA SECTII DIN ANGAJATI =====
-        function actualizeazaListaSectiiAngajati() {
-
-            listaSectiiAngajatiSupabase = [];
-
-            listaAngajatiSupabase.forEach(function(angajat) {
-
-                const sectie = String(angajat.sectie || "").trim();
-
-                if (sectie && !listaSectiiAngajatiSupabase.includes(sectie)) {
-                    listaSectiiAngajatiSupabase.push(sectie);
-                }
-
-            });
-
-            listaSectiiAngajatiSupabase.sort(function(a, b) {
-                return a.localeCompare(b, "ro");
-            });
-
-            umpleSelectSectiiAngajat();
-
-        }
-
-        // ===== UMPLERE LISTA SECTII PENTRU FORMULAR ANGAJAT =====
-        function umpleSelectSectiiAngajat() {
-
-            const select = document.getElementById("angajat-sectie");
-
-            if (!select) {
-                return;
-            }
-
-            const valoareCurenta = select.value;
-
-            let html = "<option value=''>Selectează secția</option>";
-
-            listaSectiiAngajatiSupabase.forEach(function(sectie) {
-                html +=
-                    "<option value='" +
-                    escapeHtml(sectie) +
-                    "'>" +
-                    escapeHtml(sectie) +
-                    "</option>";
-            });
-
-            select.innerHTML = html;
-            select.value = valoareCurenta;
 
         }
 
@@ -3526,158 +3322,24 @@
         }
 
         // ===== EDITARE ANGAJAT =====
-        async function editeazaAngajat(index) {
+        function editeazaAngajat(index) {
 
             const angajat = listaAngajatiSupabase[index];
 
             document.getElementById("angajat-id").value = angajat.id || "";
             document.getElementById("angajat-nume").value = angajat.nume || "";
-
-            if (angajat.sectie && !listaSectiiAngajatiSupabase.includes(angajat.sectie)) {
-                listaSectiiAngajatiSupabase.push(angajat.sectie);
-                umpleSelectSectiiAngajat();
-            }
-
             document.getElementById("angajat-sectie").value = angajat.sectie || "";
-
-            const statusAngajat = angajat.activ === false ? "Inactiv" : "Activ";
-            document.getElementById("angajat-status").value = statusAngajat;
+            document.getElementById("angajat-activ").checked = !!angajat.activ;
             document.getElementById("angajat-data-inactiv").value = angajat.data_inactiv || "";
-
-            document.getElementById("angajat-apare-rapoarte").value =
-                angajat.apare_in_rapoarte === false ? "Nu" : "Da";
-
-            document.getElementById("angajat-apare-pontaj").value =
-                angajat.afiseaza_lipsa_pontaj === false ? "Nu" : "Da";
-
+            document.getElementById("angajat-apare-rapoarte").checked = angajat.apare_in_rapoarte !== false;
             document.getElementById("angajat-regula-0700").checked = !!angajat.regula_start_0700;
             document.getElementById("angajat-pauza-masa").checked = !!angajat.pauza_masa;
+            document.getElementById("angajat-pauza-minute").value = angajat.pauza_minute || 0;
 
-            document.getElementById("angajat-rol").value = "Angajat";
-            document.getElementById("angajat-acces").value = "Personal";
-
-            const { data: utilizatorData } = await supabaseClient
-                .from("utilizatori")
-                .select("rol, acces")
-                .eq("nume", angajat.nume)
-                .maybeSingle();
-
-            if (utilizatorData) {
-                if (utilizatorData.rol) {
-                    document.getElementById("angajat-rol").value = utilizatorData.rol;
-                }
-
-                if (utilizatorData.acces) {
-                    document.getElementById("angajat-acces").value = utilizatorData.acces;
-                }
-            }
-
-            actualizeazaStatusAngajatUI();
-}
-
-
-
-        // ===== CONTROL FORMULAR ANGAJAT: NOU / FIȘĂ / EDITARE =====
-        function seteazaFormularAngajatPentruNou() {
-
-            const formular = document.getElementById("angajat-id").closest(".employee-form");
-            const randActiuni = document.getElementById("employee-actions-row");
-            const butonEdit = document.getElementById("angajat-edit-button");
-            const butonNou = document.getElementById("angajat-nou-button");
-            const butonSave = document.getElementById("angajat-save-button");
-
-            if (formular) {
-                formular.classList.remove("locked");
-            }
-
-            if (randActiuni) {
-                randActiuni.classList.remove("employee-actions-three");
-            }
-
-            if (butonEdit) {
-                butonEdit.style.display = "none";
-            }
-
-            if (butonNou) {
-                butonNou.style.display = "block";
-            }
-
-            if (butonSave) {
-                butonSave.disabled = false;
-                butonSave.style.opacity = "1";
-            }
-
-            seteazaCampuriFormularAngajat(false);
-
-        }
-
-        function seteazaFormularAngajatPentruFisa(permiteEditare) {
-
-            const formular = document.getElementById("angajat-id").closest(".employee-form");
-            const randActiuni = document.getElementById("employee-actions-row");
-            const butonEdit = document.getElementById("angajat-edit-button");
-            const butonNou = document.getElementById("angajat-nou-button");
-            const butonSave = document.getElementById("angajat-save-button");
-
-            if (formular) {
-                if (permiteEditare) {
-                    formular.classList.remove("locked");
-                } else {
-                    formular.classList.add("locked");
-                }
-            }
-
-            if (randActiuni) {
-                randActiuni.classList.add("employee-actions-three");
-            }
-
-            if (butonEdit) {
-                butonEdit.style.display = "block";
-            }
-
-            if (butonNou) {
-                butonNou.style.display = "none";
-            }
-
-            if (butonSave) {
-                butonSave.disabled = !permiteEditare;
-                butonSave.style.opacity = permiteEditare ? "1" : "0.45";
-            }
-
-            seteazaCampuriFormularAngajat(!permiteEditare);
-
-        }
-
-        function activeazaEditareAngajat() {
-
-            seteazaFormularAngajatPentruFisa(true);
-
-        }
-
-        function seteazaCampuriFormularAngajat(blocat) {
-
-            const ids = [
-                "angajat-nume",
-                "angajat-sectie",
-                "angajat-status",
-                "angajat-data-inactiv",
-                "angajat-apare-rapoarte",
-                "angajat-apare-pontaj",
-                "angajat-rol",
-                "angajat-acces",
-                "angajat-regula-0700",
-                "angajat-pauza-masa"
-            ];
-
-            ids.forEach(function(id) {
-
-                const camp = document.getElementById(id);
-
-                if (camp) {
-                    camp.disabled = blocat;
-                }
-
-            });
+            showMessage(
+                "Angajat încărcat pentru editare",
+                "success"
+            );
 
         }
 
@@ -3687,213 +3349,97 @@
             document.getElementById("angajat-id").value = "";
             document.getElementById("angajat-nume").value = "";
             document.getElementById("angajat-sectie").value = "";
-            document.getElementById("angajat-status").value = "Activ";
+            document.getElementById("angajat-activ").checked = true;
             document.getElementById("angajat-data-inactiv").value = "";
-            document.getElementById("angajat-apare-rapoarte").value = "Da";
-            document.getElementById("angajat-apare-pontaj").value = "Da";
-            document.getElementById("angajat-rol").value = "Angajat";
-            document.getElementById("angajat-acces").value = "Personal";
+            document.getElementById("angajat-apare-rapoarte").checked = true;
             document.getElementById("angajat-regula-0700").checked = false;
-            document.getElementById("angajat-pauza-masa").checked = true;
-
-            actualizeazaStatusAngajatUI();
-
-        }
-
-        // ===== AFISARE DATA INACTIVARE DOAR CAND STATUSUL ESTE INACTIV =====
-        function actualizeazaStatusAngajatUI() {
-
-            const status = document.getElementById("angajat-status");
-            const boxData = document.getElementById("angajat-data-inactiv-box");
-            const inputData = document.getElementById("angajat-data-inactiv");
-
-            if (!status || !boxData || !inputData) {
-                return;
-            }
-
-            if (status.value === "Inactiv") {
-                boxData.classList.remove("employee-date-hidden");
-            } else {
-                boxData.classList.add("employee-date-hidden");
-                inputData.value = "";
-            }
+            document.getElementById("angajat-pauza-masa").checked = false;
+            document.getElementById("angajat-pauza-minute").value = 0;
 
         }
-
 
         // ===== SALVARE ANGAJAT IN SUPABASE =====
-        async function salveazaAngajat(event) {
+        async function salveazaAngajat() {
 
-            if (event) {
-                event.preventDefault();
-                event.stopPropagation();
-            }
+            const id = document.getElementById("angajat-id").value;
+            const nume = document.getElementById("angajat-nume").value.trim();
+            const sectie = document.getElementById("angajat-sectie").value.trim();
+            const activ = document.getElementById("angajat-activ").checked;
+            const dataInactiv = document.getElementById("angajat-data-inactiv").value || null;
+            const apareRapoarte = document.getElementById("angajat-apare-rapoarte").checked;
+            const regula0700 = document.getElementById("angajat-regula-0700").checked;
+            const pauzaMasa = document.getElementById("angajat-pauza-masa").checked;
+            const pauzaMinute = parseInt(document.getElementById("angajat-pauza-minute").value || "0", 10);
 
-            try {
-
-                const id = document.getElementById("angajat-id").value;
-                const nume = document.getElementById("angajat-nume").value.trim();
-                const sectie = document.getElementById("angajat-sectie").value.trim();
-                const statusAngajat = document.getElementById("angajat-status").value;
-                const activ = statusAngajat === "Activ";
-                const dataInactiv = activ ? null : (document.getElementById("angajat-data-inactiv").value || null);
-                const apareRapoarte = document.getElementById("angajat-apare-rapoarte").value === "Da";
-                const aparePontaj = document.getElementById("angajat-apare-pontaj").value === "Da";
-                const rol = document.getElementById("angajat-rol").value;
-                const acces = document.getElementById("angajat-acces").value;
-                const regula0700 = document.getElementById("angajat-regula-0700").checked;
-                const pauzaMasa = document.getElementById("angajat-pauza-masa").checked;
-                const pauzaMinute = pauzaMasa ? 30 : 0;
-
-                if (!nume) {
-
-                    showMessage(
-                        "Completează numele angajatului",
-                        "error"
-                    );
-
-                    return;
-
-                }
-
-                if (!sectie) {
-
-                    showMessage(
-                        "Alege secția",
-                        "error"
-                    );
-
-                    return;
-
-                }
-
-                if (!activ && !dataInactiv) {
-
-                    showMessage(
-                        "Alege data de la care angajatul este inactiv",
-                        "error"
-                    );
-
-                    return;
-
-                }
-
-                const dateAngajat = {
-                    nume: nume,
-                    sectie: sectie,
-                    activ: activ,
-                    data_inactiv: dataInactiv,
-                    apare_in_rapoarte: apareRapoarte,
-                    afiseaza_lipsa_pontaj: aparePontaj,
-                    regula_start_0700: regula0700,
-                    pauza_masa: pauzaMasa,
-                    pauza_minute: pauzaMinute
-                };
-
-                let raspunsAngajat;
-
-                if (id) {
-
-                    raspunsAngajat = await supabaseClient
-                        .from("angajati")
-                        .update(dateAngajat)
-                        .eq("id", id)
-                        .select();
-
-                } else {
-
-                    raspunsAngajat = await supabaseClient
-                        .from("angajati")
-                        .insert([dateAngajat])
-                        .select();
-
-                }
-
-                if (raspunsAngajat.error) {
-
-                    showMessage(
-                        "Eroare salvare angajat: " + raspunsAngajat.error.message,
-                        "error"
-                    );
-
-                    return;
-
-                }
-
-                const { data: utilizatorExistent, error: eroareCautareUtilizator } = await supabaseClient
-                    .from("utilizatori")
-                    .select("id")
-                    .eq("nume", nume)
-                    .maybeSingle();
-
-                if (eroareCautareUtilizator) {
-
-                    showMessage(
-                        "Angajat salvat, dar nu pot verifica utilizatorul: " + eroareCautareUtilizator.message,
-                        "error"
-                    );
-
-                    return;
-
-                }
-
-                let raspunsUtilizator;
-
-                if (utilizatorExistent && utilizatorExistent.id) {
-
-                    raspunsUtilizator = await supabaseClient
-                        .from("utilizatori")
-                        .update({
-                            rol: rol,
-                            acces: acces
-                        })
-                        .eq("id", utilizatorExistent.id)
-                        .select();
-
-                } else {
-
-                    raspunsUtilizator = await supabaseClient
-                        .from("utilizatori")
-                        .insert([{
-                            nume: nume,
-                            rol: rol,
-                            acces: acces,
-                            parola: "amma",
-                            cuvant_magic: "amma"
-                        }])
-                        .select();
-
-                }
-
-                if (raspunsUtilizator.error) {
-
-                    showMessage(
-                        "Angajat salvat, dar eroare utilizator: " + raspunsUtilizator.error.message,
-                        "error"
-                    );
-
-                    return;
-
-                }
+            if (!nume) {
 
                 showMessage(
-                    "Angajat salvat",
-                    "success"
-                );
-
-                reseteazaFormularAngajat();
-
-                await incarcaAngajati();
-                incarcaContorAngajati();
-
-            } catch (error) {
-
-                showMessage(
-                    "Eroare salvare: " + error.message,
+                    "Completează numele angajatului",
                     "error"
                 );
 
+                return;
+
             }
+
+            if (!activ && !dataInactiv) {
+
+                showMessage(
+                    "Alege data inactivării",
+                    "error"
+                );
+
+                return;
+
+            }
+
+            const dateAngajat = {
+                nume: nume,
+                sectie: sectie,
+                activ: activ,
+                data_inactiv: dataInactiv,
+                apare_in_rapoarte: apareRapoarte,
+                regula_start_0700: regula0700,
+                pauza_masa: pauzaMasa,
+                pauza_minute: pauzaMinute
+            };
+
+            let raspuns;
+
+            if (id) {
+
+                raspuns = await supabaseClient
+                    .from("angajati")
+                    .update(dateAngajat)
+                    .eq("id", id);
+
+            } else {
+
+                raspuns = await supabaseClient
+                    .from("angajati")
+                    .insert(dateAngajat);
+
+            }
+
+            if (raspuns.error) {
+
+                showMessage(
+                    "Eroare salvare angajat",
+                    "error"
+                );
+
+                return;
+
+            }
+
+            showMessage(
+                "Angajat salvat",
+                "success"
+            );
+
+            reseteazaFormularAngajat();
+
+            await incarcaAngajati();
 
         }
 
