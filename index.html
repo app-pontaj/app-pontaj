@@ -1953,6 +1953,7 @@
 
                             <div class="employee-actions">
                                 <button
+                                    type="button"
                                     class="employee-button"
                                     onclick="reseteazaFormularAngajat()"
                                 >
@@ -1960,8 +1961,9 @@
                                 </button>
 
                                 <button
+                                    type="button"
                                     class="employee-button"
-                                    onclick="salveazaAngajat()"
+                                    onclick="salveazaAngajat(event)"
                                 >
                                     Salvează
                                 </button>
@@ -3416,87 +3418,117 @@
         }
 
         // ===== SALVARE ANGAJAT IN SUPABASE =====
-        async function salveazaAngajat() {
+        async function salveazaAngajat(event) {
 
-            const id = document.getElementById("angajat-id").value;
-            const nume = document.getElementById("angajat-nume").value.trim();
-            const sectie = document.getElementById("angajat-sectie").value.trim();
-            const activ = document.getElementById("angajat-activ").checked;
-            const dataInactiv = document.getElementById("angajat-data-inactiv").value || null;
-            const apareRapoarte = document.getElementById("angajat-apare-rapoarte").checked;
-            const regula0700 = document.getElementById("angajat-regula-0700").checked;
-            const pauzaMasa = document.getElementById("angajat-pauza-masa").checked;
-            const pauzaMinute = parseInt(document.getElementById("angajat-pauza-minute").value || "0", 10);
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
 
-            if (!nume) {
+            try {
+
+                const id = document.getElementById("angajat-id").value;
+                const nume = document.getElementById("angajat-nume").value.trim();
+                const sectie = document.getElementById("angajat-sectie").value.trim();
+                const activ = document.getElementById("angajat-activ").checked;
+                const dataInactiv = document.getElementById("angajat-data-inactiv").value || null;
+                const apareRapoarte = document.getElementById("angajat-apare-rapoarte").checked;
+                const regula0700 = document.getElementById("angajat-regula-0700").checked;
+                const pauzaMasa = document.getElementById("angajat-pauza-masa").checked;
+                const pauzaMinute = parseInt(document.getElementById("angajat-pauza-minute").value || "0", 10);
+
+                if (!nume) {
+
+                    showMessage(
+                        "Completează numele angajatului",
+                        "error"
+                    );
+
+                    return;
+
+                }
+
+                if (!sectie) {
+
+                    showMessage(
+                        "Alege secția",
+                        "error"
+                    );
+
+                    return;
+
+                }
+
+                if (!activ && !dataInactiv) {
+
+                    showMessage(
+                        "Alege data inactivării",
+                        "error"
+                    );
+
+                    return;
+
+                }
+
+                const dateAngajat = {
+                    nume: nume,
+                    sectie: sectie,
+                    activ: activ,
+                    data_inactiv: dataInactiv,
+                    apare_in_rapoarte: apareRapoarte,
+                    regula_start_0700: regula0700,
+                    pauza_masa: pauzaMasa,
+                    pauza_minute: pauzaMinute
+                };
+
+                let raspuns;
+
+                if (id) {
+
+                    raspuns = await supabaseClient
+                        .from("angajati")
+                        .update(dateAngajat)
+                        .eq("id", id)
+                        .select();
+
+                } else {
+
+                    raspuns = await supabaseClient
+                        .from("angajati")
+                        .insert([dateAngajat])
+                        .select();
+
+                }
+
+                if (raspuns.error) {
+
+                    showMessage(
+                        "Eroare salvare: " + raspuns.error.message,
+                        "error"
+                    );
+
+                    return;
+
+                }
 
                 showMessage(
-                    "Completează numele angajatului",
+                    "Angajat salvat",
+                    "success"
+                );
+
+                reseteazaFormularAngajat();
+
+                await incarcaAngajati();
+                incarcaContorAngajati();
+
+            } catch (error) {
+
+                showMessage(
+                    "Eroare salvare: " + error.message,
                     "error"
                 );
 
-                return;
-
             }
-
-            if (!activ && !dataInactiv) {
-
-                showMessage(
-                    "Alege data inactivării",
-                    "error"
-                );
-
-                return;
-
-            }
-
-            const dateAngajat = {
-                nume: nume,
-                sectie: sectie,
-                activ: activ,
-                data_inactiv: dataInactiv,
-                apare_in_rapoarte: apareRapoarte,
-                regula_start_0700: regula0700,
-                pauza_masa: pauzaMasa,
-                pauza_minute: pauzaMinute
-            };
-
-            let raspuns;
-
-            if (id) {
-
-                raspuns = await supabaseClient
-                    .from("angajati")
-                    .update(dateAngajat)
-                    .eq("id", id);
-
-            } else {
-
-                raspuns = await supabaseClient
-                    .from("angajati")
-                    .insert(dateAngajat);
-
-            }
-
-            if (raspuns.error) {
-
-                showMessage(
-                    "Eroare salvare angajat",
-                    "error"
-                );
-
-                return;
-
-            }
-
-            showMessage(
-                "Angajat salvat",
-                "success"
-            );
-
-            reseteazaFormularAngajat();
-
-            await incarcaAngajati();
 
         }
 
