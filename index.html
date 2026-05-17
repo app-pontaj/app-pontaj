@@ -1874,13 +1874,6 @@
                         id="employee-new-area"
                     >
 
-                        <button
-                            class="employee-section-back"
-                            onclick="revinoLaMeniuAngajati()"
-                        >
-                            ‹ BACK
-                        </button>
-
                         <div class="employee-section-title">
                             Angajat nou
                         </div>
@@ -1899,12 +1892,14 @@
                                 placeholder="Nume angajat"
                             >
 
-                            <input
-                                type="text"
+                            <select
                                 id="angajat-sectie"
                                 class="employee-input"
-                                placeholder="Secție"
                             >
+                                <option value="">
+                                    Selectează secția
+                                </option>
+                            </select>
 
                             <div class="employee-row">
                                 <span>Activ</span>
@@ -3092,6 +3087,9 @@
         // ===== DATE ANGAJATI =====
         let listaAngajatiSupabase = [];
 
+        // ===== LISTA SECTII DIN SUPABASE =====
+        let listaSectiiAngajatiSupabase = [];
+
 
         // ===== PAGINA ANGAJATI - MENIU 3 CASETE =====
         function ascundeZoneAngajati() {
@@ -3134,6 +3132,7 @@
         function deschideZonaAngajatNou() {
 
             ascundeZoneAngajati();
+            umpleSelectSectiiAngajat();
             reseteazaFormularAngajat();
 
             document.getElementById("employee-new-area").style.display = "block";
@@ -3276,7 +3275,59 @@
 
             listaAngajatiSupabase = data || [];
 
+            actualizeazaListaSectiiAngajati();
+
             afiseazaAngajati();
+
+        }
+
+        // ===== ACTUALIZARE LISTA SECTII DIN ANGAJATI =====
+        function actualizeazaListaSectiiAngajati() {
+
+            listaSectiiAngajatiSupabase = [];
+
+            listaAngajatiSupabase.forEach(function(angajat) {
+
+                const sectie = String(angajat.sectie || "").trim();
+
+                if (sectie && !listaSectiiAngajatiSupabase.includes(sectie)) {
+                    listaSectiiAngajatiSupabase.push(sectie);
+                }
+
+            });
+
+            listaSectiiAngajatiSupabase.sort(function(a, b) {
+                return a.localeCompare(b, "ro");
+            });
+
+            umpleSelectSectiiAngajat();
+
+        }
+
+        // ===== UMPLERE LISTA SECTII PENTRU FORMULAR ANGAJAT =====
+        function umpleSelectSectiiAngajat() {
+
+            const select = document.getElementById("angajat-sectie");
+
+            if (!select) {
+                return;
+            }
+
+            const valoareCurenta = select.value;
+
+            let html = "<option value=''>Selectează secția</option>";
+
+            listaSectiiAngajatiSupabase.forEach(function(sectie) {
+                html +=
+                    "<option value='" +
+                    escapeHtml(sectie) +
+                    "'>" +
+                    escapeHtml(sectie) +
+                    "</option>";
+            });
+
+            select.innerHTML = html;
+            select.value = valoareCurenta;
 
         }
 
@@ -3328,6 +3379,12 @@
 
             document.getElementById("angajat-id").value = angajat.id || "";
             document.getElementById("angajat-nume").value = angajat.nume || "";
+
+            if (angajat.sectie && !listaSectiiAngajatiSupabase.includes(angajat.sectie)) {
+                listaSectiiAngajatiSupabase.push(angajat.sectie);
+                umpleSelectSectiiAngajat();
+            }
+
             document.getElementById("angajat-sectie").value = angajat.sectie || "";
             document.getElementById("angajat-activ").checked = !!angajat.activ;
             document.getElementById("angajat-data-inactiv").value = angajat.data_inactiv || "";
