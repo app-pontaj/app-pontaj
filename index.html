@@ -1693,6 +1693,7 @@
 
                 </div>
 
+                
                 <!-- ===== PAGINA ANGAJATI ===== -->
                 <div
                     class="employees-page"
@@ -1720,51 +1721,4111 @@
                         </div>
 
                         <div class="employees-subtitle">
-                            Fișe angajați și reguli de calcul
+                            Administrare angajați
                         </div>
 
                     </div>
 
-                    
-<div class="employee-form">
+                    <div class="employee-admin-section">
 
-    <div class="report-card" style="margin-bottom:18px;cursor:pointer;">
-        <div class="report-name" style="margin-bottom:12px;">
-            Angajat nou
+                        <div class="employee-admin-card">
+
+                            <div class="employee-admin-title">
+                                Caută angajat
+                            </div>
+
+                            <select
+                                class="employee-input"
+                                id="employee-search-select"
+                            >
+                                <option value="">
+                                    Selectează angajat
+                                </option>
+                            </select>
+
+                            <button
+                                class="employee-save-button"
+                            >
+                                Deschide fișa
+                            </button>
+
+                        </div>
+
+                        <div class="employee-admin-card">
+
+                            <div class="employee-admin-title">
+                                Toți angajații
+                            </div>
+
+                            <div
+                                class="employees-list"
+                                id="employees-list"
+                            >
+                            </div>
+
+                        </div>
+
+                        <div class="employee-admin-card">
+
+                            <div class="employee-admin-title">
+                                Angajat nou
+                            </div>
+
+                            <div class="employee-form">
+
+                                <input
+                                    type="text"
+                                    id="angajat-nume"
+                                    class="employee-input"
+                                    placeholder="Nume angajat"
+                                >
+
+                                <input
+                                    type="text"
+                                    id="angajat-sectie"
+                                    class="employee-input"
+                                    placeholder="Secție"
+                                >
+
+                                <div class="employee-row">
+                                    <span>Activ</span>
+                                    <input
+                                        type="checkbox"
+                                        id="angajat-activ"
+                                        checked
+                                    >
+                                </div>
+
+                                <div class="employee-row">
+                                    <span>Apare în rapoarte</span>
+                                    <input
+                                        type="checkbox"
+                                        id="angajat-apare-rapoarte"
+                                        checked
+                                    >
+                                </div>
+
+                                <div class="employee-row">
+                                    <span>Regula 07:00</span>
+                                    <input
+                                        type="checkbox"
+                                        id="angajat-regula-0700"
+                                    >
+                                </div>
+
+                                <div class="employee-row">
+                                    <span>Pauză masă</span>
+                                    <input
+                                        type="checkbox"
+                                        id="angajat-pauza-masa"
+                                    >
+                                </div>
+
+                                <input
+                                    type="number"
+                                    id="angajat-pauza-minute"
+                                    class="employee-input"
+                                    placeholder="Minute pauză"
+                                >
+
+                                <button
+                                    class="employee-save-button"
+                                >
+                                    Salvează angajat
+                                </button>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+<!-- ===== PAGINA RAPORT TEST ===== -->
+                <div
+                    class="report-page"
+                    id="report-page"
+                    style="display:none;"
+                >
+
+                    <div class="report-header">
+
+                        <div class="report-top-row">
+
+                            <button
+                                class="report-back-modern"
+                                onclick="inchidePaginaRaportTest()"
+                            >
+                                ‹ Back
+                            </button>
+
+                            <div class="report-title-modern">
+                                Rapoarte
+                            </div>
+
+                            <div></div>
+
+                        </div>
+
+                        <div class="report-gold-line"></div>
+
+                        <div class="report-filter-row">
+
+                            <div
+                                class="report-filter-card"
+                                id="btn-cauta-angajat"
+                                onclick="activeazaCautareAngajat()"
+                            >
+                                🔎 Cauta angajat
+                            </div>
+
+                            <div
+                                class="report-filter-card"
+                                id="btn-toti-angajatii"
+                                onclick="activeazaTotiAngajatii()"
+                            >
+                                👥 Toti angajatii
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <div
+                        class="employee-search-area"
+                        id="employee-search-area"
+                    >
+
+                        <input
+                            type="text"
+                            class="employee-search-input"
+                            id="employee-search-input"
+                            placeholder="Scrie cateva litere..."
+                            oninput="cautaAngajatiLive()"
+                        >
+
+                        <div
+                            class="employee-search-results"
+                            id="employee-search-results"
+                        >
+                        </div>
+
+                    </div>
+
+                    <div
+                        class="report-years-row"
+                        id="report-years-row"
+                    >
+                    </div>
+
+                    <div
+                        class="months-grid"
+                        id="report-list"
+                    >
+
+                        <button class="month-card" data-luna="1" onclick="deschideRaportLunar(1,'Ian')">Ian</button>
+                        <button class="month-card" data-luna="2" onclick="deschideRaportLunar(2,'Feb')">Feb</button>
+                        <button class="month-card" data-luna="3" onclick="deschideRaportLunar(3,'Mar')">Mar</button>
+                        <button class="month-card" data-luna="4" onclick="deschideRaportLunar(4,'Apr')">Apr</button>
+                        <button class="month-card" data-luna="5" onclick="deschideRaportLunar(5,'Mai')">Mai</button>
+                        <button class="month-card" data-luna="6" onclick="deschideRaportLunar(6,'Iun')">Iun</button>
+
+                        <button class="month-card" data-luna="7" onclick="deschideRaportLunar(7,'Iul')">Iul</button>
+                        <button class="month-card" data-luna="8" onclick="deschideRaportLunar(8,'Aug')">Aug</button>
+                        <button class="month-card" data-luna="9" onclick="deschideRaportLunar(9,'Sep')">Sep</button>
+                        <button class="month-card" data-luna="10" onclick="deschideRaportLunar(10,'Oct')">Oct</button>
+                        <button class="month-card" data-luna="11" onclick="deschideRaportLunar(11,'Noi')">Noi</button>
+                        <button class="month-card" data-luna="12" onclick="deschideRaportLunar(12,'Dec')">Dec</button>
+
+                    </div>
+
+                </div>
+
+                <!-- ===== PAGINA RAPORT LUNAR TOTI ANGAJATII ===== -->
+                <div
+                    class="all-employees-report-page"
+                    id="all-employees-report-page"
+                    style="display:none;"
+                >
+
+                    <div class="all-employees-report-header">
+
+                        <button
+                            class="monthly-back-button"
+                            onclick="inchideRaportLunarToti()"
+                        >
+                            ‹ Back
+                        </button>
+
+                        <div>
+                            <div
+                                class="all-employees-report-title"
+                                id="all-employees-report-title"
+                            >
+                                Toți angajații
+                            </div>
+
+                            <div
+                                class="all-employees-report-month"
+                                id="all-employees-report-month"
+                            >
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="all-employees-gold-line"></div>
+
+                    <div
+                        class="all-employees-table-wrap"
+                        id="all-employees-table-wrap"
+                    >
+                    </div>
+
+                </div>
+
+
+                <!-- ===== PAGINA RAPORT LUNAR ===== -->
+                <div
+                    class="monthly-report-page"
+                    id="monthly-report-page"
+                    style="display:none;"
+                >
+
+                    <div class="monthly-report-header">
+
+                        <button
+                            class="monthly-back-button"
+                            onclick="inchideRaportLunar()"
+                        >
+                            ‹ Back
+                        </button>
+
+                        <div class="monthly-title-box">
+                            <div
+                                class="monthly-employee-name"
+                                id="monthly-report-name"
+                            >
+                                Raport
+                            </div>
+
+                            <div
+                                class="monthly-month-year"
+                                id="monthly-report-month"
+                            >
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="monthly-gold-line"></div>
+
+                    <div class="monthly-report-wrapper">
+
+                        <div
+                            class="monthly-report-grid"
+                            id="monthly-report-grid"
+                        >
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
         </div>
 
-        <div class="report-date">
-            Creează fișă nouă angajat
-        </div>
     </div>
 
-    <div class="report-card" style="margin-bottom:18px;cursor:pointer;">
-        <div class="report-name" style="margin-bottom:12px;">
-            Caută angajat
-        </div>
+    <!-- ===== CASETA MESAJE ===== -->
+    <div
+        class="custom-message"
+        id="custom-message"
+    >
 
-        <div class="report-date" style="margin-bottom:18px;">
-            Selectează și deschide fișa unui angajat
-        </div>
-
-        <select
-            class="employee-input"
-            id="employee-search-select"
+        <div
+            class="custom-message-icon"
+            id="message-icon"
         >
-            <option>Selectează angajat</option>
-        </select>
-    </div>
-
-    <div class="report-card" style="margin-bottom:18px;cursor:pointer;">
-        <div class="report-name" style="margin-bottom:12px;">
-            Toți angajații
         </div>
 
-        <div class="report-date">
-            Afișează lista completă cu toate fișele
+        <div
+            class="custom-message-text"
+            id="message-text"
+        >
         </div>
+
+        <button
+            class="message-button"
+            id="message-button"
+            onclick="closeMessage()"
+        >
+            OK
+        </button>
+
     </div>
 
-</div>
+    <!-- ===== CONECTARE SUPABASE ===== -->
+    <script>
+
+        const SUPABASE_URL = "https://xnkvrbccegzpzkbmbnwq.supabase.co";
+
+        const SUPABASE_KEY = "sb_publishable_K9GYHHRPeKadCipve58aKA_JGoPzTy_";
+
+        const supabaseClient = supabase.createClient(
+            SUPABASE_URL,
+            SUPABASE_KEY
+        );
+
+        // ===== DATE UTILIZATOR LOGAT =====
+        let utilizatorLogat = null;
+
+        // ===== SECTII PERMISE UTILIZATOR LOGAT =====
+        let sectiiPermiseUtilizator = [];
+
+        // ===== DATE ULTIM IMPORT PENTRU RAPOARTE TEST =====
+        let ultimImportRanduri = [];
+
+        // ===== AFISARE MESAJ =====
+        function showMessage(text, type) {
+
+            const box = document.getElementById("custom-message");
+
+            const messageText = document.getElementById("message-text");
+
+            const icon = document.getElementById("message-icon");
+
+            const button = document.getElementById("message-button");
+
+            box.style.display = "block";
+
+            messageText.innerHTML = text;
+
+            if (type === "success") {
+
+                icon.innerHTML = "✔";
+
+                messageText.className = "custom-message-text success-text";
+
+                button.className = "message-button success-button";
+
+            } else {
+
+                icon.innerHTML = "✖";
+
+                messageText.className = "custom-message-text error-text";
+
+                button.className = "message-button error-button";
+
+            }
+
+        }
+
+        // ===== INCHIDERE MESAJ =====
+        function closeMessage() {
+
+            document.getElementById("custom-message").style.display = "none";
+
+        }
+
+        // ===== INCARCARE SECTII PERMISE UTILIZATOR =====
+        async function incarcaSectiiPermiseUtilizator(userData) {
+
+            sectiiPermiseUtilizator = [];
+
+            if (!userData || !userData.nume) {
+                return;
+            }
+
+            const rol = String(userData.rol || "").trim().toUpperCase();
+            const acces = String(userData.acces || "").trim().toUpperCase();
+
+            if (acces === "FULL") {
+                sectiiPermiseUtilizator = ["__TOATE__"];
+                return;
+            }
+
+            if (!(rol === "SEF DEPARTAMENT" && acces === "DEPARTAMENT")) {
+                return;
+            }
+
+            const { data, error } = await supabaseClient
+                .from("acces_sectii")
+                .select("sectie")
+                .eq("nume_utilizator", userData.nume);
+
+            if (error) {
+                sectiiPermiseUtilizator = [];
+                return;
+            }
+
+            sectiiPermiseUtilizator = (data || [])
+                .map(function(rand) {
+                    return String(rand.sectie || "").trim();
+                })
+                .filter(function(sectie) {
+                    return !!sectie;
+                });
+
+        }
 
 
+        // ===== CONTROL MENIU DUPA ROL =====
+        function aplicaRestrictiiMeniu(userData) {
+
+            const rol = String(userData.rol || "").trim().toUpperCase();
+            const acces = String(userData.acces || "").trim().toUpperCase();
+
+            const esteAngajat =
+                rol === "ANGAJAT" &&
+                acces === "PERSONAL";
+
+            const esteAdmin =
+                rol === "ADMIN" &&
+                acces === "FULL";
+
+            const quickTitle = document.querySelector(".quick-menu-title");
+            const quickRow = document.querySelector(".quick-menu-row");
+            const carduriMeniu = document.querySelectorAll("#main-menu > .menu-card");
+
+            if (quickTitle) {
+                quickTitle.style.display = esteAngajat ? "none" : "";
+            }
+
+            if (quickRow) {
+
+                if (esteAngajat) {
+                    quickRow.style.display = "none";
+                } else {
+                    quickRow.style.display = "";
+                }
+
+                quickRow.querySelectorAll(".quick-menu-card").forEach(function(card) {
+
+                    const textCard = (card.innerText || "").toUpperCase();
+
+                    card.style.display = "";
+
+                    if (esteSefDepartament() && textCard.includes("IMPORT")) {
+                        card.style.display = "none";
+                    }
+
+                    if (esteAngajat && textCard.includes("ANGAJATI")) {
+                        card.style.display = "none";
+                    }
+
+                });
+
+            }
+
+            carduriMeniu.forEach(function(card) {
+
+                const textCard = (card.innerText || "").toUpperCase();
+
+                card.style.display = "";
+
+                if (
+                    esteAngajat &&
+                    (
+                        textCard.includes("ZILE FĂRĂ PONTAJ") ||
+                        textCard.includes("ZILE FARA PONTAJ")
+                    )
+                ) {
+                    card.style.display = "none";
+                }
+
+            });
+
+        }
+
+        // ===== AFISARE MENIU PRINCIPAL =====
+        async function showMainMenu(userData) {
+
+            utilizatorLogat = userData;
+
+            await incarcaSectiiPermiseUtilizator(userData);
+
+            userData.sectii_permise = sectiiPermiseUtilizator;
+
+            aplicaRestrictiiMeniu(userData);
+
+            localStorage.setItem(
+                "utilizatorLogat",
+                JSON.stringify(userData)
+            );
+
+            const loginBox = document.getElementById("login-box");
+
+            loginBox.classList.remove("login-visible");
+            loginBox.classList.add("login-hidden");
+
+            document.getElementById("main-menu").style.display = "flex";
+
+            document.getElementById("user-info").innerHTML =
+                userData.nume + "<br>" + userData.acces;
+
+            const partiNume = userData.nume.trim().split(" ");
+            const initiale = partiNume
+                .map(function(parte) {
+                    return parte.charAt(0);
+                })
+                .join("")
+                .substring(0, 2)
+                .toUpperCase();
+
+            document.getElementById("user-avatar").innerHTML = initiale;
+
+            incarcaContorZileFaraPontaj();
+            incarcaContorAngajati();
+            incarcaUltimaDataImport();
+
+        }
+
+
+        // ===== AFISARE / ASCUNDERE PAROLA =====
+        function togglePassword(inputId, icon) {
+
+            const input = document.getElementById(inputId);
+
+            if (input.type === "password") {
+
+                input.type = "text";
+
+                icon.innerHTML = "🙈";
+
+            } else {
+
+                input.type = "password";
+
+                icon.innerHTML = "👁";
+
+            }
+
+        }
+
+        
+        // ===== AUTOCOMPLETE LOGIN DIN ANGAJATI =====
+        async function cautaUtilizatoriLogin() {
+
+            const textCautare = document
+                .getElementById("nume")
+                .value
+                .trim()
+                .toLowerCase();
+
+            const lista = document.getElementById("login-user-results");
+
+            if (!textCautare || textCautare.length < 1) {
+
+                lista.style.display = "none";
+                lista.innerHTML = "";
+
+                return;
+
+            }
+
+            const { data, error } = await supabaseClient
+                .from("angajati")
+                .select("nume")
+                .order("nume", {
+                    ascending: true
+                });
+
+            if (error) {
+
+                lista.style.display = "none";
+                lista.innerHTML = "";
+
+                return;
+
+            }
+
+            function curataTextLogin(text) {
+                return String(text || "")
+                    .trim()
+                    .toLowerCase()
+                    .normalize("NFD")
+                    .replace(/[\u0300-\u036f]/g, "");
+            }
+
+            const cautareCurata = curataTextLogin(textCautare);
+
+            const rezultate = (data || []).filter(function(angajat) {
+
+                if (!angajat.nume) {
+                    return false;
+                }
+
+                const numeCurat = curataTextLogin(angajat.nume);
+
+                return numeCurat.includes(cautareCurata);
+
+            });
+
+            if (!rezultate.length) {
+
+                lista.style.display = "none";
+                lista.innerHTML = "";
+
+                return;
+
+            }
+
+            let html = "";
+
+            rezultate.forEach(function(angajat) {
+
+                html +=
+                    "<div style='padding:12px;border-bottom:1px solid rgba(255,255,255,0.08);cursor:pointer;color:#ffffff;font-weight:700;' onclick='selecteazaUtilizatorLogin(" +
+                    JSON.stringify(angajat.nume) +
+                    ")'>" +
+                    angajat.nume +
+                    "</div>";
+
+            });
+
+            lista.innerHTML = html;
+            lista.style.display = "block";
+
+        }
+
+        // ===== SELECTARE USER LOGIN =====
+        async function selecteazaUtilizatorLogin(nume) {
+
+            document.getElementById("nume").value = nume;
+
+            document.getElementById("login-user-results").style.display = "none";
+
+            await pregatesteLoginPentruNume(nume);
+
+        }
+
+        // ===== PREGATIRE FORMULAR DUPA NUME =====
+        async function pregatesteLoginPentruNume(nume) {
+
+            const parola2Wrap = document.getElementById("password2-wrap");
+            const magicWrap = document.getElementById("magic-word-wrap");
+            const forgotBox = document.getElementById("forgot-password");
+            const loginButton = document.getElementById("login-button");
+            const createButton = document.getElementById("create-account-button");
+
+            document.getElementById("password").value = "";
+            document.getElementById("password2").value = "";
+
+            if (document.getElementById("magic-word")) {
+                document.getElementById("magic-word").value = "";
+            }
+
+            if (forgotBox) {
+                forgotBox.checked = false;
+            }
+
+            if (magicWrap) {
+                magicWrap.style.display = "none";
+            }
+
+            if (parola2Wrap) {
+                parola2Wrap.style.display = "none";
+            }
+
+            if (loginButton) {
+                loginButton.style.display = "block";
+            }
+
+            if (createButton) {
+                createButton.style.display = "none";
+            }
+
+            const { data } = await supabaseClient
+                .from("utilizatori")
+                .select("*")
+                .eq("nume", nume)
+                .maybeSingle();
+
+            if (!data || !data.parola) {
+
+                if (parola2Wrap) {
+                    parola2Wrap.style.display = "block";
+                }
+
+                if (magicWrap) {
+                    magicWrap.style.display = "block";
+                }
+
+                if (loginButton) {
+                    loginButton.style.display = "none";
+                }
+
+                if (createButton) {
+                    createButton.style.display = "block";
+                }
+
+                showMessage(
+                    "Creeaza cont pentru primul acces",
+                    "success"
+                );
+
+            }
+
+        }
+
+        // ===== FORGOT PASSWORD =====
+        function toggleForgotPassword() {
+
+            const bifat = document.getElementById("forgot-password").checked;
+
+            document.getElementById("magic-word-wrap").style.display =
+                bifat ? "block" : "none";
+
+            document.getElementById("password2-wrap").style.display =
+                bifat ? "block" : "none";
+
+            const loginButton = document.getElementById("login-button");
+            const createButton = document.getElementById("create-account-button");
+
+            if (loginButton) {
+                loginButton.style.display = "block";
+            }
+
+            if (createButton) {
+                createButton.style.display = "none";
+            }
+
+        }
+
+        // ===== VALIDARE CUVANT MAGIC =====
+        function cuvantMagicValid(text) {
+
+            const valoare = String(text || "");
+
+            return valoare.length >= 4 && !/\s/.test(valoare);
+
+        }
+
+
+        // ===== LOGIN USER =====
+        async function loginUser() {
+
+            const nume = document.getElementById("nume").value.trim();
+            const password = document.getElementById("password").value;
+            const password2 = document.getElementById("password2").value;
+            const cuvantMagic = document.getElementById("magic-word")
+                ? document.getElementById("magic-word").value.trim()
+                : "";
+
+            const forgotPassword = document.getElementById("forgot-password")
+                ? document.getElementById("forgot-password").checked
+                : false;
+
+            if (!nume) {
+
+                showMessage(
+                    "Alege numele din lista",
+                    "error"
+                );
+
+                return;
+
+            }
+
+            const { data, error } = await supabaseClient
+                .from("utilizatori")
+                .select("*")
+                .eq("nume", nume)
+                .maybeSingle();
+
+            if (error || !data || !data.parola) {
+
+                showMessage(
+                    "Contul nu exista. Apasa CREARE CONT.",
+                    "error"
+                );
+
+                return;
+
+            }
+
+            // ===== RECUPERARE PAROLA =====
+            if (forgotPassword) {
+
+                if (!cuvantMagic || data.cuvant_magic !== cuvantMagic) {
+
+                    showMessage(
+                        "Cuvant magic gresit",
+                        "error"
+                    );
+
+                    return;
+
+                }
+
+                if (!password || !password2) {
+
+                    showMessage(
+                        "Completeaza noua parola",
+                        "error"
+                    );
+
+                    return;
+
+                }
+
+                if (password !== password2) {
+
+                    showMessage(
+                        "Parole diferite",
+                        "error"
+                    );
+
+                    return;
+
+                }
+
+                const { error: updateError } = await supabaseClient
+                    .from("utilizatori")
+                    .update({
+                        parola: password
+                    })
+                    .eq("id", data.id);
+
+                if (updateError) {
+
+                    showMessage(
+                        "Eroare salvare parola",
+                        "error"
+                    );
+
+                    return;
+
+                }
+
+                const userActualizat = {
+                    ...data,
+                    parola: password
+                };
+
+                await showMainMenu(userActualizat);
+
+                showMessage(
+                    "Parola schimbata",
+                    "success"
+                );
+
+                return;
+
+            }
+
+            // ===== LOGIN NORMAL =====
+            if (data.parola !== password) {
+
+                showMessage(
+                    "Parola gresita",
+                    "error"
+                );
+
+                return;
+
+            }
+
+            await showMainMenu(data);
+
+            showMessage(
+                "Login reusit",
+                "success"
+            );
+
+        }
+
+        // ===== CREARE CONT NOU =====
+        async function creeazaContNou() {
+
+            const nume = document.getElementById("nume").value.trim();
+            const password = document.getElementById("password").value;
+            const password2 = document.getElementById("password2").value;
+            const cuvantMagic = document.getElementById("magic-word")
+                ? document.getElementById("magic-word").value.trim()
+                : "";
+
+            if (!nume) {
+
+                showMessage(
+                    "Alege numele din lista",
+                    "error"
+                );
+
+                return;
+
+            }
+
+            const { data: angajatGasit } = await supabaseClient
+                .from("angajati")
+                .select("nume")
+                .eq("nume", nume)
+                .maybeSingle();
+
+            if (!angajatGasit) {
+
+                showMessage(
+                    "Alege numele exact din lista",
+                    "error"
+                );
+
+                return;
+
+            }
+
+            const { data: contExistent } = await supabaseClient
+                .from("utilizatori")
+                .select("*")
+                .eq("nume", nume)
+                .maybeSingle();
+
+            if (contExistent && contExistent.parola) {
+
+                showMessage(
+                    "Contul exista deja. Foloseste LOGIN.",
+                    "error"
+                );
+
+                await pregatesteLoginPentruNume(nume);
+
+                return;
+
+            }
+
+            if (!password || !password2) {
+
+                showMessage(
+                    "Completeaza parola",
+                    "error"
+                );
+
+                return;
+
+            }
+
+            if (password !== password2) {
+
+                showMessage(
+                    "Parole diferite",
+                    "error"
+                );
+
+                return;
+
+            }
+
+            if (!cuvantMagicValid(cuvantMagic)) {
+
+                showMessage(
+                    "Cuvantul magic trebuie sa aiba minim 4 caractere si fara spatii",
+                    "error"
+                );
+
+                return;
+
+            }
+
+            const dateContNou = {
+                nume: nume,
+                parola: password,
+                cuvant_magic: cuvantMagic,
+                rol: "Angajat",
+                acces: "Personal"
+            };
+
+            let rezultat;
+
+            if (contExistent && contExistent.id) {
+
+                rezultat = await supabaseClient
+                    .from("utilizatori")
+                    .update(dateContNou)
+                    .eq("id", contExistent.id)
+                    .select()
+                    .single();
+
+            } else {
+
+                rezultat = await supabaseClient
+                    .from("utilizatori")
+                    .insert(dateContNou)
+                    .select()
+                    .single();
+
+            }
+
+            if (rezultat.error) {
+
+                showMessage(
+                    "Eroare creare cont",
+                    "error"
+                );
+
+                return;
+
+            }
+
+            await showMainMenu(rezultat.data);
+
+            showMessage(
+                "Cont creat",
+                "success"
+            );
+
+        }
+
+        // ===== VERIFICARE SESIUNE =====
+        async function checkSession() {
+
+            const userSalvat = localStorage.getItem("utilizatorLogat");
+
+            if (userSalvat) {
+
+                const userData = JSON.parse(userSalvat);
+
+                const { data } = await supabaseClient
+                    .from("utilizatori")
+                    .select("*")
+                    .eq("nume", userData.nume)
+                    .maybeSingle();
+
+                if (data) {
+                    await showMainMenu(data);
+                }
+
+            }
+
+        }
+
+        // ===== LOGOUT =====
+        function logoutUser() {
+
+            utilizatorLogat = null;
+
+            localStorage.removeItem("utilizatorLogat");
+
+            location.reload();
+
+        }
+
+
+
+        // ===== ULTIMA DATA IMPORT PONTAJ =====
+        async function incarcaUltimaDataImport() {
+
+            const camp = document.getElementById("quick-import-date");
+
+            if (!camp) {
+                return;
+            }
+
+            camp.innerHTML = "--";
+
+            const { data, error } = await supabaseClient
+                .from("pontaj_zilnic")
+                .select("data")
+                .order("data", {
+                    ascending: false
+                })
+                .limit(1);
+
+            if (error || !data || !data.length) {
+                return;
+            }
+
+            const dataImport = data[0].data;
+
+            if (!dataImport) {
+                return;
+            }
+
+            const parti = String(dataImport).split("-");
+
+            if (parti.length !== 3) {
+                return;
+            }
+
+            camp.innerHTML = parti[2] + "." + parti[1];
+
+        }
+
+
+        // ===== CONTOR ANGAJATI PE MENIU RAPID =====
+        async function incarcaContorAngajati() {
+
+            const cifra = document.getElementById("quick-employees-number");
+
+            if (!cifra) {
+                return;
+            }
+
+            cifra.innerHTML = "...";
+
+            const { data, error } = await supabaseClient
+                .from("angajati")
+                .select("id,nume,sectie,apare_in_rapoarte,activ")
+                .order("nume", {
+                    ascending: true
+                });
+
+            if (error) {
+                cifra.innerHTML = "!";
+                return;
+            }
+
+            const totalAngajati = (data || []).filter(function(angajat) {
+
+                if (angajat.apare_in_rapoarte === false) {
+                    return false;
+                }
+
+                if (angajat.activ === false) {
+                    return false;
+                }
+
+                return angajatInSectiiPermise(angajat);
+
+            }).length;
+
+            cifra.innerHTML = String(totalAngajati);
+
+        }
+
+
+        // ===== DATE ANGAJATI =====
+        let listaAngajatiSupabase = [];
+
+        // ===== DESCHIDERE PAGINA ANGAJATI =====
+        async function deschidePaginaAngajati() {
+
+            if (!esteAdminSistem()) {
+
+                showMessage(
+                    "Nu ai acces la administrare",
+                    "error"
+                );
+
+                return;
+
+            }
+
+            document.querySelector(".premium-header").style.display = "none";
+            document.querySelector(".premium-line").style.display = "none";
+
+            document.getElementById("main-menu").style.display = "none";
+            document.getElementById("employees-page").style.display = "block";
+
+            await incarcaAngajati();
+
+        }
+
+        // ===== INCHIDERE PAGINA ANGAJATI =====
+        function inchidePaginaAngajati() {
+
+            document.getElementById("employees-page").style.display = "none";
+            document.getElementById("main-menu").style.display = "flex";
+
+            document.querySelector(".premium-header").style.display = "flex";
+            document.querySelector(".premium-line").style.display = "block";
+
+        }
+
+        // ===== INCARCARE ANGAJATI DIN SUPABASE =====
+        async function incarcaAngajati() {
+
+            const lista = document.getElementById("employees-list");
+
+            lista.innerHTML = "<div class='report-empty'>Se încarcă angajații...</div>";
+
+            const { data, error } = await supabaseClient
+                .from("angajati")
+                .select("*")
+                .order("nume", {
+                    ascending: true
+                });
+
+            if (error) {
+
+                lista.innerHTML = "";
+
+                showMessage(
+                    "Eroare citire angajați",
+                    "error"
+                );
+
+                return;
+
+            }
+
+            listaAngajatiSupabase = data || [];
+
+            afiseazaAngajati();
+
+        }
+
+        // ===== AFISARE ANGAJATI =====
+        function afiseazaAngajati() {
+
+            const lista = document.getElementById("employees-list");
+
+            if (!listaAngajatiSupabase.length) {
+
+                lista.innerHTML = "<div class='report-empty'>Nu există angajați salvați.</div>";
+
+                return;
+
+            }
+
+            let html = "";
+
+            listaAngajatiSupabase.forEach(function(angajat, index) {
+
+                const status = angajat.activ ? "Activ" : "Inactiv";
+                const dataInactiv = angajat.data_inactiv ? " din " + angajat.data_inactiv : "";
+                const apareRapoarte = angajat.apare_in_rapoarte === false ? "Nu" : "Da";
+                const regula0700 = angajat.regula_start_0700 ? "Da" : "Nu";
+                const pauzaMasa = angajat.pauza_masa ? "Da" : "Nu";
+                const pauzaMinute = angajat.pauza_minute || 0;
+
+                html += "<div class='employee-card' onclick='editeazaAngajat(" + index + ")'>";
+                html += "<div class='employee-card-name'>" + angajat.nume + "</div>";
+                html += "<div class='employee-card-info'>";
+                html += status + dataInactiv + "<br>";
+                html += "Apare în rapoarte: " + apareRapoarte + "<br>";
+                html += "Regulă 07:00: " + regula0700 + "<br>";
+                html += "Pauză masă: " + pauzaMasa + " (" + pauzaMinute + " min)<br>";
+                html += "Secție: " + (angajat.sectie || "-");
+                html += "</div>";
+                html += "</div>";
+
+            });
+
+            lista.innerHTML = html;
+
+        }
+
+        // ===== EDITARE ANGAJAT =====
+        function editeazaAngajat(index) {
+
+            const angajat = listaAngajatiSupabase[index];
+
+            document.getElementById("angajat-id").value = angajat.id || "";
+            document.getElementById("angajat-nume").value = angajat.nume || "";
+            document.getElementById("angajat-sectie").value = angajat.sectie || "";
+            document.getElementById("angajat-activ").checked = !!angajat.activ;
+            document.getElementById("angajat-data-inactiv").value = angajat.data_inactiv || "";
+            document.getElementById("angajat-apare-rapoarte").checked = angajat.apare_in_rapoarte !== false;
+            document.getElementById("angajat-regula-0700").checked = !!angajat.regula_start_0700;
+            document.getElementById("angajat-pauza-masa").checked = !!angajat.pauza_masa;
+            document.getElementById("angajat-pauza-minute").value = angajat.pauza_minute || 0;
+
+            showMessage(
+                "Angajat încărcat pentru editare",
+                "success"
+            );
+
+        }
+
+        // ===== RESETARE FORMULAR ANGAJAT =====
+        function reseteazaFormularAngajat() {
+
+            document.getElementById("angajat-id").value = "";
+            document.getElementById("angajat-nume").value = "";
+            document.getElementById("angajat-sectie").value = "";
+            document.getElementById("angajat-activ").checked = true;
+            document.getElementById("angajat-data-inactiv").value = "";
+            document.getElementById("angajat-apare-rapoarte").checked = true;
+            document.getElementById("angajat-regula-0700").checked = false;
+            document.getElementById("angajat-pauza-masa").checked = false;
+            document.getElementById("angajat-pauza-minute").value = 0;
+
+        }
+
+        // ===== SALVARE ANGAJAT IN SUPABASE =====
+        async function salveazaAngajat() {
+
+            const id = document.getElementById("angajat-id").value;
+            const nume = document.getElementById("angajat-nume").value.trim();
+            const sectie = document.getElementById("angajat-sectie").value.trim();
+            const activ = document.getElementById("angajat-activ").checked;
+            const dataInactiv = document.getElementById("angajat-data-inactiv").value || null;
+            const apareRapoarte = document.getElementById("angajat-apare-rapoarte").checked;
+            const regula0700 = document.getElementById("angajat-regula-0700").checked;
+            const pauzaMasa = document.getElementById("angajat-pauza-masa").checked;
+            const pauzaMinute = parseInt(document.getElementById("angajat-pauza-minute").value || "0", 10);
+
+            if (!nume) {
+
+                showMessage(
+                    "Completează numele angajatului",
+                    "error"
+                );
+
+                return;
+
+            }
+
+            if (!activ && !dataInactiv) {
+
+                showMessage(
+                    "Alege data inactivării",
+                    "error"
+                );
+
+                return;
+
+            }
+
+            const dateAngajat = {
+                nume: nume,
+                sectie: sectie,
+                activ: activ,
+                data_inactiv: dataInactiv,
+                apare_in_rapoarte: apareRapoarte,
+                regula_start_0700: regula0700,
+                pauza_masa: pauzaMasa,
+                pauza_minute: pauzaMinute
+            };
+
+            let raspuns;
+
+            if (id) {
+
+                raspuns = await supabaseClient
+                    .from("angajati")
+                    .update(dateAngajat)
+                    .eq("id", id);
+
+            } else {
+
+                raspuns = await supabaseClient
+                    .from("angajati")
+                    .insert(dateAngajat);
+
+            }
+
+            if (raspuns.error) {
+
+                showMessage(
+                    "Eroare salvare angajat",
+                    "error"
+                );
+
+                return;
+
+            }
+
+            showMessage(
+                "Angajat salvat",
+                "success"
+            );
+
+            reseteazaFormularAngajat();
+
+            await incarcaAngajati();
+
+        }
+
+
+        // ===== SELECTARE SI CITIRE FISIER PONTAJ =====
+        function selecteazaFisier() {
+
+            const fisier = document.getElementById("fisier-pontaj").files[0];
+
+            if (!fisier) {
+
+                return;
+
+            }
+
+            const reader = new FileReader();
+
+            reader.onload = async function(event) {
+
+                try {
+
+                    const dateFisier = new Uint8Array(event.target.result);
+
+                    const workbook = XLSX.read(dateFisier, {
+                        type: "array"
+                    });
+
+                    const primaFoaie = workbook.SheetNames[0];
+
+                    const worksheet = workbook.Sheets[primaFoaie];
+
+                    const randuri = XLSX.utils.sheet_to_json(worksheet, {
+                        header: 1,
+                        defval: ""
+                    });
+
+                    ultimImportRanduri = randuri;
+
+                    await salveazaPontajZilnic(randuri);
+
+                    showMessage(
+                        "Import finalizat",
+                        "success"
+                    );
+
+                    incarcaUltimaDataImport();
+                    incarcaContorZileFaraPontaj();
+
+                } catch (error) {
+
+                    showMessage(
+                        "Fisierul nu a putut fi citit",
+                        "error"
+                    );
+
+                }
+
+            };
+
+            reader.readAsArrayBuffer(fisier);
+
+        }
+
+        // ===== AFISARE PRIMELE RANDURI DIN EXCEL =====
+        function afiseazaPrimeleRanduri(randuri) {
+
+            const preview = document.getElementById("excel-preview");
+
+            const titlu = document.getElementById("excel-preview-title");
+
+            const primeleRanduri = randuri.slice(0, 10);
+
+            let tabel = "<table>";
+
+            primeleRanduri.forEach(function(rand) {
+
+                tabel += "<tr>";
+
+                rand.forEach(function(celula) {
+
+                    tabel += "<td>" + celula + "</td>";
+
+                });
+
+                tabel += "</tr>";
+
+            });
+
+            tabel += "</table>";
+
+            preview.innerHTML = tabel;
+
+            preview.style.display = "block";
+
+            titlu.style.display = "block";
+
+        }
+
+
+
+        // ===== SALVARE PONTAJ ZILNIC IN SUPABASE =====
+        async function salveazaPontajZilnic(randuri) {
+
+            try {
+
+                const pontariCitite = [];
+                const seriCuPontajDupaOra19 = {};
+                const diminetiCuPontajIntreOra01Si04 = {};
+
+                function dataZiAnterioara(dataText) {
+
+                    const dataObj = creeazaDataDinText(dataText);
+
+                    dataObj.setDate(dataObj.getDate() - 1);
+
+                    return formatDataPentruCheie(dataObj);
+
+                }
+
+                for (let i = 1; i < randuri.length; i++) {
+
+                    const rand = randuri[i];
+
+                    const nume = String(rand[3] || "").trim();
+                    const departament = String(rand[4] || "").trim();
+                    const dataOraRaw = rand[5];
+                    const eveniment = String(rand[7] || "").trim().toUpperCase();
+
+                    // ===== EXCLUDERE DOOR OPEN =====
+                    if (eveniment.includes("DOOR OPEN")) {
+                        continue;
+                    }
+
+                    // ===== EXCLUDERE ANGAJATI DIN SUPABASE =====
+                    const angajatGasit = listaAngajatiSupabase.find(function(angajat) {
+                        return String(angajat.nume || "").trim() === nume;
+                    });
+
+                    if (
+                        angajatGasit &&
+                        angajatGasit.apare_in_rapoarte === false
+                    ) {
+                        continue;
+                    }
+
+                    if (!nume || !dataOraRaw) {
+                        continue;
+                    }
+
+                    const dateInfo = convertesteDataOraExcel(dataOraRaw);
+
+                    if (!dateInfo) {
+                        continue;
+                    }
+
+                    pontariCitite.push({
+                        nume: nume,
+                        departament: departament,
+                        data: dateInfo.data,
+                        ora: dateInfo.ora,
+                        minute: dateInfo.minute
+                    });
+
+                    // ===== POSIBILA TURA DE NOAPTE =====
+                    // Se marchează doar dacă există pontaj după ora 21:00.
+                    if (dateInfo.minute >= 1260) {
+                        seriCuPontajDupaOra19[nume + "|" + dateInfo.data] = true;
+                    }
+
+                    // ===== CONFIRMARE TURA DE NOAPTE A DOUA ZI =====
+                    // Tura se confirmă doar dacă a doua zi există pontaj între 01:00 și 04:00.
+                    if (
+                        dateInfo.minute >= 60 &&
+                        dateInfo.minute <= 240
+                    ) {
+                        diminetiCuPontajIntreOra01Si04[nume + "|" + dateInfo.data] = true;
+                    }
+
+                }
+
+                const grupare = {};
+
+                pontariCitite.forEach(function(pontare) {
+
+                    let dataRaport = pontare.data;
+                    let minuteSortare = pontare.minute;
+
+                    const dataAnterioara = dataZiAnterioara(pontare.data);
+
+                    // ===== REGULA TURA DE NOAPTE =====
+                    // Pontajele înainte de 09:00 aparțin zilei anterioare doar dacă:
+                    // 1. angajatul a avut pontaj după 21:00 în ziua anterioară;
+                    // 2. în ziua următoare există pontaj între 01:00 și 04:00.
+                    if (
+                        pontare.minute < 540 &&
+                        seriCuPontajDupaOra19[pontare.nume + "|" + dataAnterioara] &&
+                        diminetiCuPontajIntreOra01Si04[pontare.nume + "|" + pontare.data]
+                    ) {
+                        dataRaport = dataAnterioara;
+                        minuteSortare = pontare.minute + 1440;
+                    }
+
+                    const cheie = pontare.nume + "|" + dataRaport;
+
+                    if (!grupare[cheie]) {
+
+                        grupare[cheie] = {
+                            nume: pontare.nume,
+                            departament: pontare.departament,
+                            data: dataRaport,
+                            pontari: []
+                        };
+
+                    }
+
+                    grupare[cheie].pontari.push({
+                        ora: pontare.ora,
+                        minute: minuteSortare
+                    });
+
+                });
+
+                const rezultate = Object.values(grupare).map(function(grup) {
+
+                    grup.pontari.sort(function(a, b) {
+                        return a.minute - b.minute;
+                    });
+
+                    const primaPontare = grup.pontari[0];
+                    const ultimaPontare = grup.pontari[grup.pontari.length - 1];
+
+                    return {
+                        nume: grup.nume,
+                        departament: grup.departament,
+                        data: grup.data,
+                        ora_intrare: primaPontare.ora,
+                        ora_iesire: ultimaPontare.ora,
+                        nr_pontari: grup.pontari.length
+                    };
+
+                });
+
+                console.log("REZULTATE:", rezultate);
+
+                const { data, error } = await supabaseClient
+                    .from("pontaj_zilnic")
+                    .upsert(
+
+                        rezultate.map(function(pontaj) {
+
+                            return {
+
+                                nume: pontaj.nume,
+                                departament: pontaj.departament,
+                                data: pontaj.data,
+                                ora_intrare: pontaj.ora_intrare,
+                                ora_iesire: pontaj.ora_iesire,
+                                nr_pontari: pontaj.nr_pontari,
+                                importat_de: utilizatorLogat?.nume || "",
+                                cheie_unica:
+                                    pontaj.nume + "|" + pontaj.data
+
+                            };
+
+                        }),
+
+                        {
+                            onConflict: "cheie_unica"
+                        }
+
+                    );
+
+                console.log("SUPABASE DATA:", data);
+                console.log("SUPABASE ERROR:", error);
+
+                if (error) {
+
+                    showMessage(
+                        "Eroare salvare Supabase",
+                        "error"
+                    );
+
+                    return;
+
+                }
+
+                showMessage(
+                    "Import salvat in Supabase",
+                    "success"
+                );
+
+            } catch(err) {
+
+                console.log(err);
+
+                showMessage(
+                    "Eroare import",
+                    "error"
+                );
+
+            }
+
+        }
+
+        // ===== CONVERSIE DATA SI ORA EXCEL =====
+        function convertesteDataOraExcel(valoare) {
+
+            const text = String(valoare).trim();
+
+            const parti = text.split(" ");
+
+            if (parti.length < 3) {
+                return null;
+            }
+
+            const dataText = parti[0];
+            const oraText = parti[1];
+            const ampm = parti[2].toUpperCase();
+
+            const dataParti = dataText.split("/");
+
+            if (dataParti.length !== 3) {
+                return null;
+            }
+
+            const luna = dataParti[0].padStart(2, "0");
+            const zi = dataParti[1].padStart(2, "0");
+            const an = dataParti[2];
+
+            const oraParti = oraText.split(":");
+
+            if (oraParti.length < 2) {
+                return null;
+            }
+
+            let ora = parseInt(oraParti[0], 10);
+            const minut = parseInt(oraParti[1], 10);
+
+            if (ampm === "PM" && ora !== 12) {
+                ora += 12;
+            }
+
+            if (ampm === "AM" && ora === 12) {
+                ora = 0;
+            }
+
+            const minuteTotale = ora * 60 + minut;
+
+            return {
+                data: an + "-" + luna + "-" + zi,
+                ora: String(ora).padStart(2, "0") + ":" + String(minut).padStart(2, "0"),
+                minute: minuteTotale
+            };
+
+        }
+
+
+
+
+        // ===== VERIFICARE DREPT TOTAL RAPOARTE =====
+        function areAccesTotalRapoarte() {
+
+            const rol = String(utilizatorLogat?.rol || "").trim().toUpperCase();
+            const acces = String(utilizatorLogat?.acces || "").trim().toUpperCase();
+
+            return (
+                acces === "FULL" &&
+                (
+                    rol === "ADMIN" ||
+                    rol === "MANAGEMENT"
+                )
+            );
+
+        }
+
+
+        // ===== VERIFICARE DACA ESTE ADMIN SISTEM =====
+        function esteAdminSistem() {
+
+            const rol = String(utilizatorLogat?.rol || "").trim().toUpperCase();
+            const acces = String(utilizatorLogat?.acces || "").trim().toUpperCase();
+
+            return rol === "ADMIN" && acces === "FULL";
+
+        }
+
+
+        // ===== VERIFICARE DACA ESTE SEF DEPARTAMENT =====
+        function esteSefDepartament() {
+
+            const rol = String(utilizatorLogat?.rol || "").trim().toUpperCase();
+            const acces = String(utilizatorLogat?.acces || "").trim().toUpperCase();
+
+            return rol === "SEF DEPARTAMENT" && acces === "DEPARTAMENT";
+
+        }
+
+        // ===== VERIFICARE DACA ESTE ANGAJAT SIMPLU =====
+        function esteAngajatSimplu() {
+
+            const rol = String(utilizatorLogat?.rol || "").trim().toUpperCase();
+            const acces = String(utilizatorLogat?.acces || "").trim().toUpperCase();
+
+            return rol === "ANGAJAT" && acces === "PERSONAL";
+
+        }
+
+        // ===== FILTRARE PE SECTII PERMISE =====
+        function angajatInSectiiPermise(angajat) {
+
+            if (areAccesTotalRapoarte()) {
+                return true;
+            }
+
+            const numeAngajat = String(angajat?.nume || "")
+                .trim()
+                .toUpperCase();
+
+            const numeUtilizator = String(utilizatorLogat?.nume || "")
+                .trim()
+                .toUpperCase();
+
+            if (numeAngajat && numeAngajat === numeUtilizator) {
+                return true;
+            }
+
+            if (esteAngajatSimplu()) {
+                return false;
+            }
+
+            if (!esteSefDepartament()) {
+                return false;
+            }
+
+            const sectieAngajat = String(angajat?.sectie || "")
+                .trim()
+                .toUpperCase();
+
+            return sectiiPermiseUtilizator.some(function(sectie) {
+
+                return (
+                    String(sectie || "")
+                        .trim()
+                        .toUpperCase() === sectieAngajat
+                );
+
+            });
+
+        }
+
+
+        // ===== DESCHIDERE PAGINA RAPORT TEST =====
+        async function deschidePaginaRaportTest() {
+
+            document.querySelector(".premium-header").style.display = "none";
+            document.querySelector(".premium-line").style.display = "none";
+
+            document.getElementById("main-menu").style.display = "none";
+            document.getElementById("report-page").style.display = "block";
+
+            const randFiltre = document.querySelector(".report-filter-row");
+            const zonaCautare = document.getElementById("employee-search-area");
+            const inputCautare = document.getElementById("employee-search-input");
+            const rezultateCautare = document.getElementById("employee-search-results");
+
+            if (esteAngajatSimplu()) {
+
+                modRaportSelectat = "angajat";
+                angajatSelectatRaport = utilizatorLogat.nume;
+
+                if (randFiltre) {
+                    randFiltre.style.display = "none";
+                }
+
+                if (zonaCautare) {
+                    zonaCautare.style.display = "block";
+                }
+
+                if (inputCautare) {
+                    inputCautare.value = utilizatorLogat.nume;
+                    inputCautare.disabled = true;
+                }
+
+                if (rezultateCautare) {
+                    rezultateCautare.innerHTML = "";
+                }
+
+            } else {
+
+                if (randFiltre) {
+                    randFiltre.style.display = "";
+                }
+
+                if (zonaCautare) {
+                    zonaCautare.style.display = "none";
+                }
+
+                if (inputCautare) {
+                    inputCautare.value = "";
+                    inputCautare.disabled = false;
+                }
+
+                if (rezultateCautare) {
+                    rezultateCautare.innerHTML = "";
+                }
+
+            }
+
+            afiseazaAniRaport();
+
+            // ===== INCARCARE ANGAJATI PENTRU SEARCH =====
+            if (!listaAngajatiSupabase.length) {
+
+                const { data } = await supabaseClient
+                    .from("angajati")
+                    .select("*")
+                    .order("nume", {
+                        ascending: true
+                    });
+
+                listaAngajatiSupabase = data || [];
+
+            }
+
+        }
+
+
+        // ===== INCHIDERE PAGINA RAPORT TEST =====
+        function inchidePaginaRaportTest() {
+
+            document.getElementById("report-page").style.display = "none";
+            document.getElementById("main-menu").style.display = "flex";
+
+            raportLunaCurentaDinMeniu = false;
+
+            document.querySelector(".premium-header").style.display = "flex";
+            document.querySelector(".premium-line").style.display = "block";
+
+        }
+
+        // ===== VERIFICARE DACA ANGAJATUL APARE IN RAPORT =====
+        function angajatApareInRaport(nume, dataText, reguliDupaNume) {
+
+            const regula = reguliDupaNume[nume];
+
+            if (!regula) {
+                return true;
+            }
+
+            if (regula.apare_in_rapoarte === false) {
+                return false;
+            }
+
+            if (regula.activ === false && regula.data_inactiv && dataText >= regula.data_inactiv) {
+                return false;
+            }
+
+            return true;
+
+        }
+
+
+        // ===== RAPORT TEST: ZILE FARA PONTAJ LUNI - VINERI =====
+        async function genereazaRaportZileFaraPontaj() {
+
+            const listaRaport = document.getElementById("report-list");
+
+            if (!ultimImportRanduri || ultimImportRanduri.length <= 1) {
+
+                showMessage(
+                    "Nu exista import pentru raport",
+                    "error"
+                );
+
+                return false;
+
+            }
+
+            const { data: reguliAngajati, error: eroareReguli } = await supabaseClient
+                .from("angajati")
+                .select("*");
+
+            if (eroareReguli) {
+
+                showMessage(
+                    "Eroare citire reguli angajați",
+                    "error"
+                );
+
+                return false;
+
+            }
+
+            const reguliDupaNume = {};
+
+            (reguliAngajati || []).forEach(function(angajat) {
+                reguliDupaNume[String(angajat.nume || "").trim()] = angajat;
+            });
+
+            const angajati = {};
+            const pontaje = {};
+            let dataMinima = null;
+            let dataMaxima = null;
+
+            for (let i = 1; i < ultimImportRanduri.length; i++) {
+
+                const rand = ultimImportRanduri[i];
+
+                const nume = String(rand[3] || "").trim();
+                const dataOraRaw = rand[5];
+                const eveniment = String(rand[7] || "").trim().toUpperCase();
+
+                if (
+                    eveniment.includes("DOOR OPEN") ||
+                    !nume ||
+                    !dataOraRaw
+                ) {
+                    continue;
+                }
+
+                const dateInfo = convertesteDataOraExcel(dataOraRaw);
+
+                if (!dateInfo) {
+                    continue;
+                }
+
+                angajati[nume] = true;
+                pontaje[nume + "|" + dateInfo.data] = true;
+
+                const dataObj = creeazaDataDinText(dateInfo.data);
+
+                if (!dataMinima || dataObj < dataMinima) {
+                    dataMinima = dataObj;
+                }
+
+                if (!dataMaxima || dataObj > dataMaxima) {
+                    dataMaxima = dataObj;
+                }
+
+            }
+
+            const listaAngajati = Object.keys(angajati)
+                .filter(function(nume) {
+                    return angajatApareInRaport(nume, formatDataPentruCheie(dataMinima), reguliDupaNume);
+                })
+                .sort(function(a, b) {
+                    return a.localeCompare(b, "ro");
+                });
+
+            let html = "";
+
+            listaAngajati.forEach(function(nume) {
+
+                const zileLipsa = [];
+                const dataCurenta = new Date(dataMinima);
+
+                while (dataCurenta <= dataMaxima) {
+
+                    const ziSaptamana = dataCurenta.getDay();
+                    const dataText = formatDataPentruCheie(dataCurenta);
+
+                    if (
+                        ziSaptamana >= 1 &&
+                        ziSaptamana <= 5 &&
+                        !esteZiLiberaLegala(dataText) &&
+                        angajatApareInRaport(nume, dataText, reguliDupaNume)
+                    ) {
+
+                        if (!pontaje[nume + "|" + dataText]) {
+                            zileLipsa.push(formatDataAfisare(dataCurenta));
+                        }
+
+                    }
+
+                    dataCurenta.setDate(dataCurenta.getDate() + 1);
+
+                }
+
+                if (zileLipsa.length > 0) {
+
+                    html += "<div class='report-card'>";
+                    html += "<div class='report-card-name'>" + nume + "</div>";
+                    html += "<div class='report-card-days'>" + zileLipsa.join(", ") + "</div>";
+                    html += "</div>";
+
+                }
+
+            });
+
+            if (html === "") {
+                html = "<div class='report-empty'>Nu exista zile fara pontaj in perioada importata.</div>";
+            }
+
+            listaRaport.innerHTML = html;
+
+            return true;
+
+        }
+
+        // ===== ZILE LIBERE LEGALE 2026 =====
+        function esteZiLiberaLegala(dataText) {
+
+            const zileLibere = [
+                "2026-01-01",
+                "2026-01-02",
+                "2026-01-06",
+                "2026-01-07",
+                "2026-04-10",
+                "2026-04-13",
+                "2026-05-01",
+                "2026-06-01",
+                "2026-11-30",
+                "2026-12-01",
+                "2026-12-25"
+            ];
+
+            return zileLibere.includes(dataText);
+
+        }
+
+        // ===== DATA DIN TEXT YYYY-MM-DD =====
+        function creeazaDataDinText(dataText) {
+
+            const parti = dataText.split("-");
+
+            return new Date(
+                parseInt(parti[0], 10),
+                parseInt(parti[1], 10) - 1,
+                parseInt(parti[2], 10)
+            );
+
+        }
+
+        // ===== FORMATARE DATA PENTRU CHEIE =====
+        function formatDataPentruCheie(dataObj) {
+
+            const an = dataObj.getFullYear();
+            const luna = String(dataObj.getMonth() + 1).padStart(2, "0");
+            const zi = String(dataObj.getDate()).padStart(2, "0");
+
+            return an + "-" + luna + "-" + zi;
+
+        }
+
+        // ===== FORMATARE DATA PENTRU AFISARE =====
+        function formatDataAfisare(dataObj) {
+
+            const zi = String(dataObj.getDate()).padStart(2, "0");
+            const luna = String(dataObj.getMonth() + 1).padStart(2, "0");
+
+            return zi + "." + luna;
+
+        }
+
+
+
+        // ===== FORMATARE SCURTA ZI SI DATA =====
+        function formatZiScurtaData(dataObj) {
+
+            const ziScurta = ZILE_SCURTE[dataObj.getDay()];
+            const zi = String(dataObj.getDate()).padStart(2, "0");
+            const luna = String(dataObj.getMonth() + 1).padStart(2, "0");
+
+            return ziScurta + " " + zi + "." + luna;
+
+        }
+
+        // ===== CONTOR ZILE FARA PONTAJ PE PAGINA PRINCIPALA =====
+        async function incarcaContorZileFaraPontaj() {
+
+            const cifra = document.getElementById("missing-counter-number");
+
+            if (!cifra) {
+                return;
+            }
+
+            cifra.innerHTML = "...";
+
+            const { data: angajati, error: eroareAngajati } = await supabaseClient
+                .from("angajati")
+                .select("*")
+                .order("nume", {
+                    ascending: true
+                });
+
+            if (eroareAngajati) {
+                cifra.innerHTML = "!";
+                return;
+            }
+
+            let toatePontajele = [];
+            let startLot = 0;
+            const marimeLot = 1000;
+
+            while (true) {
+
+                const { data: lotPontaje, error: eroarePontaje } = await supabaseClient
+                    .from("pontaj_zilnic")
+                    .select("nume,data,status_corectie")
+                    .order("data", {
+                        ascending: true
+                    })
+                    .range(startLot, startLot + marimeLot - 1);
+
+                if (eroarePontaje) {
+                    cifra.innerHTML = "!";
+                    return;
+                }
+
+                toatePontajele = toatePontajele.concat(lotPontaje || []);
+
+                if (!lotPontaje || lotPontaje.length < marimeLot) {
+                    break;
+                }
+
+                startLot += marimeLot;
+
+            }
+
+            const toateDatele = toatePontajele
+                .map(function(pontaj) {
+                    return pontaj.data;
+                })
+                .filter(function(dataText) {
+                    return !!dataText;
+                })
+                .sort();
+
+            if (!toateDatele.length) {
+                cifra.innerHTML = "0";
+                return;
+            }
+
+            const dataStart = creeazaDataDinText(toateDatele[0]);
+            const dataStop = creeazaDataDinText(toateDatele[toateDatele.length - 1]);
+
+            const pontajeDupaAngajatZi = {};
+
+            toatePontajele.forEach(function(pontaj) {
+
+                const cheie =
+                    String(pontaj.nume || "").trim().toUpperCase() +
+                    "|" +
+                    String(pontaj.data || "").trim();
+
+                pontajeDupaAngajatZi[cheie] = pontaj;
+
+            });
+
+            let totalLipsaPontaj = 0;
+
+            (angajati || []).forEach(function(angajat) {
+
+                const nume = String(angajat.nume || "").trim();
+
+                if (!nume) {
+                    return;
+                }
+
+                if (angajat.apare_in_rapoarte === false) {
+                    return;
+                }
+
+                if (angajat.afiseaza_lipsa_pontaj === false) {
+                    return;
+                }
+
+                if (!angajatInSectiiPermise(angajat)) {
+                    return;
+                }
+
+                const dataCurenta = new Date(dataStart);
+
+                while (dataCurenta <= dataStop) {
+
+                    const dataText = formatDataPentruCheie(dataCurenta);
+                    const ziSaptamana = dataCurenta.getDay();
+
+                    const esteWeekend =
+                        ziSaptamana === 0 ||
+                        ziSaptamana === 6;
+
+                    const angajatInactivLaData =
+                        angajat.activ === false &&
+                        angajat.data_inactiv &&
+                        dataText >= angajat.data_inactiv;
+
+                    if (
+                        !esteWeekend &&
+                        !esteZiLiberaLegala(dataText) &&
+                        !angajatInactivLaData
+                    ) {
+
+                        const cheieCautare =
+                            nume.trim().toUpperCase() +
+                            "|" +
+                            dataText;
+
+                        const pontajZi = pontajeDupaAngajatZi[cheieCautare];
+
+                        if (!pontajZi || !pontajZi.status_corectie && !pontajZi.data) {
+                            totalLipsaPontaj++;
+                        }
+
+                    }
+
+                    dataCurenta.setDate(dataCurenta.getDate() + 1);
+
+                }
+
+            });
+
+            cifra.innerHTML = String(totalLipsaPontaj);
+
+        }
+
+
+        // ===== DESCHIDERE PAGINA RAPORT ZILE FARA PONTAJ =====
+        async function deschidePaginaRaportZileFaraPontaj() {
+
+            document.querySelector(".premium-header").style.display = "none";
+            document.querySelector(".premium-line").style.display = "none";
+
+            document.getElementById("main-menu").style.display = "none";
+            document.getElementById("missing-days-page").style.display = "block";
+
+            await incarcaRaportZileFaraPontaj();
+
+        }
+
+        // ===== INCHIDERE PAGINA RAPORT ZILE FARA PONTAJ =====
+        function inchidePaginaRaportZileFaraPontaj() {
+
+            document.getElementById("missing-days-page").style.display = "none";
+            document.getElementById("main-menu").style.display = "flex";
+
+            document.querySelector(".premium-header").style.display = "flex";
+            document.querySelector(".premium-line").style.display = "block";
+
+        }
+
+        // ===== DATE RAPORT ZILE FARA PONTAJ =====
+        let modFiltruZileFaraPontaj = "toti";
+        let selectieFiltruZileFaraPontaj = "";
+        let angajatiRaportZileFaraPontaj = [];
+        let pontajeRaportZileFaraPontaj = [];
+        let dataStartRaportZileFaraPontaj = null;
+        let dataStopRaportZileFaraPontaj = null;
+
+        // ===== SETARE FILTRU RAPORT ZILE FARA PONTAJ =====
+        function seteazaFiltruZileFaraPontaj(mod) {
+
+            modFiltruZileFaraPontaj = mod;
+            selectieFiltruZileFaraPontaj = "";
+
+            document.getElementById("missing-filter-angajat").classList.remove("active");
+            document.getElementById("missing-filter-sectie").classList.remove("active");
+            document.getElementById("missing-filter-toti").classList.remove("active");
+
+            document.getElementById("missing-filter-" + mod).classList.add("active");
+
+            pregatesteSelectieZileFaraPontaj();
+            afiseazaRaportZileFaraPontaj();
+
+        }
+
+        // ===== PREGATIRE SELECTIE ANGAJAT / SECTIE =====
+        function pregatesteSelectieZileFaraPontaj() {
+
+            const zonaSelectie = document.getElementById("missing-days-select-area");
+            const select = document.getElementById("missing-days-select");
+
+            select.innerHTML = "";
+
+            if (modFiltruZileFaraPontaj === "toti") {
+
+                zonaSelectie.style.display = "none";
+
+                return;
+
+            }
+
+            zonaSelectie.style.display = "block";
+
+            let optiuni = [];
+
+            if (modFiltruZileFaraPontaj === "angajat") {
+
+                optiuni = angajatiRaportZileFaraPontaj
+                    .filter(function(angajat) {
+                        return (
+                            angajat.apare_in_rapoarte !== false &&
+                            angajatInSectiiPermise(angajat)
+                        );
+                    })
+                    .map(function(angajat) {
+                        return String(angajat.nume || "").trim();
+                    })
+                    .filter(function(nume) {
+                        return !!nume;
+                    })
+                    .sort(function(a, b) {
+                        return a.localeCompare(b, "ro");
+                    });
+
+                select.innerHTML = "<option value=''>Alege angajatul</option>";
+
+            }
+
+            if (modFiltruZileFaraPontaj === "sectie") {
+
+                const sectiiGasite = {};
+
+                angajatiRaportZileFaraPontaj.forEach(function(angajat) {
+
+                    if (angajat.apare_in_rapoarte === false) {
+                        return;
+                    }
+
+                    if (!angajatInSectiiPermise(angajat)) {
+                        return;
+                    }
+
+                    const sectie = String(angajat.sectie || "").trim();
+
+                    if (sectie) {
+                        sectiiGasite[sectie] = true;
+                    }
+
+                });
+
+                optiuni = Object.keys(sectiiGasite).sort(function(a, b) {
+                    return a.localeCompare(b, "ro");
+                });
+
+                select.innerHTML = "<option value=''>Alege secția</option>";
+
+            }
+
+            optiuni.forEach(function(optiune) {
+
+                select.innerHTML +=
+                    "<option value='" + optiune.replace(/'/g, "&#39;") + "'>" +
+                    optiune +
+                    "</option>";
+
+            });
+
+        }
+
+        // ===== SCHIMBARE SELECTIE RAPORT ZILE FARA PONTAJ =====
+        function schimbaSelectieZileFaraPontaj() {
+
+            selectieFiltruZileFaraPontaj = document.getElementById("missing-days-select").value;
+
+            afiseazaRaportZileFaraPontaj();
+
+        }
+
+        // ===== INCARCARE RAPORT ZILE FARA PONTAJ DIN SUPABASE =====
+        async function incarcaRaportZileFaraPontaj() {
+
+            const lista = document.getElementById("missing-days-list");
+
+            lista.innerHTML = "<div class='missing-days-empty'>Se încarcă raportul...</div>";
+
+            const { data: angajati, error: eroareAngajati } = await supabaseClient
+                .from("angajati")
+                .select("*")
+                .order("nume", {
+                    ascending: true
+                });
+
+            if (eroareAngajati) {
+
+                lista.innerHTML = "";
+
+                showMessage(
+                    "Eroare citire angajați",
+                    "error"
+                );
+
+                return;
+
+            }
+
+            // ===== CITIRE COMPLETA PONTAJ, IN LOTURI =====
+            let toatePontajele = [];
+            let startLotPontaje = 0;
+            const marimeLotPontaje = 1000;
+            let eroarePontaje = null;
+
+            while (true) {
+
+                const { data: lotPontaje, error } = await supabaseClient
+                    .from("pontaj_zilnic")
+                    .select("nume,data,status_corectie,ora_intrare_manual,ora_iesire_manual,modificat_de,modificat_la")
+                    .order("data", {
+                        ascending: true
+                    })
+                    .range(startLotPontaje, startLotPontaje + marimeLotPontaje - 1);
+
+                if (error) {
+                    eroarePontaje = error;
+                    break;
+                }
+
+                toatePontajele = toatePontajele.concat(lotPontaje || []);
+
+                if (!lotPontaje || lotPontaje.length < marimeLotPontaje) {
+                    break;
+                }
+
+                startLotPontaje += marimeLotPontaje;
+
+            }
+
+            if (eroarePontaje) {
+
+                lista.innerHTML = "";
+
+                showMessage(
+                    "Eroare citire pontaj",
+                    "error"
+                );
+
+                return;
+
+            }
+
+            if (!toatePontajele.length) {
+
+                lista.innerHTML = "<div class='missing-days-empty'>Nu există pontaje salvate în Supabase.</div>";
+
+                return;
+
+            }
+
+            angajatiRaportZileFaraPontaj = angajati || [];
+            pontajeRaportZileFaraPontaj = toatePontajele || [];
+
+            const toateDatelePontaj = pontajeRaportZileFaraPontaj
+                .map(function(pontaj) {
+                    return pontaj.data;
+                })
+                .filter(function(dataText) {
+                    return !!dataText;
+                })
+                .sort();
+
+            if (!toateDatelePontaj.length) {
+
+                lista.innerHTML = "<div class='missing-days-empty'>Nu există date valide în pontaj.</div>";
+
+                return;
+
+            }
+
+            dataStartRaportZileFaraPontaj = creeazaDataDinText(toateDatelePontaj[0]);
+            dataStopRaportZileFaraPontaj = creeazaDataDinText(toateDatelePontaj[toateDatelePontaj.length - 1]);
+
+            pregatesteSelectieZileFaraPontaj();
+            afiseazaRaportZileFaraPontaj();
+
+        }
+
+        // ===== AFISARE RAPORT ZILE FARA PONTAJ =====
+        function afiseazaRaportZileFaraPontaj() {
+
+            const lista = document.getElementById("missing-days-list");
+
+            if (!dataStartRaportZileFaraPontaj || !dataStopRaportZileFaraPontaj) {
+
+                lista.innerHTML = "<div class='missing-days-empty'>Nu există date pentru raport.</div>";
+
+                return;
+
+            }
+
+            if (
+                modFiltruZileFaraPontaj !== "toti" &&
+                !selectieFiltruZileFaraPontaj
+            ) {
+
+                lista.innerHTML = "<div class='missing-days-empty'>Alege o opțiune pentru filtrare.</div>";
+
+                return;
+
+            }
+
+            const pontajeDupaAngajatZi = {};
+
+            pontajeRaportZileFaraPontaj.forEach(function(pontaj) {
+                const cheiePontaj =
+                    String(pontaj.nume || "").trim().toUpperCase() +
+                    "|" +
+                    String(pontaj.data || "").trim();
+
+                pontajeDupaAngajatZi[cheiePontaj] = pontaj;
+            });
+
+            let html = "";
+
+            angajatiRaportZileFaraPontaj.forEach(function(angajat) {
+
+                const nume = String(angajat.nume || "").trim();
+                const sectie = String(angajat.sectie || "").trim();
+
+                if (!nume) {
+                    return;
+                }
+
+                if (angajat.apare_in_rapoarte === false) {
+                    return;
+                }
+
+                if (angajat.afiseaza_lipsa_pontaj === false) {
+                    return;
+                }
+
+                if (!angajatInSectiiPermise(angajat)) {
+                    return;
+                }
+
+                if (
+                    modFiltruZileFaraPontaj === "angajat" &&
+                    nume !== selectieFiltruZileFaraPontaj
+                ) {
+                    return;
+                }
+
+                if (
+                    modFiltruZileFaraPontaj === "sectie" &&
+                    sectie !== selectieFiltruZileFaraPontaj
+                ) {
+                    return;
+                }
+
+                const zileLipsa = [];
+                const dataCurenta = new Date(dataStartRaportZileFaraPontaj);
+
+                while (dataCurenta <= dataStopRaportZileFaraPontaj) {
+
+                    const dataText = formatDataPentruCheie(dataCurenta);
+                    const ziSaptamana = dataCurenta.getDay();
+
+                    if (
+                        ziSaptamana !== 0 &&
+                        ziSaptamana !== 6 &&
+                        !esteZiLiberaLegala(dataText)
+                    ) {
+
+                        const angajatInactivLaData =
+                            angajat.activ === false &&
+                            angajat.data_inactiv &&
+                            dataText >= angajat.data_inactiv;
+
+                        if (!angajatInactivLaData) {
+
+                            const cheieCautare =
+                                nume.trim().toUpperCase() +
+                                "|" +
+                                dataText;
+
+                            const pontajZi = pontajeDupaAngajatZi[cheieCautare];
+
+                            if (!pontajZi) {
+
+                                zileLipsa.push({
+                                    data: dataText,
+                                    text: formatZiScurtaData(dataCurenta) + " — Lipsă pontaj",
+                                    corectat: false,
+                                    modificatDe: ""
+                                });
+
+                            }
+
+
+                        }
+
+                    }
+
+                    dataCurenta.setDate(dataCurenta.getDate() + 1);
+
+                }
+
+                if (zileLipsa.length > 0) {
+
+                    html += "<div class='missing-days-card'>";
+                    html += "<div class='missing-days-name'>" + nume + "</div>";
+
+                    zileLipsa.forEach(function(ziLipsa, indexZi) {
+
+                        const idRand = nume.replace(/[^a-zA-Z0-9]/g, "") + "_" + ziLipsa.data.replace(/[^0-9]/g, "");
+
+                        html += "<div class='missing-days-row'>";
+
+                        html += "<div>";
+
+                        html += "<div class='missing-days-line' id='text-rand-" + idRand + "'>" + ziLipsa.text + "</div>";
+
+                        if (ziLipsa.corectat && ziLipsa.modificatDe) {
+                            html += "<div class='missing-days-modificat'>Modificat de: " + ziLipsa.modificatDe + "</div>";
+                        }
+
+                        html += "</div>";
+
+                        if (!ziLipsa.corectat) {
+                            html += "<button class='missing-days-action-button' id='btn-motiv-" + idRand + "' onclick=\"toggleMotivLipsaPontaj('" + idRand + "')\">MOTIV</button>";
+                        }
+
+                        html += "</div>";
+
+                        if (!ziLipsa.corectat) {
+
+                            html += "<div class='missing-days-reason-box' id='motiv-box-" + idRand + "'>";
+
+                            html += "<select class='missing-days-reason-select' id='motiv-select-" + idRand + "' onchange=\"schimbareMotivLipsaPontaj('" + idRand + "')\">";
+
+                            html += "<option value=''>Selectează motiv</option>";
+                            html += "<option value='C.O'>C.O</option>";
+                            html += "<option value='C.M'>C.M</option>";
+                            html += "<option value='Lipsă card'>Lipsă card</option>";
+                            html += "<option value='Lucru la distanță'>Lucru la distanță</option>";
+                            html += "<option value='Fără plată'>Fără plată</option>";
+
+                            html += "</select>";
+
+                            html += "<div class='missing-days-hours-row' id='ore-box-" + idRand + "'>";
+
+                            html += "<input class='missing-days-hour-input' id='ora-intrare-" + idRand + "' placeholder='HH:MM' maxlength='5' oninput='formatOraInput(this,event)'>";
+
+                            html += "<input class='missing-days-hour-input' id='ora-iesire-" + idRand + "' placeholder='HH:MM' maxlength='5' oninput='formatOraInput(this,event)'>";
+
+                            html += "</div>";
+
+                            html += "<button class='missing-days-save-button' onclick=\"salveazaMotivLipsaPontaj('" + idRand + "','" + nume.replace(/'/g, "\\'") + "','" + ziLipsa.data + "')\">SALVEAZĂ</button>";
+
+                            html += "</div>";
+
+                        }
+
+                    });
+
+                    html += "</div>";
+
+                }
+
+            });
+
+            if (html === "") {
+                html = "<div class='missing-days-empty'>Nu există zile fără pontaj pentru selecția aleasă.</div>";
+            }
+
+            lista.innerHTML = html;
+
+        }
+
+
+        
+
+        // ===== SELECTIE RAPORT =====
+        let modRaportSelectat = "";
+        let angajatSelectatRaport = "";
+        let raportLunaCurentaDinMeniu = false;
+
+        // ===== MOD CAUTARE ANGAJAT =====
+        function activeazaCautareAngajat() {
+
+            modRaportSelectat = "angajat";
+
+            document
+                .getElementById("btn-cauta-angajat")
+                .classList.add("active");
+
+            document
+                .getElementById("btn-toti-angajatii")
+                .classList.remove("active");
+
+            document
+                .getElementById("employee-search-area")
+                .style.display = "block";
+
+        }
+
+        // ===== MOD TOTI ANGAJATII =====
+        function activeazaTotiAngajatii() {
+
+            if (
+                !areAccesTotalRapoarte() &&
+                !esteSefDepartament()
+            ) {
+
+                showMessage(
+                    "Nu ai acces la toti angajatii",
+                    "error"
+                );
+
+                return;
+
+            }
+
+            modRaportSelectat = "toti";
+
+            document
+                .getElementById("btn-toti-angajatii")
+                .classList.add("active");
+
+            document
+                .getElementById("btn-cauta-angajat")
+                .classList.remove("active");
+
+            document
+                .getElementById("employee-search-area")
+                .style.display = "none";
+
+        }
+
+
+        // ===== VERIFICARE ANGAJAT PERMIS IN RAPOARTE =====
+        function esteAngajatPermisInRapoarte(nume) {
+
+            const numeCurat = String(nume || "").trim();
+
+            const angajat = listaAngajatiSupabase.find(function(item) {
+                return String(item.nume || "").trim() === numeCurat;
+            });
+
+            if (!angajat) {
+                return true;
+            }
+
+            if (angajat.apare_in_rapoarte === false) {
+                return false;
+            }
+
+            if (
+                angajat.activ === false &&
+                angajat.data_inactiv
+            ) {
+                return false;
+            }
+
+            return true;
+
+        }
+
+        // ===== CAUTARE LIVE ANGAJATI =====
+        function cautaAngajatiLive() {
+
+            if (esteAngajatSimplu()) {
+                return;
+            }
+
+            const textCautare = document
+                .getElementById("employee-search-input")
+                .value
+                .trim()
+                .toLowerCase();
+
+            const rezultateBox = document.getElementById("employee-search-results");
+
+            if (!textCautare) {
+
+                rezultateBox.innerHTML = "";
+
+                return;
+
+            }
+
+            const rezultate = listaAngajatiSupabase.filter(function(angajat) {
+
+                if (angajat.apare_in_rapoarte === false) {
+                    return false;
+                }
+
+                if (
+                    angajat.activ === false &&
+                    angajat.data_inactiv
+                ) {
+                    return false;
+                }
+
+                if (!angajatInSectiiPermise(angajat)) {
+                    return false;
+                }
+
+                return String(angajat.nume || "")
+                    .toLowerCase()
+                    .includes(textCautare);
+
+            });
+
+            let html = "";
+
+            rezultate.forEach(function(angajat) {
+
+                html +=
+                    "<div class='employee-search-item' onclick='selecteazaAngajatRaport(" +
+                    JSON.stringify(angajat.nume) +
+                    ")'>" +
+                    angajat.nume +
+                    "</div>";
+
+            });
+
+            rezultateBox.innerHTML = html;
+
+        }
+
+        // ===== SELECTARE ANGAJAT RAPORT =====
+        function selecteazaAngajatRaport(nume) {
+
+            if (
+                esteAngajatSimplu() &&
+                String(nume || "").trim() !== String(utilizatorLogat?.nume || "").trim()
+            ) {
+
+                showMessage(
+                    "Poti vedea doar pontajele tale",
+                    "error"
+                );
+
+                return;
+
+            }
+
+            const angajatVerificat = listaAngajatiSupabase.find(function(angajat) {
+                return String(angajat.nume || "").trim() === String(nume || "").trim();
+            });
+
+            if (!angajatInSectiiPermise(angajatVerificat)) {
+
+                showMessage(
+                    "Nu ai acces la acest angajat",
+                    "error"
+                );
+
+                return;
+
+            }
+
+            if (!esteAngajatPermisInRapoarte(nume)) {
+
+                angajatSelectatRaport = "";
+
+                document.getElementById("employee-search-input").value = "";
+
+                document.getElementById("employee-search-results").innerHTML = "";
+
+                showMessage(
+                    "Angajat exclus din rapoarte",
+                    "error"
+                );
+
+                return;
+
+            }
+
+            angajatSelectatRaport = nume;
+
+            document.getElementById("employee-search-input").value = nume;
+
+            document.getElementById("employee-search-results").innerHTML = "";
+
+        }
+
+
+
+
+        
+
+        // ===== ZILE SAPTAMANA =====
+        const ZILE_SCURTE = ['Du','Lu','Ma','Mi','Jo','Vi','Sa'];
+
+        // ===== CALCUL ORE NETE =====
+        function calculeazaOreNete(oraIntrare, oraIesire, regula0700, pauzaMasa, pauzaMinute) {
+
+            if (!oraIntrare || !oraIesire) {
+                return "";
+            }
+
+            let start = transformaOraMinute(oraIntrare);
+            let stop = transformaOraMinute(oraIesire);
+
+            if (regula0700 && start < 420) {
+                start = 420;
+            }
+
+            if (stop < start) {
+                stop += 1440;
+            }
+
+            let total = stop - start;
+
+            // ===== PAUZA MASA DOAR PESTE 4 ORE =====
+            if (
+                pauzaMasa &&
+                total >= 240
+            ) {
+                total -= Number(pauzaMinute || 0);
+            }
+
+            const negativ = total < 0;
+
+            total = Math.abs(total);
+
+            const ore = Math.floor(total / 60);
+            const minute = total % 60;
+
+            return (negativ ? "-" : "") +
+                String(ore).padStart(2,'0') +
+                ":" +
+                String(minute).padStart(2,'0');
+
+        }
+
+        // ===== ORA IN MINUTE =====
+        function transformaOraMinute(ora) {
+
+            const parti = String(ora).split(":");
+
+            return (Number(parti[0]) * 60) + Number(parti[1]);
+
+        }
+
+        // ===== FORMATARE MINUTE IN ORA =====
+        function formateazaMinuteOra(totalMinute) {
+
+            const ore = Math.floor(totalMinute / 60);
+            const minute = totalMinute % 60;
+
+            return String(ore).padStart(2, '0') +
+                ":" +
+                String(minute).padStart(2, '0');
+
+        }
+
+        // ===== INTERVAL PONTAT CU REGULA 07:00 =====
+        function calculeazaIntervalPontat(oraIntrare, oraIesire, regula0700) {
+
+            if (!oraIntrare || !oraIesire) {
+                return "";
+            }
+
+            let start = transformaOraMinute(oraIntrare);
+
+            if (regula0700 && start < 420) {
+                start = 420;
+            }
+
+            return formateazaMinuteOra(start) + " - " + oraIesire;
+
+        }
+
+
+        // ===== AFISARE ANI RAPORT =====
+        function afiseazaAniRaport() {
+
+            const container = document.getElementById("report-years-row");
+
+            if (!container) {
+                return;
+            }
+
+            const anCurent = new Date().getFullYear();
+
+            const ani = [2026, 2027, 2028, 2029];
+
+            let html = "";
+
+            ani.forEach(function(an) {
+
+                const activ = an <= anCurent;
+
+                html +=
+                    "<button class='report-year-card " +
+                    (activ ? "report-year-active" : "report-year-inactive") +
+                    "'>" +
+                    an +
+                    "</button>";
+
+            });
+
+            container.innerHTML = html;
+
+        }
+
+
+        // ===== NUME LUNA COMPLET =====
+        function numeLunaComplet(luna) {
+
+            const luni = [
+                "",
+                "Ianuarie",
+                "Februarie",
+                "Martie",
+                "Aprilie",
+                "Mai",
+                "Iunie",
+                "Iulie",
+                "August",
+                "Septembrie",
+                "Octombrie",
+                "Noiembrie",
+                "Decembrie"
+            ];
+
+            return luni[luna] || "";
+
+        }
+
+        // ===== MARCARE LUNA SELECTATA =====
+        function marcheazaLunaSelectata(luna) {
+
+            document.querySelectorAll(".month-card").forEach(function(buton) {
+                buton.classList.remove("active-month");
+            });
+
+            const butonLuna = document.querySelector(".month-card[data-luna='" + luna + "']");
+
+            if (butonLuna) {
+                butonLuna.classList.add("active-month");
+            }
+
+        }
+
+        // ===== DESCHIDE RAPOARTELE PE LUNI PENTRU ANGAJAT =====
+        async function deschideRaportLunaCurentaAngajat() {
+
+            if (!utilizatorLogat || !utilizatorLogat.nume) {
+
+                showMessage(
+                    "Utilizator nelogat",
+                    "error"
+                );
+
+                return;
+
+            }
+
+            raportLunaCurentaDinMeniu = true;
+            modRaportSelectat = "angajat";
+            angajatSelectatRaport = utilizatorLogat.nume;
+
+            document.querySelector(".premium-header").style.display = "none";
+            document.querySelector(".premium-line").style.display = "none";
+
+            document.getElementById("main-menu").style.display = "none";
+            document.getElementById("report-page").style.display = "block";
+
+            const zonaCautare = document.getElementById("employee-search-area");
+            const randFiltre = document.querySelector(".report-filter-row");
+
+            if (zonaCautare) {
+                zonaCautare.style.display = "none";
+            }
+
+            if (randFiltre) {
+                randFiltre.style.display = "none";
+            }
+
+            afiseazaAniRaport();
+
+            if (!listaAngajatiSupabase.length) {
+
+                const { data } = await supabaseClient
+                    .from("angajati")
+                    .select("*")
+                    .order("nume", {
+                        ascending: true
+                    });
+
+                listaAngajatiSupabase = data || [];
+
+            }
+
+        }
+
+        // ===== DESCHIDE RAPORT LUNAR =====
+        async function deschideRaportLunar(luna, numeLuna) {
+
+            marcheazaLunaSelectata(luna);
+
+            if (esteAngajatSimplu()) {
+                modRaportSelectat = "angajat";
+                angajatSelectatRaport = utilizatorLogat.nume;
+            }
+
+            if (modRaportSelectat === "angajat" && !angajatSelectatRaport) {
+
+                showMessage(
+                    "Selectează angajatul",
+                    "error"
+                );
+
+                return;
+
+            }
+
+            if (modRaportSelectat === "toti") {
+
+                if (
+                    !areAccesTotalRapoarte() &&
+                    !esteSefDepartament()
+                ) {
+
+                    showMessage(
+                        "Nu ai acces la toti angajatii",
+                        "error"
+                    );
+
+                    return;
+
+                }
+
+                await deschideRaportLunarToti(luna, numeLuna);
+
+                return;
+
+            }
+
+            if (modRaportSelectat !== "angajat") {
+
+                showMessage(
+                    "Alege tipul de raport",
+                    "error"
+                );
+
+                return;
+
+            }
+
+            if (!esteAngajatPermisInRapoarte(angajatSelectatRaport)) {
+
+                showMessage(
+                    "Angajat exclus din rapoarte",
+                    "error"
+                );
+
+                return;
+
+            }
+
+            document.getElementById("report-page").style.display = "none";
+            document.getElementById("monthly-report-page").style.display = "block";
+
+            const anCurent = new Date().getFullYear();
+
+            document.getElementById("monthly-report-name").innerHTML =
+                angajatSelectatRaport;
+
+            document.getElementById("monthly-report-month").innerHTML =
+                numeLunaComplet(luna) + " " + anCurent;
+
+            const grid = document.getElementById("monthly-report-grid");
+
+            const zileLuna = new Date(anCurent, luna, 0).getDate();
+
+            const { data: pontaje } = await supabaseClient
+                .from("pontaj_zilnic")
+                .select("*")
+                .eq("nume", angajatSelectatRaport);
+
+            const primaZiLuna =
+                anCurent +
+                "-" +
+                String(luna).padStart(2, "0") +
+                "-01";
+
+            const ultimaZiLuna =
+                anCurent +
+                "-" +
+                String(luna).padStart(2, "0") +
+                "-" +
+                String(zileLuna).padStart(2, "0");
+
+            const { data: ultimPontajImportat } = await supabaseClient
+                .from("pontaj_zilnic")
+                .select("data")
+                .gte("data", primaZiLuna)
+                .lte("data", ultimaZiLuna)
+                .order("data", {
+                    ascending: false
+                })
+                .limit(1);
+
+            let ultimaZiAfisata = zileLuna;
+
+            if (
+                raportLunaCurentaDinMeniu &&
+                ultimPontajImportat &&
+                ultimPontajImportat.length &&
+                ultimPontajImportat[0].data
+            ) {
+                ultimaZiAfisata = Number(String(ultimPontajImportat[0].data).slice(8, 10));
+            }
+
+            const angajat = listaAngajatiSupabase.find(function(a) {
+                return a.nume === angajatSelectatRaport;
+            });
+
+            if (!angajatInSectiiPermise(angajat)) {
+
+                showMessage(
+                    "Nu ai acces la acest angajat",
+                    "error"
+                );
+
+                return;
+
+            }
+
+            const estePaza =
+                String(angajat?.sectie || "")
+                    .trim()
+                    .toLowerCase()
+                    .includes("paza");
+
+            let html = "";
+
+            let totalMinuteLucrate = 0;
+            let totalZileLucratoare = 0;
+
+            for (let zi = 1; zi <= ultimaZiAfisata; zi++) {
+
+                const dataText =
+                    anCurent +
+                    "-" +
+                    String(luna).padStart(2,'0') +
+                    "-" +
+                    String(zi).padStart(2,'0');
+
+                const dataObj = new Date(anCurent, luna - 1, zi);
+
+                const ziSapt = ZILE_SCURTE[dataObj.getDay()];
+
+                const weekend =
+                    dataObj.getDay() === 0 ||
+                    dataObj.getDay() === 6;
+
+                const sarbatoare = esteZiLiberaLegala(dataText);
+
+                if (!weekend && !sarbatoare) {
+                    totalZileLucratoare++;
+                }
+
+                const pontaj = (pontaje || []).find(function(p) {
+                    return p.data === dataText;
+                });
+
+                const clasaData = weekend
+                    ? "monthly-date-cell monthly-date-weekend"
+                    : "monthly-date-cell";
+
+                html += "<div class='monthly-report-row'>";
+
+                html += "<div class='" + clasaData + "'>" +
+                    ziSapt + " " +
+                    String(zi).padStart(2,'0') + "." +
+                    String(luna).padStart(2,'0') +
+                    "</div>";
+
+                if (pontaj && pontaj.status_corectie) {
+
+                    let textCorectie = pontaj.status_corectie;
+                    let oreCorectie = "00:00";
+                    let minuteCorectie = 0;
+
+                    if (
+                        pontaj.status_corectie === "C.O" ||
+                        pontaj.status_corectie === "Lucru la distanță"
+                    ) {
+                        oreCorectie = "08:00";
+                        minuteCorectie = 480;
+                    }
+
+                    if (
+                        pontaj.status_corectie === "C.M" ||
+                        pontaj.status_corectie === "Fără plată"
+                    ) {
+                        oreCorectie = "00:00";
+                        minuteCorectie = 0;
+                    }
+
+                    if (pontaj.status_corectie === "Lipsă card") {
+
+                        textCorectie =
+                            (pontaj.ora_intrare_manual || "") +
+                            " - " +
+                            (pontaj.ora_iesire_manual || "");
+
+                        oreCorectie = calculeazaOreNete(
+                            pontaj.ora_intrare_manual,
+                            pontaj.ora_iesire_manual,
+                            angajat?.regula_start_0700,
+                            angajat?.pauza_masa,
+                            angajat?.pauza_minute
+                        );
+
+                        minuteCorectie = transformaOraMinute(oreCorectie.replace("-", ""));
+
+                    }
+
+                    totalMinuteLucrate += minuteCorectie;
+
+                    const modificatDe = pontaj.modificat_de
+                        ? "<span class='monthly-manual-user'>- " + pontaj.modificat_de + "</span>"
+                        : "";
+
+                    html += "<div class='monthly-value-cell monthly-normal'>";
+                    html += "<div class='monthly-interval-cell monthly-manual-correction'>" +
+                        textCorectie +
+                        modificatDe +
+                        "</div>";
+                    html += "<div class='monthly-hours-cell'>" +
+                        oreCorectie +
+                        "</div>";
+                    html += "</div>";
+
+                } else if (pontaj) {
+
+                    const intervalPontat = calculeazaIntervalPontat(
+                        pontaj.ora_intrare,
+                        pontaj.ora_iesire,
+                        angajat?.regula_start_0700
+                    );
+
+                    const oreNete = calculeazaOreNete(
+                        pontaj.ora_intrare,
+                        pontaj.ora_iesire,
+                        angajat?.regula_start_0700,
+                        angajat?.pauza_masa,
+                        angajat?.pauza_minute
+                    );
+
+                    const minuteOreNete =
+                        transformaOraMinute(oreNete.replace("-", ""));
+
+                    if (!oreNete.startsWith("-")) {
+                        totalMinuteLucrate += minuteOreNete;
+                    }
+
+                    html += "<div class='monthly-value-cell monthly-normal'>";
+                    html += "<div class='monthly-interval-cell'>" +
+                        intervalPontat +
+                        "</div>";
+                    html += "<div class='monthly-hours-cell'>" +
+                        oreNete +
+                        "</div>";
+                    html += "</div>";
+
+                } else if (sarbatoare) {
+
+                    html += "<div class='monthly-red'>S.L</div>";
+
+                } else if (weekend) {
+
+                    html += "<div class='monthly-value-cell monthly-normal'>";
+                    html += "<div class='monthly-interval-cell'></div>";
+                    html += "<div class='monthly-hours-cell'></div>";
+                    html += "</div>";
+
+                } else {
+
+                    if (estePaza) {
+
+                        html += "<div class='monthly-value-cell monthly-normal'>";
+                        html += "<div class='monthly-interval-cell'></div>";
+                        html += "<div class='monthly-hours-cell'></div>";
+                        html += "</div>";
+
+                    } else {
+
+                        html += "<div class='monthly-missing'>FARA PONTAJ</div>";
+
+                    }
+
+                }
+
+                html += "</div>";
+
+            }
+
+            const totalOreLucratoareMinute = totalZileLucratoare * 8 * 60;
+            const diferentaMinute =
+                totalMinuteLucrate - totalOreLucratoareMinute;
+
+            const diferentaText =
+                (diferentaMinute < 0 ? "-" : "") +
+                formateazaMinuteOra(Math.abs(diferentaMinute));
+
+            html += "<div style='height:12px;'></div>";
+
+            const culoareDiferenta =
+                diferentaMinute < 0
+                    ? "#ff3b3b"
+                    : "#d4af37";
+
+            html += "<div style='padding:0 10px 0 10px;font-family:Montserrat,Arial,sans-serif;'>";
+
+            html += "<div style='display:grid;grid-template-columns:210px 70px;align-items:center;color:#ffffff;font-size:11px;font-weight:700;line-height:1.9;'>";
+            html += "<div>Total ore lucrătoare pe lună:</div>";
+            html += "<div style='color:#d4af37;text-align:left;'>" + formateazaMinuteOra(totalOreLucratoareMinute) + "</div>";
+            html += "</div>";
+
+            html += "<div style='display:grid;grid-template-columns:210px 70px;align-items:center;color:#ffffff;font-size:11px;font-weight:700;line-height:1.9;'>";
+            html += "<div>Total ore lucrate pe lună:</div>";
+            html += "<div style='color:#d4af37;text-align:left;'>" + formateazaMinuteOra(totalMinuteLucrate) + "</div>";
+            html += "</div>";
+
+            html += "</div>";
+
+            html += "<div style='width:280px;height:1px;background:rgba(212,175,55,0.9);margin:6px 0 0 10px;'></div>";
+
+            html += "<div style='height:10px;'></div>";
+
+            html += "<div style='padding:0 10px 10px 10px;font-family:Montserrat,Arial,sans-serif;'>";
+            html += "<div style='display:grid;grid-template-columns:210px 70px;align-items:center;color:#ffffff;font-size:12px;font-weight:900;'>";
+            html += "<div>Diferență:</div>";
+            html += "<div style='color:" + culoareDiferenta + ";text-align:left;'>" + diferentaText + "</div>";
+            html += "</div>";
+            html += "</div>";
+
+            const procentRealizat =
+                totalOreLucratoareMinute > 0
+                    ? ((totalMinuteLucrate / totalOreLucratoareMinute) * 100).toFixed(1)
+                    : "0.0";
+
+            html += "<div style='height:10px;'></div>";
+
+            html += "<div style='padding:0 10px 12px 10px;font-family:Montserrat,Arial,sans-serif;'>";
+            html += "<div style='display:grid;grid-template-columns:210px 70px;align-items:center;color:#ffffff;font-size:12px;font-weight:900;'>";
+            html += "<div>Procent:</div>";
+            html += "<div style='color:#2f7dff;text-align:left;font-weight:900;'>" + procentRealizat + "%</div>";
+            html += "</div>";
+            html += "</div>";
+
+            grid.innerHTML = html;
+
+        }
+
+        // ===== TEXT SIGUR PENTRU HTML =====
+        function escapeHtml(text) {
+
+            return String(text || "")
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#39;");
+
+        }
+
+        // ===== VALOARE CELULA RAPORT TOTI ANGAJATII =====
+        function valoareCelulaRaportToti(pontaj, dataText, angajat) {
+
+            if (pontaj && pontaj.status_corectie) {
+
+                if (pontaj.status_corectie === "C.O") {
+                    return {
+                        text: "CO",
+                        rosu: true
+                    };
+                }
+
+                if (pontaj.status_corectie === "C.M") {
+                    return {
+                        text: "CM",
+                        rosu: true
+                    };
+                }
+
+                if (pontaj.status_corectie === "Fără plată") {
+                    return {
+                        text: "LIPSA",
+                        rosu: true
+                    };
+                }
+
+                if (pontaj.status_corectie === "Lucru la distanță") {
+                    return {
+                        text: "08:00",
+                        rosu: false
+                    };
+                }
+
+                if (pontaj.status_corectie === "Lipsă card") {
+                    return {
+                        text: calculeazaOreNete(
+                            pontaj.ora_intrare_manual,
+                            pontaj.ora_iesire_manual,
+                            angajat?.regula_start_0700,
+                            angajat?.pauza_masa,
+                            angajat?.pauza_minute
+                        ),
+                        rosu: false
+                    };
+                }
+
+            }
+
+            if (pontaj && pontaj.ora_intrare && pontaj.ora_iesire) {
+
+                return {
+                    text: calculeazaOreNete(
+                        pontaj.ora_intrare,
+                        pontaj.ora_iesire,
+                        angajat?.regula_start_0700,
+                        angajat?.pauza_masa,
+                        angajat?.pauza_minute
+                    ),
+                    rosu: false
+                };
+
+            }
+
+            if (esteZiLiberaLegala(dataText)) {
+                return {
+                    text: "S.L",
+                    rosu: true
+                };
+            }
+
+            const dataObj = new Date(dataText + "T00:00:00");
+            const ziSaptamana = dataObj.getDay();
+
+            const esteWeekend =
+                ziSaptamana === 0 ||
+                ziSaptamana === 6;
+
+            if (
+                !esteWeekend &&
+                !esteZiLiberaLegala(dataText) &&
+                angajat?.afiseaza_lipsa_pontaj !== false
+            ) {
+
+                return {
+                    text: "Lipsă pontaj",
+                    rosu: false,
+                    lipsaPontaj: true
+                };
+
+            }
+
+            return {
+                text: "",
+                rosu: false,
+                lipsaPontaj: false
+            };
+
+        }
+
+        // ===== DESCHIDE RAPORT LUNAR TOTI ANGAJATII =====
+        async function deschideRaportLunarToti(luna, numeLuna) {
+
+            document.getElementById("report-page").style.display = "none";
+            document.getElementById("all-employees-report-page").style.display = "block";
+
+            const anCurent = new Date().getFullYear();
+
+            document.getElementById("all-employees-report-title").innerHTML =
+                "Toți angajații";
+
+            document.getElementById("all-employees-report-month").innerHTML =
+                numeLunaComplet(luna) + " " + anCurent;
+
+            const container = document.getElementById("all-employees-table-wrap");
+
+            container.innerHTML =
+                "<div class='missing-days-empty'>Se încarcă raportul...</div>";
+
+            if (!listaAngajatiSupabase.length) {
+
+                const { data: angajati } = await supabaseClient
+                    .from("angajati")
+                    .select("*")
+                    .order("nume", {
+                        ascending: true
+                    });
+
+                listaAngajatiSupabase = angajati || [];
+
+            }
+
+            const primaZi =
+                anCurent +
+                "-" +
+                String(luna).padStart(2, "0") +
+                "-01";
+
+            const zileLuna = new Date(anCurent, luna, 0).getDate();
+
+            const ultimaZi =
+                anCurent +
+                "-" +
+                String(luna).padStart(2, "0") +
+                "-" +
+                String(zileLuna).padStart(2, "0");
+
+            // ===== CITIRE COMPLETA PONTAJ LUNA, IN LOTURI =====
+            let toatePontajeleLunii = [];
+            let startLot = 0;
+            const marimeLot = 1000;
+            let eroareCitirePontaj = null;
+
+            while (true) {
+
+                const { data: lotPontaje, error } = await supabaseClient
+                    .from("pontaj_zilnic")
+                    .select("*")
+                    .gte("data", primaZi)
+                    .lte("data", ultimaZi)
+                    .range(startLot, startLot + marimeLot - 1);
+
+                if (error) {
+                    eroareCitirePontaj = error;
+                    break;
+                }
+
+                toatePontajeleLunii = toatePontajeleLunii.concat(lotPontaje || []);
+
+                if (!lotPontaje || lotPontaje.length < marimeLot) {
+                    break;
+                }
+
+                startLot += marimeLot;
+
+            }
+
+            if (eroareCitirePontaj) {
+
+                container.innerHTML = "";
+
+                showMessage(
+                    "Eroare citire pontaj",
+                    "error"
+                );
+
+                return;
+
+            }
+
+            const pontajeDupaAngajatZi = {};
+
+            toatePontajeleLunii.forEach(function(pontaj) {
+                const cheiePontaj =
+                    String(pontaj.nume || "").trim().toUpperCase() +
+                    "|" +
+                    String(pontaj.data || "").trim();
+
+                pontajeDupaAngajatZi[cheiePontaj] = pontaj;
+            });
+
+            const angajatiRaport = listaAngajatiSupabase
+                .filter(function(angajat) {
+                    return (
+                        angajat.apare_in_rapoarte !== false &&
+                        angajatInSectiiPermise(angajat)
+                    );
+                })
+                .sort(function(a, b) {
+                    return String(a.nume || "").localeCompare(String(b.nume || ""), "ro");
+                });
+
+            let html = "";
+
+            html += "<table class='all-employees-table'>";
+            html += "<thead><tr>";
+            html += "<th class='all-employees-name-head'>Angajat</th>";
+
+            for (let zi = 1; zi <= zileLuna; zi++) {
+
+                const dataObj = new Date(anCurent, luna - 1, zi);
+                const ziSapt = ZILE_SCURTE[dataObj.getDay()];
+                const dataScurta =
+                    String(zi).padStart(2, "0") +
+                    "." +
+                    String(luna).padStart(2, "0");
+
+                html +=
+                    "<th>" +
+                    "<span class='all-employees-day-small'>" + ziSapt + "</span>" +
+                    "<span class='all-employees-date-small'>" + dataScurta + "</span>" +
+                    "</th>";
+
+            }
+
+            html += "</tr></thead>";
+            html += "<tbody>";
+
+            angajatiRaport.forEach(function(angajat) {
+
+                const nume = String(angajat.nume || "").trim();
+
+                if (!nume) {
+                    return;
+                }
+
+                html += "<tr>";
+                html += "<td class='all-employees-name-cell'>" + escapeHtml(nume) + "</td>";
+
+                for (let zi = 1; zi <= zileLuna; zi++) {
+
+                    const dataText =
+                        anCurent +
+                        "-" +
+                        String(luna).padStart(2, "0") +
+                        "-" +
+                        String(zi).padStart(2, "0");
+
+                    const cheieCautare =
+                        nume.trim().toUpperCase() +
+                        "|" +
+                        dataText;
+
+                    const pontaj = pontajeDupaAngajatZi[cheieCautare];
+
+                    const rezultatCelula = valoareCelulaRaportToti(pontaj, dataText, angajat);
+                    const valoare = rezultatCelula.text;
+
+                    let clasaCelula = "all-employees-empty-cell";
+
+                    if (rezultatCelula.lipsaPontaj) {
+
+                        clasaCelula = "all-employees-missing-cell";
+
+                    } else if (valoare) {
+
+                        clasaCelula = rezultatCelula.rosu
+                            ? "all-employees-warning-cell"
+                            : "all-employees-value-cell";
+
+                    }
+
+                    html +=
+                        "<td class='" + clasaCelula + "'>" +
+                        escapeHtml(valoare) +
+                        "</td>";
+
+                }
+
+                html += "</tr>";
+
+            });
+
+            html += "</tbody></table>";
+
+            container.innerHTML = html;
+
+        }
+
+        // ===== INCHIDE RAPORT LUNAR TOTI ANGAJATII =====
+        function inchideRaportLunarToti() {
+
+            document.getElementById("all-employees-report-page").style.display = "none";
+            document.getElementById("report-page").style.display = "block";
+
+        }
+
+
+        // ===== INCHIDE RAPORT LUNAR =====
+        function inchideRaportLunar() {
+
+            document.getElementById("monthly-report-page").style.display = "none";
+
+            if (raportLunaCurentaDinMeniu) {
+
+                raportLunaCurentaDinMeniu = false;
+
+                document.getElementById("main-menu").style.display = "flex";
+
+                document.querySelector(".premium-header").style.display = "flex";
+                document.querySelector(".premium-line").style.display = "block";
+
+                return;
+
+            }
+
+            document.getElementById("report-page").style.display = "block";
+
+        }
+
+
+
+
+
+
+        // ===== DESCHIDE MENIU MOTIV =====
+        function toggleMotivLipsaPontaj(id) {
+
+            const box = document.getElementById("motiv-box-" + id);
+
+            if (!box) {
+                return;
+            }
+
+            box.style.display =
+                box.style.display === "block"
+                    ? "none"
+                    : "block";
+
+        }
+
+        // ===== SCHIMBARE MOTIV =====
+        function schimbareMotivLipsaPontaj(id) {
+
+            const select = document.getElementById("motiv-select-" + id);
+            const oreBox = document.getElementById("ore-box-" + id);
+
+            if (!select || !oreBox) {
+                return;
+            }
+
+            if (select.value === "Lipsă card") {
+                oreBox.style.display = "grid";
+            } else {
+                oreBox.style.display = "none";
+            }
+
+        }
+
+        // ===== FORMAT HH:MM =====
+        function formatOraInput(element, event) {
+
+            let valoare = element.value.replace(/[^0-9]/g, "");
+
+            if (valoare.length > 4) {
+                valoare = valoare.substring(0, 4);
+            }
+
+            if (valoare.length > 2) {
+                valoare = valoare.substring(0, 2) + ":" + valoare.substring(2);
+            }
+
+            element.value = valoare;
+
+        }
+
+        // ===== TEXT AFISARE CORECTIE =====
+        function textCorectieAfisare(dataText, motiv, oraIntrare, oraIesire) {
+
+            const dataObj = creeazaDataDinText(dataText);
+            const dataScurta = formatZiScurtaData(dataObj);
+
+            if (motiv === "Lipsă card") {
+                return dataScurta + " — " + oraIntrare + " - " + oraIesire;
+            }
+
+            return dataScurta + " — " + motiv;
+
+        }
+
+        // ===== SALVARE MOTIV LIPSA PONTAJ =====
+        async function salveazaMotivLipsaPontaj(id, nume, dataText) {
+
+            const select = document.getElementById("motiv-select-" + id);
+            const oraIntrareInput = document.getElementById("ora-intrare-" + id);
+            const oraIesireInput = document.getElementById("ora-iesire-" + id);
+
+            const motiv = select ? select.value : "";
+            const oraIntrare = oraIntrareInput ? oraIntrareInput.value : "";
+            const oraIesire = oraIesireInput ? oraIesireInput.value : "";
+
+            if (!motiv) {
+
+                showMessage(
+                    "Alege motivul",
+                    "error"
+                );
+
+                return;
+
+            }
+
+            if (
+                motiv === "Lipsă card" &&
+                (!oraIntrare || !oraIesire || oraIntrare.length !== 5 || oraIesire.length !== 5)
+            ) {
+
+                showMessage(
+                    "Completează orele HH:MM",
+                    "error"
+                );
+
+                return;
+
+            }
+
+            const dateCorectie = {
+                nume: nume,
+                data: dataText,
+                cheie_unica: nume + "|" + dataText,
+                status_corectie: motiv,
+                ora_intrare_manual: motiv === "Lipsă card" ? oraIntrare : null,
+                ora_iesire_manual: motiv === "Lipsă card" ? oraIesire : null,
+                modificat_de: utilizatorLogat?.nume || "",
+                modificat_la: new Date().toISOString()
+            };
+
+            const { error } = await supabaseClient
+                .from("pontaj_zilnic")
+                .upsert(
+                    dateCorectie,
+                    {
+                        onConflict: "cheie_unica"
+                    }
+                );
+
+            if (error) {
+
+                showMessage(
+                    "Eroare salvare motiv",
+                    "error"
+                );
+
+                return;
+
+            }
+
+            const textRand = document.getElementById("text-rand-" + id);
+            const btn = document.getElementById("btn-motiv-" + id);
+            const box = document.getElementById("motiv-box-" + id);
+
+            if (textRand) {
+
+                textRand.innerHTML = textCorectieAfisare(
+                    dataText,
+                    motiv,
+                    oraIntrare,
+                    oraIesire
+                );
+
+                textRand.insertAdjacentHTML(
+                    "afterend",
+                    "<div class='missing-days-modificat'>Modificat de: " + (utilizatorLogat?.nume || "") + "</div>"
+                );
+
+            }
+
+            if (btn) {
+                btn.style.display = "none";
+            }
+
+            if (box) {
+                box.style.display = "none";
+            }
+
+            const randPontaj = pontajeRaportZileFaraPontaj.find(function(item) {
+                return String(item.nume || "").trim() === nume && item.data === dataText;
+            });
+
+            if (randPontaj) {
+                randPontaj.status_corectie = motiv;
+                randPontaj.ora_intrare_manual = motiv === "Lipsă card" ? oraIntrare : null;
+                randPontaj.ora_iesire_manual = motiv === "Lipsă card" ? oraIesire : null;
+                randPontaj.modificat_de = utilizatorLogat?.nume || "";
+                randPontaj.modificat_la = new Date().toISOString();
+            } else {
+                pontajeRaportZileFaraPontaj.push(dateCorectie);
+            }
+
+            showMessage(
+                "Motiv salvat",
+                "success"
+            );
+
+        }
+
+
+        // ===== CONFIRMARE VIZUALA PAROLE IDENTICE =====
+        document.addEventListener("input", function() {
+
+            const parola1 = document.getElementById("password");
+            const parola2 = document.getElementById("password2");
+
+            if (!parola1 || !parola2) {
+                return;
+            }
+
+            parola2.classList.remove("password-match-ok");
+            parola2.classList.remove("password-match-error");
+
+            if (!parola2.value) {
+                return;
+            }
+
+            if (parola1.value === parola2.value) {
+                parola2.classList.add("password-match-ok");
+            } else {
+                parola2.classList.add("password-match-error");
+            }
+
+        });
+
+
+        checkSession();
+
+    </script>
+
+</body>
+
+</html>
