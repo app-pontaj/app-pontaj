@@ -3703,7 +3703,25 @@ function deschideZonaAngajatNou() {
                 html += "Apare în rapoarte: " + apareRapoarte + "<br>";
                 html += "Regulă 07:00: " + regula0700 + "<br>";
                 html += "Pauză masă: " + pauzaMasa + " (" + pauzaMinute + " min)<br>";
-                html += "Secție: " + (angajat.sectie || "-");
+                html += "Secție: " + (angajat.sectie || "-") + "<br>";
+
+                const detaliiUtilizator = await obtineDetaliiUtilizatorCard(
+                    angajat.nume || ""
+                );
+
+                html += "Rol: " + (detaliiUtilizator.rol || "-") + "<br>";
+                html += "Acces: " + (detaliiUtilizator.acces || "-");
+
+                if (
+                    detaliiUtilizator.sectiiSef &&
+                    detaliiUtilizator.sectiiSef.length
+                ) {
+
+                    html += "<br>Secții șef: " +
+                        detaliiUtilizator.sectiiSef.join(", ");
+
+                }
+
                 html += "</div>";
                 html += "</div>";
 
@@ -3713,7 +3731,43 @@ function deschideZonaAngajatNou() {
 
         }
 
-        // ===== EDITARE ANGAJAT =====
+        
+        // ===== DETALII UTILIZATOR CARD =====
+        async function obtineDetaliiUtilizatorCard(numeAngajat) {
+
+            const rezultat = {
+                rol: "-",
+                acces: "-",
+                sectiiSef: []
+            };
+
+            const { data: utilizator } = await supabaseClient
+                .from("utilizatori")
+                .select("rol,acces")
+                .eq("nume", numeAngajat)
+                .maybeSingle();
+
+            if (utilizator) {
+
+                rezultat.rol = utilizator.rol || "-";
+                rezultat.acces = utilizator.acces || "-";
+
+            }
+
+            const { data: sectii } = await supabaseClient
+                .from("acces_sectii")
+                .select("sectie")
+                .eq("nume_utilizator", numeAngajat);
+
+            rezultat.sectiiSef = (sectii || []).map(function(rand) {
+                return rand.sectie;
+            });
+
+            return rezultat;
+
+        }
+
+// ===== EDITARE ANGAJAT =====
         async function editeazaAngajat(index) {
 
             const angajat = listaAngajatiSupabase[index];
@@ -6651,6 +6705,11 @@ function deschideZonaAngajatNou() {
             } else {
                 pontajeRaportZileFaraPontaj.push(dateCorectie);
             }
+
+            showMessage(
+                "Motiv salvat",
+                "success"
+            );
 
         }
 
