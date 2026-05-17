@@ -3350,11 +3350,7 @@
 
             return (
                 rol === "ADMIN" ||
-                acces === "TOTAL" ||
-                (
-                    rol === "SEF" &&
-                    acces === "DEPARTAMENT"
-                )
+                acces === "TOTAL"
             );
 
         }
@@ -4354,7 +4350,10 @@
         // ===== MOD TOTI ANGAJATII =====
         function activeazaTotiAngajatii() {
 
-            if (!areAccesTotalRapoarte()) {
+            if (
+                !areAccesTotalRapoarte() &&
+                !esteSefDepartament()
+            ) {
 
                 showMessage(
                     "Nu ai acces la toti angajatii",
