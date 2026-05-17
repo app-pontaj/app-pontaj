@@ -2782,8 +2782,13 @@
                 return;
             }
 
-            const totalAngajati = (data || []).filter(function(angajat) {
-                return angajat.apare_in_rapoarte !== false && angajat.activ !== false;
+            const totalAngajati = listaAngajatiSupabase.filter(function(angajat) {
+
+                return (
+                    angajat.apare_in_rapoarte !== false &&
+                    angajatInSectiiPermise(angajat)
+                );
+
             }).length;
 
             cifra.innerHTML = String(totalAngajati);
@@ -3848,6 +3853,10 @@
                 }
 
                 if (angajat.apare_in_rapoarte === false) {
+                    return;
+                }
+
+                if (!angajatInSectiiPermise(angajat)) {
                     return;
                 }
 
