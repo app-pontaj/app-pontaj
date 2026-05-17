@@ -1443,6 +1443,15 @@
             font-family: 'Montserrat', Arial, sans-serif;
         }
 
+        .employee-actions-three {
+            grid-template-columns: 1fr 1fr 1fr !important;
+        }
+
+        .employee-form.locked input,
+        .employee-form.locked select {
+            opacity: 0.70;
+        }
+
 </style>
 
 </head>
@@ -2048,10 +2057,14 @@
                                 >
                             </div>
 
-                            <div class="employee-actions">
+                            <div
+                                class="employee-actions"
+                                id="employee-actions-row"
+                            >
                                 <button
                                     type="button"
                                     class="employee-button"
+                                    id="angajat-nou-button"
                                     onclick="reseteazaFormularAngajat()"
                                 >
                                     Nou
@@ -2060,6 +2073,17 @@
                                 <button
                                     type="button"
                                     class="employee-button"
+                                    id="angajat-edit-button"
+                                    onclick="activeazaEditareAngajat()"
+                                    style="display:none;"
+                                >
+                                    Edit
+                                </button>
+
+                                <button
+                                    type="button"
+                                    class="employee-button"
+                                    id="angajat-save-button"
                                     onclick="salveazaAngajat(event)"
                                 >
                                     Salvează
@@ -3218,6 +3242,8 @@
 
         function revinoLaMeniuAngajati() {
 
+            mutaFormularAngajatInZona("employee-new-area");
+
             ascundeZoneAngajati();
 
             const meniu = document.getElementById("employees-menu-box");
@@ -3228,11 +3254,34 @@
 
         }
 
+        function mutaFormularAngajatInZona(idZona) {
+
+            const zona = document.getElementById(idZona);
+            const campId = document.getElementById("angajat-id");
+
+            if (!zona || !campId) {
+                return;
+            }
+
+            const formular = campId.closest(".employee-form");
+
+            if (!formular) {
+                return;
+            }
+
+            if (formular.parentElement !== zona) {
+                zona.appendChild(formular);
+            }
+
+        }
+
         function deschideZonaAngajatNou() {
 
             ascundeZoneAngajati();
+            mutaFormularAngajatInZona("employee-new-area");
             umpleSelectSectiiAngajat();
             reseteazaFormularAngajat();
+            seteazaFormularAngajatPentruNou();
 
             document.getElementById("employee-new-area").style.display = "block";
 
@@ -3242,6 +3291,12 @@
 
             ascundeZoneAngajati();
             umpleSelectAngajatiAdministrare();
+
+            const box = document.getElementById("employee-selected-form");
+
+            if (box) {
+                box.style.display = "none";
+            }
 
             document.getElementById("employee-search-area-admin").style.display = "block";
 
@@ -3282,7 +3337,7 @@
 
         }
 
-        function selecteazaAngajatDinAdministrare() {
+        async function selecteazaAngajatDinAdministrare() {
 
             const select = document.getElementById("employee-search-select");
             const box = document.getElementById("employee-selected-form");
@@ -3291,20 +3346,19 @@
 
                 if (box) {
                     box.style.display = "none";
-                    box.innerHTML = "";
                 }
 
                 return;
 
             }
 
-            editeazaAngajat(Number(select.value));
-
             box.style.display = "block";
-            box.innerHTML =
-                "<div class='employee-card-info'>" +
-                "Fișa este încărcată pentru editare în formularul Angajat nou." +
-                "</div>";
+
+            mutaFormularAngajatInZona("employee-selected-form");
+
+            await editeazaAngajat(Number(select.value), true);
+
+            seteazaFormularAngajatPentruFisa(false);
 
         }
 
@@ -3519,14 +3573,113 @@
             }
 
             actualizeazaStatusAngajatUI();
+}
 
-            showMessage(
-                "Angajat încărcat pentru editare",
-                "success"
-            );
+
+
+        // ===== CONTROL FORMULAR ANGAJAT: NOU / FIȘĂ / EDITARE =====
+        function seteazaFormularAngajatPentruNou() {
+
+            const formular = document.getElementById("angajat-id").closest(".employee-form");
+            const randActiuni = document.getElementById("employee-actions-row");
+            const butonEdit = document.getElementById("angajat-edit-button");
+            const butonNou = document.getElementById("angajat-nou-button");
+            const butonSave = document.getElementById("angajat-save-button");
+
+            if (formular) {
+                formular.classList.remove("locked");
+            }
+
+            if (randActiuni) {
+                randActiuni.classList.remove("employee-actions-three");
+            }
+
+            if (butonEdit) {
+                butonEdit.style.display = "none";
+            }
+
+            if (butonNou) {
+                butonNou.style.display = "block";
+            }
+
+            if (butonSave) {
+                butonSave.disabled = false;
+                butonSave.style.opacity = "1";
+            }
+
+            seteazaCampuriFormularAngajat(false);
 
         }
 
+        function seteazaFormularAngajatPentruFisa(permiteEditare) {
+
+            const formular = document.getElementById("angajat-id").closest(".employee-form");
+            const randActiuni = document.getElementById("employee-actions-row");
+            const butonEdit = document.getElementById("angajat-edit-button");
+            const butonNou = document.getElementById("angajat-nou-button");
+            const butonSave = document.getElementById("angajat-save-button");
+
+            if (formular) {
+                if (permiteEditare) {
+                    formular.classList.remove("locked");
+                } else {
+                    formular.classList.add("locked");
+                }
+            }
+
+            if (randActiuni) {
+                randActiuni.classList.add("employee-actions-three");
+            }
+
+            if (butonEdit) {
+                butonEdit.style.display = "block";
+            }
+
+            if (butonNou) {
+                butonNou.style.display = "none";
+            }
+
+            if (butonSave) {
+                butonSave.disabled = !permiteEditare;
+                butonSave.style.opacity = permiteEditare ? "1" : "0.45";
+            }
+
+            seteazaCampuriFormularAngajat(!permiteEditare);
+
+        }
+
+        function activeazaEditareAngajat() {
+
+            seteazaFormularAngajatPentruFisa(true);
+
+        }
+
+        function seteazaCampuriFormularAngajat(blocat) {
+
+            const ids = [
+                "angajat-nume",
+                "angajat-sectie",
+                "angajat-status",
+                "angajat-data-inactiv",
+                "angajat-apare-rapoarte",
+                "angajat-apare-pontaj",
+                "angajat-rol",
+                "angajat-acces",
+                "angajat-regula-0700",
+                "angajat-pauza-masa"
+            ];
+
+            ids.forEach(function(id) {
+
+                const camp = document.getElementById(id);
+
+                if (camp) {
+                    camp.disabled = blocat;
+                }
+
+            });
+
+        }
 
         // ===== RESETARE FORMULAR ANGAJAT =====
         function reseteazaFormularAngajat() {
