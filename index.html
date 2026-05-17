@@ -1387,56 +1387,32 @@
                 0 0 10px rgba(255,23,68,0.42) !important;
         }
 
-
-        /* ===== ANGAJATI - COMPACT SI CLAR ===== */
-        .employees-page {
-            padding: 8px 12px 10px !important;
-        }
-
-        .employees-header {
-            min-height: 76px !important;
-            padding-bottom: 8px !important;
-        }
-
-        .employees-title {
-            font-size: 20px !important;
-        }
-
-        .employees-subtitle {
-            font-size: 11px !important;
-            margin-top: 2px !important;
-        }
-
-        .employee-section-title {
-            font-size: 14px !important;
-            margin-bottom: 8px !important;
-        }
-
+        /* ===== COMPACTARE FORMULAR ANGAJATI ===== */
         .employee-form {
             padding: 10px !important;
             margin: 10px 0 10px !important;
-            border-radius: 16px !important;
         }
 
         .employee-input {
             min-height: 34px !important;
+            height: 34px !important;
             margin-bottom: 7px !important;
-            font-size: 12px !important;
-            border-radius: 11px !important;
+            font-size: 11px !important;
+            border-radius: 10px !important;
         }
 
         .employee-row {
             margin: 5px 0 !important;
-            font-size: 11px !important;
+            font-size: 10px !important;
             gap: 8px !important;
         }
 
         .employee-row .employee-input {
-            width: 145px !important;
-            min-height: 32px !important;
+            width: 150px !important;
+            min-height: 30px !important;
+            height: 30px !important;
             margin-bottom: 0 !important;
-            font-size: 11px !important;
-            padding: 0 8px !important;
+            font-size: 10px !important;
         }
 
         .employee-actions {
@@ -1445,15 +1421,27 @@
         }
 
         .employee-button {
-            min-height: 38px !important;
-            border-radius: 14px !important;
+            min-height: 36px !important;
+            border-radius: 13px !important;
+            font-size: 12px !important;
+        }
+
+        .employee-section-title {
+            margin-bottom: 8px !important;
             font-size: 13px !important;
         }
 
-        #angajat-data-inactiv-wrap {
-            display: none;
+        .employee-date-hidden {
+            display: none !important;
         }
 
+        .employee-date-label {
+            color: #ffffff;
+            font-size: 10px;
+            font-weight: 800;
+            margin: 4px 0 4px 0;
+            font-family: 'Montserrat', Arial, sans-serif;
+        }
 
 </style>
 
@@ -1974,19 +1962,26 @@
                                 <select
                                     id="angajat-status"
                                     class="employee-input"
-                                    onchange="actualizeazaCampDataInactiv()"
+                                    onchange="actualizeazaStatusAngajatUI()"
                                 >
                                     <option value="Activ">Activ</option>
                                     <option value="Inactiv">Inactiv</option>
                                 </select>
                             </div>
 
-                            <div id="angajat-data-inactiv-wrap">
+                            <div
+                                id="angajat-data-inactiv-box"
+                                class="employee-date-hidden"
+                            >
+                                <div class="employee-date-label">
+                                    Inactiv începând cu data
+                                </div>
+
                                 <input
                                     type="date"
                                     id="angajat-data-inactiv"
                                     class="employee-input"
-                                    title="Inactiv începând cu data"
+                                    title="Data inactivare"
                                 >
                             </div>
 
@@ -2037,7 +2032,6 @@
                                 </select>
                             </div>
 
-
                             <div class="employee-row">
                                 <span>Start înainte de 07:00 devine 07:00</span>
                                 <input
@@ -2053,12 +2047,6 @@
                                     id="angajat-pauza-masa"
                                 >
                             </div>
-
-                            <input
-                                type="hidden"
-                                id="angajat-pauza-minute"
-                                value="30"
-                            >
 
                             <div class="employee-actions">
                                 <button
@@ -3464,17 +3452,15 @@
                 const apareRapoarte = angajat.apare_in_rapoarte === false ? "Nu" : "Da";
                 const regula0700 = angajat.regula_start_0700 ? "Da" : "Nu";
                 const pauzaMasa = angajat.pauza_masa ? "Da" : "Nu";
-                const rolAngajat = angajat.rol || "-";
-                const accesAngajat = angajat.acces || "-";
+                const pauzaMinute = angajat.pauza_minute || 0;
 
                 html += "<div class='employee-card' onclick='editeazaAngajat(" + index + ")'>";
                 html += "<div class='employee-card-name'>" + angajat.nume + "</div>";
                 html += "<div class='employee-card-info'>";
                 html += status + dataInactiv + "<br>";
                 html += "Apare în rapoarte: " + apareRapoarte + "<br>";
-                html += "Rol: " + rolAngajat + " · Acces: " + accesAngajat + "<br>";
                 html += "Regulă 07:00: " + regula0700 + "<br>";
-                html += "Pauză masă 30 min: " + pauzaMasa + "<br>";
+                html += "Pauză masă: " + pauzaMasa + " (" + pauzaMinute + " min)<br>";
                 html += "Secție: " + (angajat.sectie || "-");
                 html += "</div>";
                 html += "</div>";
@@ -3486,7 +3472,7 @@
         }
 
         // ===== EDITARE ANGAJAT =====
-        function editeazaAngajat(index) {
+        async function editeazaAngajat(index) {
 
             const angajat = listaAngajatiSupabase[index];
 
@@ -3499,42 +3485,45 @@
             }
 
             document.getElementById("angajat-sectie").value = angajat.sectie || "";
-            document.getElementById("angajat-status").value = angajat.activ === false ? "Inactiv" : "Activ";
+
+            const statusAngajat = angajat.activ === false ? "Inactiv" : "Activ";
+            document.getElementById("angajat-status").value = statusAngajat;
             document.getElementById("angajat-data-inactiv").value = angajat.data_inactiv || "";
-            document.getElementById("angajat-apare-rapoarte").value = angajat.apare_in_rapoarte === false ? "Nu" : "Da";
-            document.getElementById("angajat-apare-pontaj").value = "Da";
-            document.getElementById("angajat-rol").value = angajat.rol || "Angajat";
-            document.getElementById("angajat-acces").value = angajat.acces || "Personal";
+
+            document.getElementById("angajat-apare-rapoarte").value =
+                angajat.apare_in_rapoarte === false ? "Nu" : "Da";
+
+            document.getElementById("angajat-apare-pontaj").value =
+                angajat.afiseaza_lipsa_pontaj === false ? "Nu" : "Da";
+
             document.getElementById("angajat-regula-0700").checked = !!angajat.regula_start_0700;
             document.getElementById("angajat-pauza-masa").checked = !!angajat.pauza_masa;
-            document.getElementById("angajat-pauza-minute").value = 30;
-            actualizeazaCampDataInactiv();
+
+            document.getElementById("angajat-rol").value = "Angajat";
+            document.getElementById("angajat-acces").value = "Personal";
+
+            const { data: utilizatorData } = await supabaseClient
+                .from("utilizatori")
+                .select("rol, acces")
+                .eq("nume", angajat.nume)
+                .maybeSingle();
+
+            if (utilizatorData) {
+                if (utilizatorData.rol) {
+                    document.getElementById("angajat-rol").value = utilizatorData.rol;
+                }
+
+                if (utilizatorData.acces) {
+                    document.getElementById("angajat-acces").value = utilizatorData.acces;
+                }
+            }
+
+            actualizeazaStatusAngajatUI();
 
             showMessage(
                 "Angajat încărcat pentru editare",
                 "success"
             );
-
-        }
-
-
-        // ===== AFISARE DATA INACTIVARE DOAR PENTRU STATUS INACTIV =====
-        function actualizeazaCampDataInactiv() {
-
-            const status = document.getElementById("angajat-status");
-            const zonaData = document.getElementById("angajat-data-inactiv-wrap");
-            const dataInactiv = document.getElementById("angajat-data-inactiv");
-
-            if (!status || !zonaData || !dataInactiv) {
-                return;
-            }
-
-            if (status.value === "Inactiv") {
-                zonaData.style.display = "block";
-            } else {
-                zonaData.style.display = "none";
-                dataInactiv.value = "";
-            }
 
         }
 
@@ -3552,11 +3541,32 @@
             document.getElementById("angajat-rol").value = "Angajat";
             document.getElementById("angajat-acces").value = "Personal";
             document.getElementById("angajat-regula-0700").checked = false;
-            document.getElementById("angajat-pauza-masa").checked = false;
-            document.getElementById("angajat-pauza-minute").value = 30;
-            actualizeazaCampDataInactiv();
+            document.getElementById("angajat-pauza-masa").checked = true;
+
+            actualizeazaStatusAngajatUI();
 
         }
+
+        // ===== AFISARE DATA INACTIVARE DOAR CAND STATUSUL ESTE INACTIV =====
+        function actualizeazaStatusAngajatUI() {
+
+            const status = document.getElementById("angajat-status");
+            const boxData = document.getElementById("angajat-data-inactiv-box");
+            const inputData = document.getElementById("angajat-data-inactiv");
+
+            if (!status || !boxData || !inputData) {
+                return;
+            }
+
+            if (status.value === "Inactiv") {
+                boxData.classList.remove("employee-date-hidden");
+            } else {
+                boxData.classList.add("employee-date-hidden");
+                inputData.value = "";
+            }
+
+        }
+
 
         // ===== SALVARE ANGAJAT IN SUPABASE =====
         async function salveazaAngajat(event) {
@@ -3572,11 +3582,12 @@
                 const nume = document.getElementById("angajat-nume").value.trim();
                 const sectie = document.getElementById("angajat-sectie").value.trim();
                 const statusAngajat = document.getElementById("angajat-status").value;
-                const activ = statusAngajat !== "Inactiv";
+                const activ = statusAngajat === "Activ";
                 const dataInactiv = activ ? null : (document.getElementById("angajat-data-inactiv").value || null);
                 const apareRapoarte = document.getElementById("angajat-apare-rapoarte").value === "Da";
-                const rolAngajat = document.getElementById("angajat-rol").value;
-                const accesAngajat = document.getElementById("angajat-acces").value;
+                const aparePontaj = document.getElementById("angajat-apare-pontaj").value === "Da";
+                const rol = document.getElementById("angajat-rol").value;
+                const acces = document.getElementById("angajat-acces").value;
                 const regula0700 = document.getElementById("angajat-regula-0700").checked;
                 const pauzaMasa = document.getElementById("angajat-pauza-masa").checked;
                 const pauzaMinute = pauzaMasa ? 30 : 0;
@@ -3606,7 +3617,7 @@
                 if (!activ && !dataInactiv) {
 
                     showMessage(
-                        "Alege data de la care angajatul devine inactiv",
+                        "Alege data de la care angajatul este inactiv",
                         "error"
                     );
 
@@ -3620,18 +3631,17 @@
                     activ: activ,
                     data_inactiv: dataInactiv,
                     apare_in_rapoarte: apareRapoarte,
-                    rol: rolAngajat,
-                    acces: accesAngajat,
+                    afiseaza_lipsa_pontaj: aparePontaj,
                     regula_start_0700: regula0700,
                     pauza_masa: pauzaMasa,
                     pauza_minute: pauzaMinute
                 };
 
-                let raspuns;
+                let raspunsAngajat;
 
                 if (id) {
 
-                    raspuns = await supabaseClient
+                    raspunsAngajat = await supabaseClient
                         .from("angajati")
                         .update(dateAngajat)
                         .eq("id", id)
@@ -3639,17 +3649,73 @@
 
                 } else {
 
-                    raspuns = await supabaseClient
+                    raspunsAngajat = await supabaseClient
                         .from("angajati")
                         .insert([dateAngajat])
                         .select();
 
                 }
 
-                if (raspuns.error) {
+                if (raspunsAngajat.error) {
 
                     showMessage(
-                        "Eroare salvare: " + raspuns.error.message,
+                        "Eroare salvare angajat: " + raspunsAngajat.error.message,
+                        "error"
+                    );
+
+                    return;
+
+                }
+
+                const { data: utilizatorExistent, error: eroareCautareUtilizator } = await supabaseClient
+                    .from("utilizatori")
+                    .select("id")
+                    .eq("nume", nume)
+                    .maybeSingle();
+
+                if (eroareCautareUtilizator) {
+
+                    showMessage(
+                        "Angajat salvat, dar nu pot verifica utilizatorul: " + eroareCautareUtilizator.message,
+                        "error"
+                    );
+
+                    return;
+
+                }
+
+                let raspunsUtilizator;
+
+                if (utilizatorExistent && utilizatorExistent.id) {
+
+                    raspunsUtilizator = await supabaseClient
+                        .from("utilizatori")
+                        .update({
+                            rol: rol,
+                            acces: acces
+                        })
+                        .eq("id", utilizatorExistent.id)
+                        .select();
+
+                } else {
+
+                    raspunsUtilizator = await supabaseClient
+                        .from("utilizatori")
+                        .insert([{
+                            nume: nume,
+                            rol: rol,
+                            acces: acces,
+                            parola: "amma",
+                            cuvant_magic: "amma"
+                        }])
+                        .select();
+
+                }
+
+                if (raspunsUtilizator.error) {
+
+                    showMessage(
+                        "Angajat salvat, dar eroare utilizator: " + raspunsUtilizator.error.message,
                         "error"
                     );
 
