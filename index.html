@@ -2676,11 +2676,28 @@
                 createButton.style.display = "none";
             }
 
-            const { data } = await supabaseClient
+            const { data: conturi } = await supabaseClient
                 .from("utilizatori")
                 .select("*")
                 .eq("nume", nume)
-                .maybeSingle();
+                .order("id", {
+                    ascending: true
+                });
+
+            if (conturi && conturi.length > 1) {
+
+                showMessage(
+                    "Există cont duplicat în utilizatori. Șterge duplicatul din Supabase.",
+                    "error"
+                );
+
+                return;
+
+            }
+
+            const data = conturi && conturi.length
+                ? conturi[0]
+                : null;
 
             if (!data || !data.parola) {
 
@@ -2768,13 +2785,41 @@
 
             }
 
-            const { data, error } = await supabaseClient
+            const { data: conturi, error } = await supabaseClient
                 .from("utilizatori")
                 .select("*")
                 .eq("nume", nume)
-                .maybeSingle();
+                .order("id", {
+                    ascending: true
+                });
 
-            if (error || !data || !data.parola) {
+            if (error) {
+
+                showMessage(
+                    "Eroare citire cont",
+                    "error"
+                );
+
+                return;
+
+            }
+
+            if (conturi && conturi.length > 1) {
+
+                showMessage(
+                    "Există cont duplicat în utilizatori. Șterge duplicatul din Supabase.",
+                    "error"
+                );
+
+                return;
+
+            }
+
+            const data = conturi && conturi.length
+                ? conturi[0]
+                : null;
+
+            if (!data || !data.parola) {
 
                 showMessage(
                     "Contul nu exista. Apasa CREARE CONT.",
@@ -2897,16 +2942,15 @@
 
             }
 
-            const { data: angajatGasit } = await supabaseClient
+            const { data: angajatiGasiti, error: eroareAngajati } = await supabaseClient
                 .from("angajati")
-                .select("nume")
-                .eq("nume", nume)
-                .maybeSingle();
+                .select("id,nume")
+                .eq("nume", nume);
 
-            if (!angajatGasit) {
+            if (eroareAngajati || !angajatiGasiti || angajatiGasiti.length !== 1) {
 
                 showMessage(
-                    "Alege numele exact din lista",
+                    "Alege numele exact din lista angajaților",
                     "error"
                 );
 
@@ -2914,11 +2958,39 @@
 
             }
 
-            const { data: contExistent } = await supabaseClient
+            const { data: conturiGasite, error: eroareConturi } = await supabaseClient
                 .from("utilizatori")
                 .select("*")
                 .eq("nume", nume)
-                .maybeSingle();
+                .order("id", {
+                    ascending: true
+                });
+
+            if (eroareConturi) {
+
+                showMessage(
+                    "Eroare verificare cont",
+                    "error"
+                );
+
+                return;
+
+            }
+
+            const contExistent = conturiGasite && conturiGasite.length
+                ? conturiGasite[0]
+                : null;
+
+            if (conturiGasite && conturiGasite.length > 1) {
+
+                showMessage(
+                    "Există cont duplicat în utilizatori. Șterge duplicatul din Supabase.",
+                    "error"
+                );
+
+                return;
+
+            }
 
             if (contExistent && contExistent.parola) {
 
@@ -2970,8 +3042,8 @@
                 nume: nume,
                 parola: password,
                 cuvant_magic: cuvantMagic,
-                rol: "Angajat",
-                acces: "Personal"
+                rol: contExistent?.rol || "Angajat",
+                acces: contExistent?.acces || "Personal"
             };
 
             let rezultat;
@@ -3246,11 +3318,39 @@
 
             }
 
-            const { data: contExistent } = await supabaseClient
+            const { data: conturiExistente, error: eroareConturi } = await supabaseClient
                 .from("utilizatori")
                 .select("id")
                 .eq("nume", numeAngajat)
-                .maybeSingle();
+                .order("id", {
+                    ascending: true
+                });
+
+            if (eroareConturi) {
+
+                showMessage(
+                    "Eroare verificare utilizator",
+                    "error"
+                );
+
+                return false;
+
+            }
+
+            if (conturiExistente && conturiExistente.length > 1) {
+
+                showMessage(
+                    "Există utilizator duplicat. Șterge duplicatul din Supabase.",
+                    "error"
+                );
+
+                return false;
+
+            }
+
+            const contExistent = conturiExistente && conturiExistente.length
+                ? conturiExistente[0]
+                : null;
 
             let raspunsUtilizator;
 
@@ -3311,7 +3411,9 @@
                     return input.value;
                 });
 
-                if (!sectiiSelectate.length) {
+                const sectiiUnice = Array.from(new Set(sectiiSelectate));
+
+                if (!sectiiUnice.length) {
 
                     showMessage(
                         "Alege secțiile șefului",
@@ -3322,7 +3424,7 @@
 
                 }
 
-                const randuri = sectiiSelectate.map(function(sectie) {
+                const randuri = sectiiUnice.map(function(sectie) {
                     return {
                         nume_utilizator: numeAngajat,
                         sectie: sectie
@@ -3668,6 +3770,64 @@ function deschideZonaAngajatNou() {
 
                 showMessage(
                     "Alege data inactivării",
+                    "error"
+                );
+
+                return;
+
+            }
+
+            const { data: angajatiExistenti, error: eroareVerificare } = await supabaseClient
+                .from("angajati")
+                .select("id,nume")
+                .eq("nume", nume);
+
+            if (eroareVerificare) {
+
+                showMessage(
+                    "Eroare verificare angajat",
+                    "error"
+                );
+
+                return;
+
+            }
+
+            if (angajatiExistenti && angajatiExistenti.length > 1) {
+
+                showMessage(
+                    "Există angajat duplicat în angajați. Șterge duplicatul din Supabase.",
+                    "error"
+                );
+
+                return;
+
+            }
+
+            if (
+                !id &&
+                angajatiExistenti &&
+                angajatiExistenti.length === 1
+            ) {
+
+                showMessage(
+                    "Angajatul există deja. Folosește Caută angajat pentru editare.",
+                    "error"
+                );
+
+                return;
+
+            }
+
+            if (
+                id &&
+                angajatiExistenti &&
+                angajatiExistenti.length === 1 &&
+                String(angajatiExistenti[0].id) !== String(id)
+            ) {
+
+                showMessage(
+                    "Există deja alt angajat cu acest nume.",
                     "error"
                 );
 
