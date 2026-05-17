@@ -2063,12 +2063,12 @@
             const rol = String(userData.rol || "").trim().toUpperCase();
             const acces = String(userData.acces || "").trim().toUpperCase();
 
-            if (rol === "ADMIN" || acces === "TOTAL") {
+            if (acces === "FULL") {
                 sectiiPermiseUtilizator = ["__TOATE__"];
                 return;
             }
 
-            if (rol !== "SEF" && acces !== "DEPARTAMENT") {
+            if (!(rol === "SEF DEPARTAMENT" && acces === "DEPARTAMENT")) {
                 return;
             }
 
@@ -2101,7 +2101,11 @@
 
             const esteAngajat =
                 rol === "ANGAJAT" &&
-                acces === "ANGAJAT";
+                acces === "PERSONAL";
+
+            const esteAdmin =
+                rol === "ADMIN" &&
+                acces === "FULL";
 
             const quickTitle = document.querySelector(".quick-menu-title");
             const quickRow = document.querySelector(".quick-menu-row");
@@ -2119,21 +2123,21 @@
                     quickRow.style.display = "";
                 }
 
-                if (esteSefDepartament()) {
+                quickRow.querySelectorAll(".quick-menu-card").forEach(function(card) {
 
-                    quickRow.querySelectorAll(".quick-menu-card").forEach(function(card) {
+                    const textCard = (card.innerText || "").toUpperCase();
 
-                        const textCard = (card.innerText || "").toUpperCase();
+                    card.style.display = "";
 
-                        if (textCard.includes("IMPORT")) {
-                            card.style.display = "none";
-                        } else {
-                            card.style.display = "";
-                        }
+                    if (esteSefDepartament() && textCard.includes("IMPORT")) {
+                        card.style.display = "none";
+                    }
 
-                    });
+                    if (!esteAdmin && textCard.includes("ANGAJATI")) {
+                        card.style.display = "none";
+                    }
 
-                }
+                });
 
             }
 
@@ -2649,8 +2653,8 @@
                 nume: nume,
                 parola: password,
                 cuvant_magic: cuvantMagic,
-                rol: "ANGAJAT",
-                acces: "ANGAJAT"
+                rol: "Angajat",
+                acces: "Personal"
             };
 
             let rezultat;
@@ -2703,7 +2707,15 @@
 
                 const userData = JSON.parse(userSalvat);
 
-                await showMainMenu(userData);
+                const { data } = await supabaseClient
+                    .from("utilizatori")
+                    .select("*")
+                    .eq("nume", userData.nume)
+                    .maybeSingle();
+
+                if (data) {
+                    await showMainMenu(data);
+                }
 
             }
 
@@ -2809,6 +2821,17 @@
 
         // ===== DESCHIDERE PAGINA ANGAJATI =====
         async function deschidePaginaAngajati() {
+
+            if (!esteAdminSistem()) {
+
+                showMessage(
+                    "Nu ai acces la administrare",
+                    "error"
+                );
+
+                return;
+
+            }
 
             document.getElementById("main-menu").style.display = "none";
             document.getElementById("employees-page").style.display = "block";
@@ -3384,20 +3407,44 @@
             const acces = String(utilizatorLogat?.acces || "").trim().toUpperCase();
 
             return (
-                rol === "ADMIN" ||
-                acces === "TOTAL"
+                acces === "FULL" &&
+                (
+                    rol === "ADMIN" ||
+                    rol === "MANAGEMENT"
+                )
             );
 
         }
 
 
-        // ===== VERIFICARE DACA ESTE SEF DE DEPARTAMENT =====
+        // ===== VERIFICARE DACA ESTE ADMIN SISTEM =====
+        function esteAdminSistem() {
+
+            const rol = String(utilizatorLogat?.rol || "").trim().toUpperCase();
+            const acces = String(utilizatorLogat?.acces || "").trim().toUpperCase();
+
+            return rol === "ADMIN" && acces === "FULL";
+
+        }
+
+
+        // ===== VERIFICARE DACA ESTE SEF DEPARTAMENT =====
         function esteSefDepartament() {
 
             const rol = String(utilizatorLogat?.rol || "").trim().toUpperCase();
             const acces = String(utilizatorLogat?.acces || "").trim().toUpperCase();
 
-            return rol === "SEF" && acces === "DEPARTAMENT";
+            return rol === "SEF DEPARTAMENT" && acces === "DEPARTAMENT";
+
+        }
+
+        // ===== VERIFICARE DACA ESTE ANGAJAT SIMPLU =====
+        function esteAngajatSimplu() {
+
+            const rol = String(utilizatorLogat?.rol || "").trim().toUpperCase();
+            const acces = String(utilizatorLogat?.acces || "").trim().toUpperCase();
+
+            return rol === "ANGAJAT" && acces === "PERSONAL";
 
         }
 
@@ -3420,8 +3467,12 @@
                 return true;
             }
 
+            if (esteAngajatSimplu()) {
+                return false;
+            }
+
             if (!esteSefDepartament()) {
-                return true;
+                return false;
             }
 
             const sectieAngajat = String(angajat?.sectie || "")
@@ -3437,17 +3488,6 @@
                 );
 
             });
-
-        }
-
-
-        // ===== VERIFICARE DACA ESTE ANGAJAT SIMPLU =====
-        function esteAngajatSimplu() {
-
-            const rol = String(utilizatorLogat?.rol || "").trim().toUpperCase();
-            const acces = String(utilizatorLogat?.acces || "").trim().toUpperCase();
-
-            return rol === "ANGAJAT" && acces === "ANGAJAT";
 
         }
 
@@ -3865,6 +3905,10 @@
                 }
 
                 if (angajat.afiseaza_lipsa_pontaj === false) {
+                    return;
+                }
+
+                if (!angajatInSectiiPermise(angajat)) {
                     return;
                 }
 
