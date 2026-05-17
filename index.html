@@ -5330,6 +5330,7 @@ function deschideZonaAngajatNou() {
 
             let totalMinuteLucrate = 0;
             let totalZileLucratoare = 0;
+
             const an = 2026;
             const zileLuna = new Date(an, luna, 0).getDate();
 
@@ -5364,11 +5365,20 @@ function deschideZonaAngajatNou() {
 
                 if (pontaj.status_corectie) {
 
+                    let minuteCorectie = 0;
+
                     if (
                         pontaj.status_corectie === "C.O" ||
                         pontaj.status_corectie === "Lucru la distanță"
                     ) {
-                        totalMinuteLucrate += 480;
+                        minuteCorectie = 480;
+                    }
+
+                    if (
+                        pontaj.status_corectie === "C.M" ||
+                        pontaj.status_corectie === "Fără plată"
+                    ) {
+                        minuteCorectie = 0;
                     }
 
                     if (pontaj.status_corectie === "Lipsă card") {
@@ -5381,14 +5391,23 @@ function deschideZonaAngajatNou() {
                             angajat?.pauza_minute
                         );
 
-                        if (
-                            oreCorectie &&
-                            !oreCorectie.startsWith("-")
-                        ) {
-                            totalMinuteLucrate += transformaOraMinute(oreCorectie);
+                        if (oreCorectie) {
+
+                            const negativ = oreCorectie.startsWith("-");
+
+                            const minute = transformaOraMinute(
+                                oreCorectie.replace("-", "")
+                            );
+
+                            minuteCorectie = negativ
+                                ? -minute
+                                : minute;
+
                         }
 
                     }
+
+                    totalMinuteLucrate += minuteCorectie;
 
                     continue;
 
@@ -5407,11 +5426,18 @@ function deschideZonaAngajatNou() {
                         angajat?.pauza_minute
                     );
 
-                    if (
-                        oreNete &&
-                        !oreNete.startsWith("-")
-                    ) {
-                        totalMinuteLucrate += transformaOraMinute(oreNete);
+                    if (oreNete) {
+
+                        const negativ = oreNete.startsWith("-");
+
+                        const minute = transformaOraMinute(
+                            oreNete.replace("-", "")
+                        );
+
+                        totalMinuteLucrate += negativ
+                            ? -minute
+                            : minute;
+
                     }
 
                 }
@@ -5495,7 +5521,7 @@ function deschideZonaAngajatNou() {
 
             (pontaje || []).forEach(function(pontaj) {
 
-                const nume = String(pontaj.nume || "").trim();
+                const nume = String(pontaj.nume || "").trim().toUpperCase();
 
                 if (!pontajeDupaAngajat[nume]) {
                     pontajeDupaAngajat[nume] = [];
@@ -5535,7 +5561,7 @@ function deschideZonaAngajatNou() {
 
                 LUNI_RAPORT_DIFERENTE.forEach(function(luna) {
 
-                    const pontajeAngajatLuna = (pontajeDupaAngajat[nume] || []).filter(function(pontaj) {
+                    const pontajeAngajatLuna = (pontajeDupaAngajat[nume.toUpperCase()] || []).filter(function(pontaj) {
                         return String(pontaj.data || "").slice(5, 7) === String(luna.numar).padStart(2, "0");
                     });
 
