@@ -1882,7 +1882,7 @@
                         </button>
 
                         <div class="employee-section-title">
-                            Angajat nou
+                            Fișă angajat
                         </div>
 
                         <div class="employee-form">
@@ -3187,26 +3187,20 @@
         function selecteazaAngajatDinAdministrare() {
 
             const select = document.getElementById("employee-search-select");
-            const box = document.getElementById("employee-selected-form");
 
-            if (!select || !box || !select.value) {
-
-                if (box) {
-                    box.style.display = "none";
-                    box.innerHTML = "";
-                }
-
+            if (!select || select.value === "") {
                 return;
-
             }
 
             editeazaAngajat(Number(select.value));
 
-            box.style.display = "block";
-            box.innerHTML =
-                "<div class='employee-card-info'>" +
-                "Fișa este încărcată pentru editare în formularul Angajat nou." +
-                "</div>";
+            ascundeZoneAngajati();
+
+            const zonaNou = document.getElementById("employee-new-area");
+
+            if (zonaNou) {
+                zonaNou.style.display = "block";
+            }
 
         }
 
@@ -3335,12 +3329,6 @@
             document.getElementById("angajat-regula-0700").checked = !!angajat.regula_start_0700;
             document.getElementById("angajat-pauza-masa").checked = !!angajat.pauza_masa;
             document.getElementById("angajat-pauza-minute").value = angajat.pauza_minute || 0;
-
-            showMessage(
-                "Angajat încărcat pentru editare",
-                "success"
-            );
-
         }
 
         // ===== RESETARE FORMULAR ANGAJAT =====
