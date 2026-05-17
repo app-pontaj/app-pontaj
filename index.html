@@ -1906,6 +1906,86 @@
                                 placeholder="Secție"
                             >
 
+
+                            <select
+                                id="angajat-rol"
+                                class="employee-input"
+                            >
+                                <option value="">
+                                    Rol
+                                </option>
+
+                                <option value="Angajat">
+                                    Angajat
+                                </option>
+
+                                <option value="Sef departament">
+                                    Sef departament
+                                </option>
+
+                                <option value="Management">
+                                    Management
+                                </option>
+
+                                <option value="Admin">
+                                    Admin
+                                </option>
+                            </select>
+
+                            <select
+                                id="angajat-acces"
+                                class="employee-input"
+                            >
+                                <option value="">
+                                    Acces
+                                </option>
+
+                                <option value="Personal">
+                                    Personal
+                                </option>
+
+                                <option value="Departament">
+                                    Departament
+                                </option>
+
+                                <option value="Full">
+                                    Full
+                                </option>
+                            </select>
+
+                            <div
+                                id="zone-sef-departament"
+                                style="display:none;"
+                            >
+
+                                <div
+                                    style="
+                                        color:#d4af37;
+                                        font-size:13px;
+                                        font-weight:800;
+                                        margin:12px 0 8px 0;
+                                    "
+                                >
+                                    Secții șef departament
+                                </div>
+
+                                <label class="employee-row">
+                                    <span>LEGATORIE MECANICA</span>
+                                    <input type="checkbox">
+                                </label>
+
+                                <label class="employee-row">
+                                    <span>LEGATORIE MANUALA</span>
+                                    <input type="checkbox">
+                                </label>
+
+                                <label class="employee-row">
+                                    <span>PAZA</span>
+                                    <input type="checkbox">
+                                </label>
+
+                            </div>
+
                             <div class="employee-row">
                                 <span>Activ</span>
                                 <input
@@ -3131,7 +3211,28 @@
 
         }
 
-        function deschideZonaAngajatNou() {
+        
+        document.addEventListener("change", function(event) {
+
+            if (event.target && event.target.id === "angajat-rol") {
+
+                const zona = document.getElementById("zone-sef-departament");
+
+                if (!zona) {
+                    return;
+                }
+
+                if (event.target.value === "Sef departament") {
+                    zona.style.display = "block";
+                } else {
+                    zona.style.display = "none";
+                }
+
+            }
+
+        });
+
+function deschideZonaAngajatNou() {
 
             ascundeZoneAngajati();
             reseteazaFormularAngajat();
