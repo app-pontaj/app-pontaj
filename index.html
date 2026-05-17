@@ -2784,10 +2784,11 @@
 
             const totalAngajati = listaAngajatiSupabase.filter(function(angajat) {
 
-                return (
-                    angajat.apare_in_rapoarte !== false &&
-                    angajatInSectiiPermise(angajat)
-                );
+                if (angajat.apare_in_rapoarte === false) {
+                    return false;
+                }
+
+                return angajatInSectiiPermise(angajat);
 
             }).length;
 
