@@ -1103,6 +1103,85 @@
             font-family: 'Montserrat', Arial, sans-serif;
         }
 
+
+        /* ===== ANGAJATI - 3 CASETE MENIU ===== */
+        .employees-menu-box {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            padding-top: 14px;
+            padding-bottom: 24px;
+        }
+
+        .employees-menu-card {
+            width: 100%;
+            min-height: 82px;
+            border-radius: 18px;
+            border: 1.5px solid rgba(212,175,55,0.80);
+            background: linear-gradient(145deg, rgba(255,255,255,0.10), rgba(0,0,0,0.98));
+            color: #d4af37;
+            box-shadow:
+                inset 0 1px 0 rgba(255,255,255,0.07),
+                0 8px 18px rgba(0,0,0,0.60);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 16px 18px;
+            cursor: pointer;
+            box-sizing: border-box;
+            font-family: 'Montserrat', Arial, sans-serif;
+        }
+
+        .employees-menu-card-title {
+            color: #d4af37;
+            font-size: 17px;
+            font-weight: 900;
+            line-height: 1.1;
+        }
+
+        .employees-menu-card-subtitle {
+            color: #ffffff;
+            font-size: 11px;
+            font-weight: 700;
+            line-height: 1.25;
+            margin-top: 6px;
+            opacity: 0.88;
+        }
+
+        .employees-menu-card-arrow {
+            color: #d4af37;
+            font-size: 30px;
+            font-weight: 300;
+            line-height: 1;
+        }
+
+        .employee-admin-area {
+            display: none;
+            padding-top: 14px;
+            padding-bottom: 24px;
+        }
+
+        .employee-section-title {
+            color: #d4af37;
+            font-size: 15px;
+            font-weight: 900;
+            margin: 0 0 12px 0;
+            font-family: 'Montserrat', Arial, sans-serif;
+        }
+
+        .employee-section-back {
+            background: transparent;
+            border: none;
+            color: #ff3b3b;
+            font-size: 12px;
+            font-weight: 900;
+            padding: 0;
+            margin: 0 0 12px 0;
+            cursor: pointer;
+            font-family: 'Montserrat', Arial, sans-serif;
+        }
+
     
         /* ===== LOGIN SI POPUP - VARIANTA FINALA ===== */
 
@@ -1726,116 +1805,231 @@
 
                     </div>
 
-                    <div class="employee-admin-section">
+                    <div
+                        class="employees-menu-box"
+                        id="employees-menu-box"
+                    >
 
-                        <div class="employee-admin-card">
+                        <div
+                            class="employees-menu-card"
+                            onclick="deschideZonaAngajatNou()"
+                        >
+                            <div>
+                                <div class="employees-menu-card-title">
+                                    Angajat nou
+                                </div>
 
-                            <div class="employee-admin-title">
-                                Caută angajat
+                                <div class="employees-menu-card-subtitle">
+                                    Completezi datele unui angajat nou
+                                </div>
                             </div>
 
-                            <select
+                            <div class="employees-menu-card-arrow">
+                                ›
+                            </div>
+                        </div>
+
+                        <div
+                            class="employees-menu-card"
+                            onclick="deschideZonaCautaAngajat()"
+                        >
+                            <div>
+                                <div class="employees-menu-card-title">
+                                    Caută angajat
+                                </div>
+
+                                <div class="employees-menu-card-subtitle">
+                                    Alegi angajatul și vezi fișa lui
+                                </div>
+                            </div>
+
+                            <div class="employees-menu-card-arrow">
+                                ›
+                            </div>
+                        </div>
+
+                        <div
+                            class="employees-menu-card"
+                            onclick="deschideZonaTotiAngajatii()"
+                        >
+                            <div>
+                                <div class="employees-menu-card-title">
+                                    Toți angajații
+                                </div>
+
+                                <div class="employees-menu-card-subtitle">
+                                    Afișezi lista completă cu fișele tuturor
+                                </div>
+                            </div>
+
+                            <div class="employees-menu-card-arrow">
+                                ›
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div
+                        class="employee-admin-area"
+                        id="employee-new-area"
+                    >
+
+                        <button
+                            class="employee-section-back"
+                            onclick="revinoLaMeniuAngajati()"
+                        >
+                            ‹ BACK
+                        </button>
+
+                        <div class="employee-section-title">
+                            Angajat nou
+                        </div>
+
+                        <div class="employee-form">
+
+                            <input
+                                type="hidden"
+                                id="angajat-id"
+                            >
+
+                            <input
+                                type="text"
+                                id="angajat-nume"
                                 class="employee-input"
-                                id="employee-search-select"
+                                placeholder="Nume angajat"
                             >
-                                <option value="">
-                                    Selectează angajat
-                                </option>
-                            </select>
 
-                            <button
-                                class="employee-save-button"
+                            <input
+                                type="text"
+                                id="angajat-sectie"
+                                class="employee-input"
+                                placeholder="Secție"
                             >
-                                Deschide fișa
-                            </button>
 
-                        </div>
-
-                        <div class="employee-admin-card">
-
-                            <div class="employee-admin-title">
-                                Toți angajații
+                            <div class="employee-row">
+                                <span>Activ</span>
+                                <input
+                                    type="checkbox"
+                                    id="angajat-activ"
+                                    checked
+                                >
                             </div>
 
-                            <div
-                                class="employees-list"
-                                id="employees-list"
+                            <input
+                                type="date"
+                                id="angajat-data-inactiv"
+                                class="employee-input"
+                                title="Data inactivare"
                             >
+
+                            <div class="employee-row">
+                                <span>Apare în rapoarte</span>
+                                <input
+                                    type="checkbox"
+                                    id="angajat-apare-rapoarte"
+                                    checked
+                                >
                             </div>
 
-                        </div>
-
-                        <div class="employee-admin-card">
-
-                            <div class="employee-admin-title">
-                                Angajat nou
+                            <div class="employee-row">
+                                <span>Start înainte de 07:00 devine 07:00</span>
+                                <input
+                                    type="checkbox"
+                                    id="angajat-regula-0700"
+                                >
                             </div>
 
-                            <div class="employee-form">
-
+                            <div class="employee-row">
+                                <span>Se scade pauza de masă</span>
                                 <input
-                                    type="text"
-                                    id="angajat-nume"
-                                    class="employee-input"
-                                    placeholder="Nume angajat"
+                                    type="checkbox"
+                                    id="angajat-pauza-masa"
                                 >
+                            </div>
 
-                                <input
-                                    type="text"
-                                    id="angajat-sectie"
-                                    class="employee-input"
-                                    placeholder="Secție"
-                                >
+                            <input
+                                type="number"
+                                id="angajat-pauza-minute"
+                                class="employee-input"
+                                placeholder="Minute pauză masă"
+                                min="0"
+                                value="0"
+                            >
 
-                                <div class="employee-row">
-                                    <span>Activ</span>
-                                    <input
-                                        type="checkbox"
-                                        id="angajat-activ"
-                                        checked
-                                    >
-                                </div>
-
-                                <div class="employee-row">
-                                    <span>Apare în rapoarte</span>
-                                    <input
-                                        type="checkbox"
-                                        id="angajat-apare-rapoarte"
-                                        checked
-                                    >
-                                </div>
-
-                                <div class="employee-row">
-                                    <span>Regula 07:00</span>
-                                    <input
-                                        type="checkbox"
-                                        id="angajat-regula-0700"
-                                    >
-                                </div>
-
-                                <div class="employee-row">
-                                    <span>Pauză masă</span>
-                                    <input
-                                        type="checkbox"
-                                        id="angajat-pauza-masa"
-                                    >
-                                </div>
-
-                                <input
-                                    type="number"
-                                    id="angajat-pauza-minute"
-                                    class="employee-input"
-                                    placeholder="Minute pauză"
-                                >
-
+                            <div class="employee-actions">
                                 <button
-                                    class="employee-save-button"
+                                    class="employee-button"
+                                    onclick="reseteazaFormularAngajat()"
                                 >
-                                    Salvează angajat
+                                    Nou
                                 </button>
 
+                                <button
+                                    class="employee-button"
+                                    onclick="salveazaAngajat()"
+                                >
+                                    Salvează
+                                </button>
                             </div>
 
+                        </div>
+
+                    </div>
+
+                    <div
+                        class="employee-admin-area"
+                        id="employee-search-area-admin"
+                    >
+
+                        <button
+                            class="employee-section-back"
+                            onclick="revinoLaMeniuAngajati()"
+                        >
+                            ‹ BACK
+                        </button>
+
+                        <div class="employee-section-title">
+                            Caută angajat
+                        </div>
+
+                        <select
+                            class="employee-input"
+                            id="employee-search-select"
+                            onchange="selecteazaAngajatDinAdministrare()"
+                        >
+                            <option value="">
+                                Selectează angajat
+                            </option>
+                        </select>
+
+                        <div
+                            class="employee-form"
+                            id="employee-selected-form"
+                            style="display:none;"
+                        ></div>
+
+                    </div>
+
+                    <div
+                        class="employee-admin-area"
+                        id="employee-all-area"
+                    >
+
+                        <button
+                            class="employee-section-back"
+                            onclick="revinoLaMeniuAngajati()"
+                        >
+                            ‹ BACK
+                        </button>
+
+                        <div class="employee-section-title">
+                            Toți angajații
+                        </div>
+
+                        <div
+                            class="employees-list"
+                            id="employees-list"
+                        >
                         </div>
 
                     </div>
@@ -2898,6 +3092,124 @@
         // ===== DATE ANGAJATI =====
         let listaAngajatiSupabase = [];
 
+
+        // ===== PAGINA ANGAJATI - MENIU 3 CASETE =====
+        function ascundeZoneAngajati() {
+
+            const meniu = document.getElementById("employees-menu-box");
+            const zonaNou = document.getElementById("employee-new-area");
+            const zonaCautare = document.getElementById("employee-search-area-admin");
+            const zonaToti = document.getElementById("employee-all-area");
+
+            if (meniu) {
+                meniu.style.display = "none";
+            }
+
+            if (zonaNou) {
+                zonaNou.style.display = "none";
+            }
+
+            if (zonaCautare) {
+                zonaCautare.style.display = "none";
+            }
+
+            if (zonaToti) {
+                zonaToti.style.display = "none";
+            }
+
+        }
+
+        function revinoLaMeniuAngajati() {
+
+            ascundeZoneAngajati();
+
+            const meniu = document.getElementById("employees-menu-box");
+
+            if (meniu) {
+                meniu.style.display = "flex";
+            }
+
+        }
+
+        function deschideZonaAngajatNou() {
+
+            ascundeZoneAngajati();
+            reseteazaFormularAngajat();
+
+            document.getElementById("employee-new-area").style.display = "block";
+
+        }
+
+        function deschideZonaCautaAngajat() {
+
+            ascundeZoneAngajati();
+            umpleSelectAngajatiAdministrare();
+
+            document.getElementById("employee-search-area-admin").style.display = "block";
+
+        }
+
+        function deschideZonaTotiAngajatii() {
+
+            ascundeZoneAngajati();
+
+            document.getElementById("employee-all-area").style.display = "block";
+
+            afiseazaAngajati();
+
+        }
+
+        function umpleSelectAngajatiAdministrare() {
+
+            const select = document.getElementById("employee-search-select");
+
+            if (!select) {
+                return;
+            }
+
+            let html = "<option value=''>Selectează angajat</option>";
+
+            listaAngajatiSupabase.forEach(function(angajat, index) {
+
+                html +=
+                    "<option value='" +
+                    index +
+                    "'>" +
+                    escapeHtml(angajat.nume || "") +
+                    "</option>";
+
+            });
+
+            select.innerHTML = html;
+
+        }
+
+        function selecteazaAngajatDinAdministrare() {
+
+            const select = document.getElementById("employee-search-select");
+            const box = document.getElementById("employee-selected-form");
+
+            if (!select || !box || !select.value) {
+
+                if (box) {
+                    box.style.display = "none";
+                    box.innerHTML = "";
+                }
+
+                return;
+
+            }
+
+            editeazaAngajat(Number(select.value));
+
+            box.style.display = "block";
+            box.innerHTML =
+                "<div class='employee-card-info'>" +
+                "Fișa este încărcată pentru editare în formularul Angajat nou." +
+                "</div>";
+
+        }
+
         // ===== DESCHIDERE PAGINA ANGAJATI =====
         async function deschidePaginaAngajati() {
 
@@ -2919,6 +3231,8 @@
             document.getElementById("employees-page").style.display = "block";
 
             await incarcaAngajati();
+
+            revinoLaMeniuAngajati();
 
         }
 
