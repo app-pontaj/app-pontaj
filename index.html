@@ -1929,7 +1929,7 @@
                                 <option value="Full">Full</option>
                             </select>
 
-                            <div
+                                                        <div
                                 id="sectii-sef-box"
                                 style="display:none;"
                             >
@@ -1945,20 +1945,8 @@
                                     Secții șef departament
                                 </div>
 
-                                <label class="employee-row">
-                                    <span>LEGATORIE MECANICA</span>
-                                    <input type="checkbox">
-                                </label>
-
-                                <label class="employee-row">
-                                    <span>LEGATORIE MANUALA</span>
-                                    <input type="checkbox">
-                                </label>
-
-                                <label class="employee-row">
-                                    <span>PAZA</span>
-                                    <input type="checkbox">
-                                </label>
+                                <div id="lista-sectii-sef">
+                                </div>
 
                             </div>
 
@@ -3145,6 +3133,223 @@
         }
 
 
+
+        // ===== ADMIN ANGAJATI - ROL, ACCES SI SECTII =====
+        async function incarcaRolAccesSiSectiiAngajat(numeAngajat) {
+
+            const rolSelect = document.getElementById("angajat-rol");
+            const accesSelect = document.getElementById("angajat-acces");
+
+            if (!rolSelect || !accesSelect) {
+                return;
+            }
+
+            rolSelect.value = "";
+            accesSelect.value = "";
+
+            const { data: utilizator } = await supabaseClient
+                .from("utilizatori")
+                .select("rol,acces")
+                .eq("nume", numeAngajat)
+                .maybeSingle();
+
+            if (utilizator) {
+                rolSelect.value = utilizator.rol || "";
+                accesSelect.value = utilizator.acces || "";
+            }
+
+            const { data: sectiiSalvate } = await supabaseClient
+                .from("acces_sectii")
+                .select("sectie")
+                .eq("nume_utilizator", numeAngajat);
+
+            const sectiiBifate = (sectiiSalvate || []).map(function(rand) {
+                return String(rand.sectie || "").trim();
+            });
+
+            pregatesteListaSectiiSef(sectiiBifate);
+
+            toggleSectiiSef();
+
+        }
+
+        function pregatesteListaSectiiSef(sectiiBifate) {
+
+            const container = document.getElementById("lista-sectii-sef");
+
+            if (!container) {
+                return;
+            }
+
+            const sectiiGasite = {};
+
+            listaAngajatiSupabase.forEach(function(angajat) {
+
+                const sectie = String(angajat.sectie || "").trim();
+
+                if (sectie) {
+                    sectiiGasite[sectie] = true;
+                }
+
+            });
+
+            const listaSectii = Object.keys(sectiiGasite).sort(function(a, b) {
+                return a.localeCompare(b, "ro");
+            });
+
+            let html = "";
+
+            listaSectii.forEach(function(sectie) {
+
+                const bifat = sectiiBifate.includes(sectie) ? "checked" : "";
+
+                html +=
+                    "<label class='employee-row'>" +
+                    "<span>" + escapeHtml(sectie) + "</span>" +
+                    "<input type='checkbox' class='sectie-sef-check' value='" +
+                    escapeHtml(sectie) +
+                    "' " +
+                    bifat +
+                    ">" +
+                    "</label>";
+
+            });
+
+            if (!html) {
+                html = "<div class='employee-card-info'>Nu există secții definite.</div>";
+            }
+
+            container.innerHTML = html;
+
+        }
+
+        async function salveazaRolAccesSiSectiiAngajat(numeAngajat) {
+
+            const rolSelect = document.getElementById("angajat-rol");
+            const accesSelect = document.getElementById("angajat-acces");
+
+            if (!rolSelect || !accesSelect) {
+                return true;
+            }
+
+            const rol = rolSelect.value;
+            const acces = accesSelect.value;
+
+            if (!rol || !acces) {
+
+                showMessage(
+                    "Alege rolul și accesul",
+                    "error"
+                );
+
+                return false;
+
+            }
+
+            const { data: contExistent } = await supabaseClient
+                .from("utilizatori")
+                .select("id")
+                .eq("nume", numeAngajat)
+                .maybeSingle();
+
+            let raspunsUtilizator;
+
+            if (contExistent && contExistent.id) {
+
+                raspunsUtilizator = await supabaseClient
+                    .from("utilizatori")
+                    .update({
+                        rol: rol,
+                        acces: acces
+                    })
+                    .eq("id", contExistent.id);
+
+            } else {
+
+                raspunsUtilizator = await supabaseClient
+                    .from("utilizatori")
+                    .insert({
+                        nume: numeAngajat,
+                        rol: rol,
+                        acces: acces
+                    });
+
+            }
+
+            if (raspunsUtilizator.error) {
+
+                showMessage(
+                    "Eroare salvare rol/acces",
+                    "error"
+                );
+
+                return false;
+
+            }
+
+            const stergere = await supabaseClient
+                .from("acces_sectii")
+                .delete()
+                .eq("nume_utilizator", numeAngajat);
+
+            if (stergere.error) {
+
+                showMessage(
+                    "Eroare actualizare secții",
+                    "error"
+                );
+
+                return false;
+
+            }
+
+            if (rol === "Sef departament") {
+
+                const sectiiSelectate = Array.from(
+                    document.querySelectorAll(".sectie-sef-check:checked")
+                ).map(function(input) {
+                    return input.value;
+                });
+
+                if (!sectiiSelectate.length) {
+
+                    showMessage(
+                        "Alege secțiile șefului",
+                        "error"
+                    );
+
+                    return false;
+
+                }
+
+                const randuri = sectiiSelectate.map(function(sectie) {
+                    return {
+                        nume_utilizator: numeAngajat,
+                        sectie: sectie
+                    };
+                });
+
+                const inserare = await supabaseClient
+                    .from("acces_sectii")
+                    .insert(randuri);
+
+                if (inserare.error) {
+
+                    showMessage(
+                        "Eroare salvare secții",
+                        "error"
+                    );
+
+                    return false;
+
+                }
+
+            }
+
+            return true;
+
+        }
+
         // ===== DATE ANGAJATI =====
         let listaAngajatiSupabase = [];
 
@@ -3258,7 +3463,7 @@ function deschideZonaAngajatNou() {
 
         }
 
-        function selecteazaAngajatDinAdministrare() {
+        async function selecteazaAngajatDinAdministrare() {
 
             const select = document.getElementById("employee-search-select");
 
@@ -3266,7 +3471,7 @@ function deschideZonaAngajatNou() {
                 return;
             }
 
-            editeazaAngajat(Number(select.value));
+            await editeazaAngajat(Number(select.value));
 
             ascundeZoneAngajati();
 
@@ -3390,7 +3595,7 @@ function deschideZonaAngajatNou() {
         }
 
         // ===== EDITARE ANGAJAT =====
-        function editeazaAngajat(index) {
+        async function editeazaAngajat(index) {
 
             const angajat = listaAngajatiSupabase[index];
 
@@ -3403,6 +3608,9 @@ function deschideZonaAngajatNou() {
             document.getElementById("angajat-regula-0700").checked = !!angajat.regula_start_0700;
             document.getElementById("angajat-pauza-masa").checked = !!angajat.pauza_masa;
             document.getElementById("angajat-pauza-minute").value = angajat.pauza_minute || 0;
+
+            await incarcaRolAccesSiSectiiAngajat(angajat.nume || "");
+
         }
 
         // ===== RESETARE FORMULAR ANGAJAT =====
@@ -3417,6 +3625,18 @@ function deschideZonaAngajatNou() {
             document.getElementById("angajat-regula-0700").checked = false;
             document.getElementById("angajat-pauza-masa").checked = false;
             document.getElementById("angajat-pauza-minute").value = 0;
+
+            if (document.getElementById("angajat-rol")) {
+                document.getElementById("angajat-rol").value = "";
+            }
+
+            if (document.getElementById("angajat-acces")) {
+                document.getElementById("angajat-acces").value = "";
+            }
+
+            pregatesteListaSectiiSef([]);
+
+            toggleSectiiSef();
 
         }
 
@@ -3494,6 +3714,12 @@ function deschideZonaAngajatNou() {
 
             }
 
+            const rolOk = await salveazaRolAccesSiSectiiAngajat(nume);
+
+            if (!rolOk) {
+                return;
+            }
+
             showMessage(
                 "Angajat salvat",
                 "success"
@@ -3502,6 +3728,10 @@ function deschideZonaAngajatNou() {
             reseteazaFormularAngajat();
 
             await incarcaAngajati();
+
+            if (typeof revinoLaMeniuAngajati === "function") {
+                revinoLaMeniuAngajati();
+            }
 
         }
 
