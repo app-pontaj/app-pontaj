@@ -1104,6 +1104,13 @@
         }
 
 
+        .sectie-sef-check {
+            width: 18px;
+            height: 18px;
+            accent-color: #d4af37;
+        }
+
+
         /* ===== ANGAJATI - 3 CASETE MENIU ===== */
         .employees-menu-box {
             display: flex;
@@ -1952,7 +1959,6 @@
                                     Full
                                 </option>
                             </select>
-
                             <div
                                 id="zone-sef-departament"
                                 style="display:none;"
@@ -1969,90 +1975,13 @@
                                     Secții șef departament
                                 </div>
 
-                                <label class="employee-row">
-                                    <span>LEGATORIE MECANICA</span>
-                                    <input type="checkbox">
-                                </label>
-
-                                <label class="employee-row">
-                                    <span>LEGATORIE MANUALA</span>
-                                    <input type="checkbox">
-                                </label>
-
-                                <label class="employee-row">
-                                    <span>PAZA</span>
-                                    <input type="checkbox">
-                                </label>
+                                <div
+                                    id="lista-sectii-sef"
+                                >
+                                </div>
 
                             </div>
 
-                            <div class="employee-row">
-                                <span>Activ</span>
-                                <input
-                                    type="checkbox"
-                                    id="angajat-activ"
-                                    checked
-                                >
-                            </div>
-
-                            <input
-                                type="date"
-                                id="angajat-data-inactiv"
-                                class="employee-input"
-                                title="Data inactivare"
-                            >
-
-                            <div class="employee-row">
-                                <span>Apare în rapoarte</span>
-                                <input
-                                    type="checkbox"
-                                    id="angajat-apare-rapoarte"
-                                    checked
-                                >
-                            </div>
-
-                            <div class="employee-row">
-                                <span>Start înainte de 07:00 devine 07:00</span>
-                                <input
-                                    type="checkbox"
-                                    id="angajat-regula-0700"
-                                >
-                            </div>
-
-                            <div class="employee-row">
-                                <span>Se scade pauza de masă</span>
-                                <input
-                                    type="checkbox"
-                                    id="angajat-pauza-masa"
-                                >
-                            </div>
-
-                            <input
-                                type="number"
-                                id="angajat-pauza-minute"
-                                class="employee-input"
-                                placeholder="Minute pauză masă"
-                                min="0"
-                                value="0"
-                            >
-
-                            <div class="employee-actions">
-                                <button
-                                    class="employee-button"
-                                    onclick="reseteazaFormularAngajat()"
-                                >
-                                    Nou
-                                </button>
-
-                                <button
-                                    class="employee-button"
-                                    onclick="salveazaAngajat()"
-                                >
-                                    Salvează
-                                </button>
-                            </div>
-
-                        </div>
 
                     </div>
 
@@ -3173,6 +3102,252 @@
         let listaAngajatiSupabase = [];
 
 
+
+        // ===== UTILIZATORI SI SECTII - ADMIN ANGAJATI =====
+        async function incarcaRolAccesPentruAngajat(numeAngajat) {
+
+            const rolSelect = document.getElementById("angajat-rol");
+            const accesSelect = document.getElementById("angajat-acces");
+
+            if (!rolSelect || !accesSelect) {
+                return;
+            }
+
+            rolSelect.value = "";
+            accesSelect.value = "";
+
+            if (!numeAngajat) {
+                await incarcaSectiiSefPentruAngajat("");
+                actualizeazaZonaSectiiSef();
+                return;
+            }
+
+            const { data } = await supabaseClient
+                .from("utilizatori")
+                .select("rol,acces")
+                .eq("nume", numeAngajat)
+                .maybeSingle();
+
+            if (data) {
+                rolSelect.value = data.rol || "";
+                accesSelect.value = data.acces || "";
+            }
+
+            await incarcaSectiiSefPentruAngajat(numeAngajat);
+
+            actualizeazaZonaSectiiSef();
+
+        }
+
+        async function incarcaSectiiSefPentruAngajat(numeAngajat) {
+
+            const container = document.getElementById("lista-sectii-sef");
+
+            if (!container) {
+                return;
+            }
+
+            const sectiiGasite = {};
+
+            listaAngajatiSupabase.forEach(function(angajat) {
+
+                const sectie = String(angajat.sectie || "").trim();
+
+                if (sectie) {
+                    sectiiGasite[sectie] = true;
+                }
+
+            });
+
+            let sectiiBifate = [];
+
+            if (numeAngajat) {
+
+                const { data } = await supabaseClient
+                    .from("acces_sectii")
+                    .select("sectie")
+                    .eq("nume_utilizator", numeAngajat);
+
+                sectiiBifate = (data || []).map(function(rand) {
+                    return String(rand.sectie || "").trim();
+                });
+
+            }
+
+            let html = "";
+
+            Object.keys(sectiiGasite)
+                .sort(function(a, b) {
+                    return a.localeCompare(b, "ro");
+                })
+                .forEach(function(sectie) {
+
+                    const bifat = sectiiBifate.includes(sectie) ? "checked" : "";
+
+                    html +=
+                        "<label class='employee-row'>" +
+                        "<span>" + escapeHtml(sectie) + "</span>" +
+                        "<input type='checkbox' class='sectie-sef-check' value='" +
+                        escapeHtml(sectie) +
+                        "' " +
+                        bifat +
+                        ">" +
+                        "</label>";
+
+                });
+
+            if (!html) {
+                html = "<div class='employee-card-info'>Nu există secții în lista de angajați.</div>";
+            }
+
+            container.innerHTML = html;
+
+        }
+
+        function actualizeazaZonaSectiiSef() {
+
+            const rolSelect = document.getElementById("angajat-rol");
+            const zona = document.getElementById("zone-sef-departament");
+
+            if (!rolSelect || !zona) {
+                return;
+            }
+
+            zona.style.display =
+                rolSelect.value === "Sef departament"
+                    ? "block"
+                    : "none";
+
+        }
+
+        async function salveazaRolAccesSiSectii(numeAngajat) {
+
+            const rolSelect = document.getElementById("angajat-rol");
+            const accesSelect = document.getElementById("angajat-acces");
+
+            if (!rolSelect || !accesSelect || !numeAngajat) {
+                return true;
+            }
+
+            const rol = rolSelect.value;
+            const acces = accesSelect.value;
+
+            if (!rol || !acces) {
+
+                showMessage(
+                    "Alege rolul și accesul",
+                    "error"
+                );
+
+                return false;
+
+            }
+
+            const { data: contExistent } = await supabaseClient
+                .from("utilizatori")
+                .select("id,nume")
+                .eq("nume", numeAngajat)
+                .maybeSingle();
+
+            let eroareUtilizator = null;
+
+            if (contExistent && contExistent.id) {
+
+                const { error } = await supabaseClient
+                    .from("utilizatori")
+                    .update({
+                        rol: rol,
+                        acces: acces
+                    })
+                    .eq("id", contExistent.id);
+
+                eroareUtilizator = error;
+
+            } else {
+
+                const { error } = await supabaseClient
+                    .from("utilizatori")
+                    .insert({
+                        nume: numeAngajat,
+                        rol: rol,
+                        acces: acces
+                    });
+
+                eroareUtilizator = error;
+
+            }
+
+            if (eroareUtilizator) {
+
+                showMessage(
+                    "Eroare salvare rol/acces",
+                    "error"
+                );
+
+                return false;
+
+            }
+
+            await supabaseClient
+                .from("acces_sectii")
+                .delete()
+                .eq("nume_utilizator", numeAngajat);
+
+            if (rol === "Sef departament") {
+
+                const sectiiSelectate = Array.from(
+                    document.querySelectorAll(".sectie-sef-check:checked")
+                ).map(function(input) {
+                    return input.value;
+                });
+
+                if (!sectiiSelectate.length) {
+
+                    showMessage(
+                        "Alege secțiile șefului de departament",
+                        "error"
+                    );
+
+                    return false;
+
+                }
+
+                const randuriSectii = sectiiSelectate.map(function(sectie) {
+                    return {
+                        nume_utilizator: numeAngajat,
+                        sectie: sectie
+                    };
+                });
+
+                const { error: eroareSectii } = await supabaseClient
+                    .from("acces_sectii")
+                    .insert(randuriSectii);
+
+                if (eroareSectii) {
+
+                    showMessage(
+                        "Eroare salvare secții",
+                        "error"
+                    );
+
+                    return false;
+
+                }
+
+            }
+
+            return true;
+
+        }
+
+        document.addEventListener("change", function(event) {
+
+            if (event.target && event.target.id === "angajat-rol") {
+                actualizeazaZonaSectiiSef();
+            }
+
+        });
+
         // ===== PAGINA ANGAJATI - MENIU 3 CASETE =====
         function ascundeZoneAngajati() {
 
@@ -3285,7 +3460,7 @@ function deschideZonaAngajatNou() {
 
         }
 
-        function selecteazaAngajatDinAdministrare() {
+        async function selecteazaAngajatDinAdministrare() {
 
             const select = document.getElementById("employee-search-select");
 
@@ -3293,7 +3468,7 @@ function deschideZonaAngajatNou() {
                 return;
             }
 
-            editeazaAngajat(Number(select.value));
+            await editeazaAngajat(Number(select.value));
 
             ascundeZoneAngajati();
 
@@ -3417,7 +3592,7 @@ function deschideZonaAngajatNou() {
         }
 
         // ===== EDITARE ANGAJAT =====
-        function editeazaAngajat(index) {
+        async function editeazaAngajat(index) {
 
             const angajat = listaAngajatiSupabase[index];
 
@@ -3430,6 +3605,9 @@ function deschideZonaAngajatNou() {
             document.getElementById("angajat-regula-0700").checked = !!angajat.regula_start_0700;
             document.getElementById("angajat-pauza-masa").checked = !!angajat.pauza_masa;
             document.getElementById("angajat-pauza-minute").value = angajat.pauza_minute || 0;
+
+            await incarcaRolAccesPentruAngajat(angajat.nume || "");
+
         }
 
         // ===== RESETARE FORMULAR ANGAJAT =====
@@ -3444,6 +3622,24 @@ function deschideZonaAngajatNou() {
             document.getElementById("angajat-regula-0700").checked = false;
             document.getElementById("angajat-pauza-masa").checked = false;
             document.getElementById("angajat-pauza-minute").value = 0;
+
+            const rolSelect = document.getElementById("angajat-rol");
+            const accesSelect = document.getElementById("angajat-acces");
+            const sectiiBox = document.getElementById("lista-sectii-sef");
+
+            if (rolSelect) {
+                rolSelect.value = "";
+            }
+
+            if (accesSelect) {
+                accesSelect.value = "";
+            }
+
+            if (sectiiBox) {
+                sectiiBox.innerHTML = "";
+            }
+
+            actualizeazaZonaSectiiSef();
 
         }
 
@@ -3521,6 +3717,12 @@ function deschideZonaAngajatNou() {
 
             }
 
+            const salvareRolAccesOk = await salveazaRolAccesSiSectii(nume);
+
+            if (!salvareRolAccesOk) {
+                return;
+            }
+
             showMessage(
                 "Angajat salvat",
                 "success"
@@ -3529,6 +3731,8 @@ function deschideZonaAngajatNou() {
             reseteazaFormularAngajat();
 
             await incarcaAngajati();
+
+            revinoLaMeniuAngajati();
 
         }
 
