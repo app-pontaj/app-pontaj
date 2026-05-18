@@ -7536,13 +7536,17 @@ function deschideZonaAngajatNou() {
             html += "</tr></thead>";
             html += "<tbody>";
 
-            angajatiRaport.forEach(function(angajat) {
+            for (const angajat of angajatiRaport) {
 
                 const nume = String(angajat.nume || "").trim();
 
                 if (!nume) {
-                    return;
+                    continue;
                 }
+
+                let totalMinuteLucrate = 0;
+                let totalZileLucratoare = 0;
+                let arePontajInLuna = false;
 
                 html += "<tr>";
                 html += "<td class='all-employees-name-cell'>" + escapeHtml(nume) + "</td>";
@@ -7556,12 +7560,98 @@ function deschideZonaAngajatNou() {
                         "-" +
                         String(zi).padStart(2, "0");
 
+                    const dataObj = new Date(anCurent, luna - 1, zi);
+
+                    const weekend =
+                        dataObj.getDay() === 0 ||
+                        dataObj.getDay() === 6;
+
+                    const sarbatoare = esteZiLiberaLegala(dataText);
+
+                    if (!weekend && !sarbatoare) {
+                        totalZileLucratoare++;
+                    }
+
                     const cheieCautare =
                         nume.trim().toUpperCase() +
                         "|" +
                         dataText;
 
                     const pontaj = pontajeDupaAngajatZi[cheieCautare];
+
+                    if (pontaj) {
+
+                        arePontajInLuna = true;
+
+                        if (pontaj.status_corectie) {
+
+                            const statusCorectie = String(pontaj.status_corectie || "").trim();
+                            let minuteCorectie = 0;
+
+                            if (
+                                statusCorectie === "C.O" ||
+                                statusCorectie.startsWith("C.O") ||
+                                statusCorectie === "Lucru la distanță" ||
+                                statusCorectie.startsWith("Lucru la distanță")
+                            ) {
+                                minuteCorectie = 480;
+                            }
+
+                            if (
+                                statusCorectie === "C.M" ||
+                                statusCorectie.startsWith("C.M") ||
+                                statusCorectie === "Fără plată" ||
+                                statusCorectie.startsWith("Fără plată")
+                            ) {
+                                minuteCorectie = 0;
+                            }
+
+                            if (statusCorectie === "Lipsă card" || statusCorectie.startsWith("Lipsă card")) {
+
+                                const oreCorectie = calculeazaOreNete(
+                                    pontaj.ora_intrare_manual,
+                                    pontaj.ora_iesire_manual,
+                                    angajat?.regula_start_0700,
+                                    angajat?.pauza_masa,
+                                    angajat?.pauza_minute
+                                );
+
+                                if (oreCorectie) {
+                                    minuteCorectie = transformaOraMinute(oreCorectie.replace("-", ""));
+                                }
+
+                            }
+
+                            totalMinuteLucrate += minuteCorectie;
+
+                        } else if (
+                            pontaj.ora_intrare &&
+                            pontaj.ora_iesire
+                        ) {
+
+                            const oreNete = calculeazaOreNete(
+                                pontaj.ora_intrare,
+                                pontaj.ora_iesire,
+                                angajat?.regula_start_0700,
+                                angajat?.pauza_masa,
+                                angajat?.pauza_minute
+                            );
+
+                            if (oreNete) {
+
+                                const minuteOreNete = transformaOraMinute(
+                                    oreNete.replace("-", "")
+                                );
+
+                                if (!oreNete.startsWith("-")) {
+                                    totalMinuteLucrate += minuteOreNete;
+                                }
+
+                            }
+
+                        }
+
+                    }
 
                     const rezultatCelula = valoareCelulaRaportToti(pontaj, dataText, angajat);
                     const valoare = rezultatCelula.text;
@@ -7589,7 +7679,42 @@ function deschideZonaAngajatNou() {
 
                 html += "</tr>";
 
-            });
+                if (arePontajInLuna) {
+
+                    const totalOreLucratoareMinute = totalZileLucratoare * 8 * 60;
+                    const diferentaMinute = totalMinuteLucrate - totalOreLucratoareMinute;
+
+                    const diferentaText =
+                        (diferentaMinute < 0 ? "-" : "") +
+                        formateazaMinuteOra(Math.abs(diferentaMinute));
+
+                    const procentRealizat =
+                        totalOreLucratoareMinute > 0
+                            ? Number(((totalMinuteLucrate / totalOreLucratoareMinute) * 100).toFixed(1))
+                            : 0;
+
+                    await salveazaRezultatRaportDiferenteLunar({
+                        nume_angajat: nume,
+                        an: anCurent,
+                        luna: luna,
+                        total_lucratoare_minute: totalOreLucratoareMinute,
+                        total_lucrate_minute: totalMinuteLucrate,
+                        diferenta_minute: diferentaMinute,
+                        diferenta_text: diferentaText,
+                        procent: procentRealizat
+                    });
+
+                } else {
+
+                    await stergeRezultatRaportDiferenteLunar(
+                        nume,
+                        anCurent,
+                        luna
+                    );
+
+                }
+
+            }
 
             html += "</tbody></table>";
 
