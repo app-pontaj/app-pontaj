@@ -5315,21 +5315,27 @@ function deschideZonaAngajatNou() {
 
                     let minuteCorectie = 0;
 
+                    const statusCorectie = String(pontaj.status_corectie || "").trim();
+
                     if (
-                        pontaj.status_corectie === "C.O" ||
-                        pontaj.status_corectie === "Lucru la distanță"
+                        statusCorectie === "C.O" ||
+                        statusCorectie.startsWith("C.O") ||
+                        statusCorectie === "Lucru la distanță" ||
+                        statusCorectie.startsWith("Lucru la distanță")
                     ) {
                         minuteCorectie = 480;
                     }
 
                     if (
-                        pontaj.status_corectie === "C.M" ||
-                        pontaj.status_corectie === "Fără plată"
+                        statusCorectie === "C.M" ||
+                        statusCorectie.startsWith("C.M") ||
+                        statusCorectie === "Fără plată" ||
+                        statusCorectie.startsWith("Fără plată")
                     ) {
                         minuteCorectie = 0;
                     }
 
-                    if (pontaj.status_corectie === "Lipsă card") {
+                    if (statusCorectie === "Lipsă card" || statusCorectie.startsWith("Lipsă card")) {
 
                         const oreCorectie = calculeazaOreNete(
                             pontaj.ora_intrare_manual,
@@ -7004,23 +7010,29 @@ function deschideZonaAngajatNou() {
                     let oreCorectie = "00:00";
                     let minuteCorectie = 0;
 
+                    const statusCorectie = String(pontaj.status_corectie || "").trim();
+
                     if (
-                        pontaj.status_corectie === "C.O" ||
-                        pontaj.status_corectie === "Lucru la distanță"
+                        statusCorectie === "C.O" ||
+                        statusCorectie.startsWith("C.O") ||
+                        statusCorectie === "Lucru la distanță" ||
+                        statusCorectie.startsWith("Lucru la distanță")
                     ) {
                         oreCorectie = "08:00";
                         minuteCorectie = 480;
                     }
 
                     if (
-                        pontaj.status_corectie === "C.M" ||
-                        pontaj.status_corectie === "Fără plată"
+                        statusCorectie === "C.M" ||
+                        statusCorectie.startsWith("C.M") ||
+                        statusCorectie === "Fără plată" ||
+                        statusCorectie.startsWith("Fără plată")
                     ) {
                         oreCorectie = "00:00";
                         minuteCorectie = 0;
                     }
 
-                    if (pontaj.status_corectie === "Lipsă card") {
+                    if (statusCorectie === "Lipsă card" || statusCorectie.startsWith("Lipsă card")) {
 
                         textCorectie =
                             (pontaj.ora_intrare_manual || "") +
@@ -7804,6 +7816,14 @@ function deschideZonaAngajatNou() {
             showMessage(
                 "Motiv salvat",
                 "success"
+            );
+
+            const dataObjActualizareRaport = creeazaDataDinText(dataText);
+
+            await actualizeazaRaportDiferenteLunarPentruAngajat(
+                nume,
+                dataObjActualizareRaport.getFullYear(),
+                dataObjActualizareRaport.getMonth() + 1
             );
 
         }
