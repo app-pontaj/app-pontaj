@@ -4454,20 +4454,17 @@ function deschideZonaAngajatNou() {
 
                     if (pontare.estePaza) {
 
-                        // ===== REGULA SPECIALA PAZA =====
-                        // Pontajele dimineața până la 07:00 sunt ieșiri din tura începută ieri
-                        // doar dacă ieri există intrare de seară și există confirmare de noapte.
+                        // ===== REGULA SPECIALA PAZA - TURA NU SE SPLITUIESTE =====
+                        // Dacă paznicul intră seara și pleacă dimineața,
+                        // toată tura se salvează pe ziua în care a intrat la muncă.
+                        // Exemplu: intră 04.04 la 17:49 și iese 05.04 la 05:12
+                        // => raportul se salvează integral pe 04.04.
                         const existaIntrareSearaIeri =
                             pontajSearaPaza[pontare.nume + "|" + dataAnterioara];
 
-                        const existaConfirmareNoapte =
-                            pontajDupaOra21[pontare.nume + "|" + dataAnterioara] ||
-                            pontajIntreOra00Si04[pontare.nume + "|" + pontare.data];
-
                         if (
                             pontare.minute <= 420 &&
-                            existaIntrareSearaIeri &&
-                            existaConfirmareNoapte
+                            existaIntrareSearaIeri
                         ) {
                             dataRaport = dataAnterioara;
                             minuteSortare = pontare.minute + 1440;
