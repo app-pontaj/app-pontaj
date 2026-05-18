@@ -4334,7 +4334,7 @@ function deschideZonaAngajatNou() {
                 const pontariCitite = [];
                 const pontajDupaOra21 = {};
                 const pontajIntreOra00Si04 = {};
-                const pontajSearaPaza = {};
+                const pontajePazaPeZi = {};
 
                 function dataZiAnterioara(dataText) {
 
@@ -4365,6 +4365,51 @@ function deschideZonaAngajatNou() {
                         sectieAngajat.includes("pază") ||
                         departamentPontaj.includes("paza") ||
                         departamentPontaj.includes("pază")
+                    );
+
+                }
+
+                function cheiePaza(nume, dataText) {
+                    return String(nume || "").trim() + "|" + String(dataText || "").trim();
+                }
+
+                function existaPontajPazaInInterval(nume, dataText, minutStart, minutStop) {
+
+                    const lista = pontajePazaPeZi[cheiePaza(nume, dataText)] || [];
+
+                    return lista.some(function(minut) {
+                        return minut >= minutStart && minut <= minutStop;
+                    });
+
+                }
+
+                function esteZiStartTuraNoaptePaza(nume, dataText) {
+
+                    const arePontajSeara = existaPontajPazaInInterval(
+                        nume,
+                        dataText,
+                        990,   // 16:30
+                        1260   // 21:00, cu mici variatii
+                    );
+
+                    const arePontajZiInainte = existaPontajPazaInInterval(
+                        nume,
+                        dataText,
+                        600,   // 10:00
+                        990    // 16:30
+                    );
+
+                    return arePontajSeara && !arePontajZiInainte;
+
+                }
+
+                function areRevenireZiDupaNoaptePaza(nume, dataText) {
+
+                    return existaPontajPazaInInterval(
+                        nume,
+                        dataText,
+                        480,   // 08:00
+                        900    // 15:00
                     );
 
                 }
@@ -4407,19 +4452,30 @@ function deschideZonaAngajatNou() {
 
                     const estePaza = esteAngajatPaza(nume, departament);
 
-                    pontariCitite.push({
+                    const pontareNoua = {
                         nume: nume,
                         departament: departament,
                         data: dateInfo.data,
                         ora: dateInfo.ora,
                         minute: dateInfo.minute,
                         estePaza: estePaza
-                    });
+                    };
 
-                    // ===== MARCAJ TURA DE NOAPTE =====
-                    // Pentru pază, tura de noapte se confirmă dacă există pontaj:
-                    // - între 21:00 și 23:59 în ziua de intrare;
-                    // - sau între 00:01 și 04:00 în ziua de ieșire.
+                    pontariCitite.push(pontareNoua);
+
+                    if (estePaza) {
+
+                        const cheie = cheiePaza(nume, dateInfo.data);
+
+                        if (!pontajePazaPeZi[cheie]) {
+                            pontajePazaPeZi[cheie] = [];
+                        }
+
+                        pontajePazaPeZi[cheie].push(dateInfo.minute);
+
+                    }
+
+                    // ===== MARCAJ TURA DE NOAPTE PENTRU ANGAJATI NON-PAZA =====
                     if (dateInfo.minute >= 1260) {
                         pontajDupaOra21[nume + "|" + dateInfo.data] = true;
                     }
@@ -4431,33 +4487,7 @@ function deschideZonaAngajatNou() {
                         pontajIntreOra00Si04[nume + "|" + dateInfo.data] = true;
                     }
 
-                    // ===== POSIBILA INTRARE SEARA PENTRU PAZA =====
-                    // În zile lucrătoare intrarea este de obicei 17:30 - 20:00.
-                    // În weekend / sărbători poate începe și 15:00 - 19:00.
-                    if (
-                        estePaza &&
-                        dateInfo.minute >= 900
-                    ) {
-                        pontajSearaPaza[nume + "|" + dateInfo.data] = true;
-                    }
-
                 }
-
-                const primulPontajPeZi = {};
-
-                pontariCitite.forEach(function(pontare) {
-
-                    const cheieZi =
-                        pontare.nume + "|" + pontare.data;
-
-                    if (
-                        primulPontajPeZi[cheieZi] === undefined ||
-                        pontare.minute < primulPontajPeZi[cheieZi]
-                    ) {
-                        primulPontajPeZi[cheieZi] = pontare.minute;
-                    }
-
-                });
 
                 const grupare = {};
 
@@ -4470,24 +4500,29 @@ function deschideZonaAngajatNou() {
 
                     if (pontare.estePaza) {
 
-                        // ===== REGULA SPECIALA PAZA - TURA NU SE SPLITUIESTE =====
-                        // Dacă paznicul intră seara și pleacă dimineața,
-                        // toată tura se salvează pe ziua în care a intrat la muncă.
-                        // Exemplu: intră 04.04 la 17:49 și iese 05.04 la 05:12
-                        // => raportul se salvează integral pe 04.04.
-                        const existaIntrareSearaIeri =
-                            pontajSearaPaza[pontare.nume + "|" + dataAnterioara];
+                        // ===== REGULA PAZA - IDENTIFICARE TURA DE NOAPTE =====
+                        // 1. Daca ieri exista pontaj seara 16:30 - 21:00
+                        //    si ieri NU exista pontaj intre 10:00 - 16:30,
+                        //    atunci ieri este considerata zi de intrare pentru tura de noapte.
+                        // 2. Pontajele de azi dimineata pana la 08:00 se lipesc de ieri
+                        //    doar daca azi nu exista revenire intre 08:00 - 15:00.
+                        // 3. Astfel, pontajele de tip 03:48 / 04:16 / 05:12
+                        //    nu mai pot deveni intrari false.
+                        const ieriEsteStartNoapte = esteZiStartTuraNoaptePaza(
+                            pontare.nume,
+                            dataAnterioara
+                        );
 
-                        const primulPontajZiAnterioara =
-                            primulPontajPeZi[pontare.nume + "|" + dataAnterioara];
-
-                        const ziuaAnterioaraEsteTuraNoapte =
-                            primulPontajZiAnterioara >= 900;
+                        const aziAreRevenireZi = areRevenireZiDupaNoaptePaza(
+                            pontare.nume,
+                            pontare.data
+                        );
 
                         if (
-                            pontare.minute <= 420 &&
-                            existaIntrareSearaIeri &&
-                            ziuaAnterioaraEsteTuraNoapte
+                            pontare.minute > 0 &&
+                            pontare.minute <= 480 &&
+                            ieriEsteStartNoapte &&
+                            !aziAreRevenireZi
                         ) {
                             dataRaport = dataAnterioara;
                             minuteSortare = pontare.minute + 1440;
@@ -4539,21 +4574,21 @@ function deschideZonaAngajatNou() {
                         return a.minute - b.minute;
                     });
 
-                    let pontariFinale = grup.pontari;
+                    const primaPontare = grup.pontari[0];
+                    const ultimaPontare = grup.pontari[grup.pontari.length - 1];
 
-                    if (grup.estePaza) {
+                    // ===== PROTECTIE PAZA - MINIM 1 ORA =====
+                    // Un paznic nu poate avea tura reala sub 1 ora.
+                    // Daca apare sub 1 ora, inseamna pontaj izolat / interpretare gresita
+                    // si nu se salveaza ca zi de lucru reala.
+                    const durataTuraMinute = ultimaPontare.minute - primaPontare.minute;
 
-                        // ===== PAZA - TURA DE NOAPTE RAMANE INTREAGA =====
-                        // Nu rupem tura intre seara si dimineata.
-                        // Exemplu corect:
-                        // 04.04 17:49 -> 05.04 05:12
-                        // se salveaza pe data 04.04, cu data_iesire 05.04.
-                        pontariFinale = grup.pontari;
-
+                    if (
+                        grup.estePaza &&
+                        durataTuraMinute < 60
+                    ) {
+                        return;
                     }
-
-                    const primaPontare = pontariFinale[0];
-                    const ultimaPontare = pontariFinale[pontariFinale.length - 1];
 
                     // ===== DATA INTRARE / DATA IESIRE =====
                     // data = ziua in care incepe tura
@@ -4578,7 +4613,7 @@ function deschideZonaAngajatNou() {
                         data_iesire: dataIesire,
                         ora_intrare: primaPontare.ora,
                         ora_iesire: ultimaPontare.ora,
-                        nr_pontari: pontariFinale.length
+                        nr_pontari: grup.pontari.length
                     });
 
                 });
