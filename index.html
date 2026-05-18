@@ -5163,6 +5163,232 @@ function deschideZonaAngajatNou() {
             { numar: 12, text: "Dec" }
         ];
 
+        // ===== SALVARE REZULTAT LUNAR IN TABELA RAPORT DIFERENTE =====
+        async function salveazaRezultatRaportDiferenteLunar(dateRaport) {
+
+            if (
+                !dateRaport ||
+                !dateRaport.nume_angajat ||
+                !dateRaport.an ||
+                !dateRaport.luna
+            ) {
+                return;
+            }
+
+            const randRaport = {
+                nume_angajat: dateRaport.nume_angajat,
+                an: dateRaport.an,
+                luna: dateRaport.luna,
+                total_lucratoare_minute: dateRaport.total_lucratoare_minute,
+                total_lucrate_minute: dateRaport.total_lucrate_minute,
+                diferenta_minute: dateRaport.diferenta_minute,
+                diferenta_text: dateRaport.diferenta_text,
+                procent: dateRaport.procent,
+                actualizat_la: new Date().toISOString()
+            };
+
+            const { data: existent, error: eroareCautare } = await supabaseClient
+                .from("raport_diferente_lunar")
+                .select("id")
+                .eq("nume_angajat", randRaport.nume_angajat)
+                .eq("an", randRaport.an)
+                .eq("luna", randRaport.luna)
+                .order("actualizat_la", {
+                    ascending: false
+                })
+                .limit(1);
+
+            if (eroareCautare) {
+                return;
+            }
+
+            if (existent && existent.length && existent[0].id) {
+
+                await supabaseClient
+                    .from("raport_diferente_lunar")
+                    .update(randRaport)
+                    .eq("id", existent[0].id);
+
+            } else {
+
+                await supabaseClient
+                    .from("raport_diferente_lunar")
+                    .insert(randRaport);
+
+            }
+
+        }
+
+        // ===== CALCUL LUNAR IDENTIC CU FISA INDIVIDUALA PENTRU TABELA DIFERENTE =====
+        async function calculeazaRezultatLunarPentruTabela(numeAngajat, an, luna) {
+
+            const zileLuna = new Date(an, luna, 0).getDate();
+
+            const primaZiLuna =
+                an +
+                "-" +
+                String(luna).padStart(2, "0") +
+                "-01";
+
+            const ultimaZiLuna =
+                an +
+                "-" +
+                String(luna).padStart(2, "0") +
+                "-" +
+                String(zileLuna).padStart(2, "0");
+
+            const { data: pontaje } = await supabaseClient
+                .from("pontaj_zilnic")
+                .select("*")
+                .eq("nume", numeAngajat)
+                .gte("data", primaZiLuna)
+                .lte("data", ultimaZiLuna);
+
+            let angajat = listaAngajatiSupabase.find(function(a) {
+                return String(a.nume || "").trim() === String(numeAngajat || "").trim();
+            });
+
+            if (!angajat) {
+
+                const { data: angajatCitit } = await supabaseClient
+                    .from("angajati")
+                    .select("*")
+                    .eq("nume", numeAngajat)
+                    .maybeSingle();
+
+                angajat = angajatCitit || null;
+
+            }
+
+            let totalMinuteLucrate = 0;
+            let totalZileLucratoare = 0;
+
+            for (let zi = 1; zi <= zileLuna; zi++) {
+
+                const dataText =
+                    an +
+                    "-" +
+                    String(luna).padStart(2, "0") +
+                    "-" +
+                    String(zi).padStart(2, "0");
+
+                const dataObj = new Date(an, luna - 1, zi);
+
+                const weekend =
+                    dataObj.getDay() === 0 ||
+                    dataObj.getDay() === 6;
+
+                const sarbatoare = esteZiLiberaLegala(dataText);
+
+                if (!weekend && !sarbatoare) {
+                    totalZileLucratoare++;
+                }
+
+                const pontaj = (pontaje || []).find(function(p) {
+                    return p.data === dataText;
+                });
+
+                if (pontaj && pontaj.status_corectie) {
+
+                    let minuteCorectie = 0;
+
+                    if (
+                        pontaj.status_corectie === "C.O" ||
+                        pontaj.status_corectie === "Lucru la distanță"
+                    ) {
+                        minuteCorectie = 480;
+                    }
+
+                    if (
+                        pontaj.status_corectie === "C.M" ||
+                        pontaj.status_corectie === "Fără plată"
+                    ) {
+                        minuteCorectie = 0;
+                    }
+
+                    if (pontaj.status_corectie === "Lipsă card") {
+
+                        const oreCorectie = calculeazaOreNete(
+                            pontaj.ora_intrare_manual,
+                            pontaj.ora_iesire_manual,
+                            angajat?.regula_start_0700,
+                            angajat?.pauza_masa,
+                            angajat?.pauza_minute
+                        );
+
+                        if (oreCorectie) {
+                            minuteCorectie = transformaOraMinute(oreCorectie.replace("-", ""));
+                        }
+
+                    }
+
+                    totalMinuteLucrate += minuteCorectie;
+
+                } else if (pontaj) {
+
+                    const oreNete = calculeazaOreNete(
+                        pontaj.ora_intrare,
+                        pontaj.ora_iesire,
+                        angajat?.regula_start_0700,
+                        angajat?.pauza_masa,
+                        angajat?.pauza_minute
+                    );
+
+                    if (oreNete) {
+
+                        const minuteOreNete = transformaOraMinute(
+                            oreNete.replace("-", "")
+                        );
+
+                        if (!oreNete.startsWith("-")) {
+                            totalMinuteLucrate += minuteOreNete;
+                        }
+
+                    }
+
+                }
+
+            }
+
+            const totalOreLucratoareMinute = totalZileLucratoare * 8 * 60;
+            const diferentaMinute = totalMinuteLucrate - totalOreLucratoareMinute;
+
+            const diferentaText =
+                (diferentaMinute < 0 ? "-" : "") +
+                formateazaMinuteOra(Math.abs(diferentaMinute));
+
+            const procentRealizat =
+                totalOreLucratoareMinute > 0
+                    ? Number(((totalMinuteLucrate / totalOreLucratoareMinute) * 100).toFixed(1))
+                    : 0;
+
+            return {
+                nume_angajat: numeAngajat,
+                an: an,
+                luna: luna,
+                total_lucratoare_minute: totalOreLucratoareMinute,
+                total_lucrate_minute: totalMinuteLucrate,
+                diferenta_minute: diferentaMinute,
+                diferenta_text: diferentaText,
+                procent: procentRealizat
+            };
+
+        }
+
+        // ===== ACTUALIZARE TABELA RAPORT DIFERENTE PENTRU O LUNA =====
+        async function actualizeazaRaportDiferenteLunarPentruAngajat(numeAngajat, an, luna) {
+
+            const rezultat = await calculeazaRezultatLunarPentruTabela(
+                numeAngajat,
+                an,
+                luna
+            );
+
+            await salveazaRezultatRaportDiferenteLunar(rezultat);
+
+        }
+
+
         async function deschidePaginaRaportDiferente2026() {
 
             document.querySelector(".premium-header").style.display = "none";
@@ -5500,18 +5726,20 @@ function deschideZonaAngajatNou() {
 
             }
 
-            const { data: pontaje, error } = await supabaseClient
-                .from("pontaj_zilnic")
+            const { data: diferenteSalvate, error } = await supabaseClient
+                .from("raport_diferente_lunar")
                 .select("*")
-                .gte("data", "2026-01-01")
-                .lte("data", "2026-12-31");
+                .eq("an", 2026)
+                .order("actualizat_la", {
+                    ascending: false
+                });
 
             if (error) {
 
                 container.innerHTML = "";
 
                 showMessage(
-                    "Eroare citire pontaj",
+                    "Eroare citire raport diferențe",
                     "error"
                 );
 
@@ -5519,17 +5747,18 @@ function deschideZonaAngajatNou() {
 
             }
 
-            const pontajeDupaAngajat = {};
+            const diferenteDupaAngajatLuna = {};
 
-            (pontaje || []).forEach(function(pontaj) {
+            (diferenteSalvate || []).forEach(function(rand) {
 
-                const nume = String(pontaj.nume || "").trim().toUpperCase();
+                const cheie =
+                    String(rand.nume_angajat || "").trim().toUpperCase() +
+                    "|" +
+                    String(rand.luna || "");
 
-                if (!pontajeDupaAngajat[nume]) {
-                    pontajeDupaAngajat[nume] = [];
+                if (!diferenteDupaAngajatLuna[cheie]) {
+                    diferenteDupaAngajatLuna[cheie] = rand;
                 }
-
-                pontajeDupaAngajat[nume].push(pontaj);
 
             });
 
@@ -5563,23 +5792,23 @@ function deschideZonaAngajatNou() {
 
                 LUNI_RAPORT_DIFERENTE.forEach(function(luna) {
 
-                    const pontajeAngajatLuna = (pontajeDupaAngajat[nume.toUpperCase()] || []).filter(function(pontaj) {
-                        return String(pontaj.data || "").slice(5, 7) === String(luna.numar).padStart(2, "0");
-                    });
+                    const cheie =
+                        nume.toUpperCase() +
+                        "|" +
+                        String(luna.numar);
 
-                    const diferenta = diferentaMinuteLuna2026(
-                        angajat,
-                        pontajeAngajatLuna,
-                        luna.numar
-                    );
+                    const randDiferenta = diferenteDupaAngajatLuna[cheie];
 
-                    if (diferenta === null) {
+                    if (!randDiferenta) {
 
                         html += "<td class='year-diff-empty'></td>";
 
                         return;
 
                     }
+
+                    const diferenta = Number(randDiferenta.diferenta_minute || 0);
+                    const textDiferenta = randDiferenta.diferenta_text || formateazaDiferentaRaport2026(diferenta);
 
                     areCelPutinOLuna = true;
                     totalAn += diferenta;
@@ -5591,7 +5820,7 @@ function deschideZonaAngajatNou() {
 
                     html +=
                         "<td class='" + clasa + "'>" +
-                        formateazaDiferentaRaport2026(diferenta) +
+                        escapeHtml(textDiferenta) +
                         "</td>";
 
                 });
@@ -6844,6 +7073,17 @@ function deschideZonaAngajatNou() {
             html += "</div>";
             html += "</div>";
 
+            await salveazaRezultatRaportDiferenteLunar({
+                nume_angajat: angajatSelectatRaport,
+                an: anCurent,
+                luna: luna,
+                total_lucratoare_minute: totalOreLucratoareMinute,
+                total_lucrate_minute: totalMinuteLucrate,
+                diferenta_minute: diferentaMinute,
+                diferenta_text: diferentaText,
+                procent: Number(procentRealizat)
+            });
+
             grid.innerHTML = html;
 
         }
@@ -6910,6 +7150,12 @@ function deschideZonaAngajatNou() {
                 return;
 
             }
+
+            await actualizeazaRaportDiferenteLunarPentruAngajat(
+                nume,
+                Number(String(dataText).slice(0, 4)),
+                Number(String(dataText).slice(5, 7))
+            );
 
             showMessage(
                 "Pontaj șters. Ziua apare acum fără pontaj.",
@@ -7402,6 +7648,12 @@ function deschideZonaAngajatNou() {
                 return;
 
             }
+
+            await actualizeazaRaportDiferenteLunarPentruAngajat(
+                nume,
+                Number(String(dataText).slice(0, 4)),
+                Number(String(dataText).slice(5, 7))
+            );
 
             const textRand = document.getElementById("text-rand-" + id);
             const btn = document.getElementById("btn-motiv-" + id);
