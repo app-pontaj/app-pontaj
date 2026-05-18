@@ -5324,7 +5324,7 @@ function deschideZonaAngajatNou() {
 
         function diferentaMinuteLuna2026(angajat, pontajeLuna, luna) {
 
-            if (!pontajeLuna.length) {
+            if (!pontajeLuna || !pontajeLuna.length) {
                 return null;
             }
 
@@ -5363,25 +5363,29 @@ function deschideZonaAngajatNou() {
                     continue;
                 }
 
-                if (pontaj.status_corectie) {
+                const statusCorectie = String(pontaj.status_corectie || "").trim();
+
+                if (statusCorectie) {
 
                     let minuteCorectie = 0;
 
                     if (
-                        pontaj.status_corectie === "C.O" ||
-                        pontaj.status_corectie === "Lucru la distanță"
+                        statusCorectie === "C.O" ||
+                        statusCorectie.startsWith("C.O") ||
+                        statusCorectie === "Lucru la distanță"
                     ) {
                         minuteCorectie = 480;
                     }
 
                     if (
-                        pontaj.status_corectie === "C.M" ||
-                        pontaj.status_corectie === "Fără plată"
+                        statusCorectie === "C.M" ||
+                        statusCorectie.startsWith("C.M") ||
+                        statusCorectie === "Fără plată"
                     ) {
                         minuteCorectie = 0;
                     }
 
-                    if (pontaj.status_corectie === "Lipsă card") {
+                    if (statusCorectie === "Lipsă card") {
 
                         const oreCorectie = calculeazaOreNete(
                             pontaj.ora_intrare_manual,
@@ -5392,9 +5396,15 @@ function deschideZonaAngajatNou() {
                         );
 
                         if (oreCorectie) {
-                            minuteCorectie = transformaOraMinute(
+
+                            const minute = transformaOraMinute(
                                 oreCorectie.replace("-", "")
                             );
+
+                            minuteCorectie = oreCorectie.startsWith("-")
+                                ? -minute
+                                : minute;
+
                         }
 
                     }
@@ -5418,11 +5428,16 @@ function deschideZonaAngajatNou() {
                         angajat?.pauza_minute
                     );
 
-                    const minuteOreNete =
-                        transformaOraMinute(oreNete.replace("-", ""));
+                    if (oreNete) {
 
-                    if (!oreNete.startsWith("-")) {
-                        totalMinuteLucrate += minuteOreNete;
+                        const minuteOreNete = transformaOraMinute(
+                            oreNete.replace("-", "")
+                        );
+
+                        if (!oreNete.startsWith("-")) {
+                            totalMinuteLucrate += minuteOreNete;
+                        }
+
                     }
 
                 }
