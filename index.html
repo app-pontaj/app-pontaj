@@ -5317,25 +5317,28 @@ function deschideZonaAngajatNou() {
 
                     const statusCorectie = String(pontaj.status_corectie || "").trim();
 
+                    const statusCorectieNormalizat = statusCorectie
+                        .toUpperCase()
+                        .normalize("NFD")
+                        .replace(/[\u0300-\u036f]/g, "");
+
                     if (
-                        statusCorectie === "C.O" ||
-                        statusCorectie.startsWith("C.O") ||
-                        statusCorectie === "Lucru la distanță" ||
-                        statusCorectie.startsWith("Lucru la distanță")
+                        statusCorectieNormalizat.includes("C.O") ||
+                        statusCorectieNormalizat.includes("CO") ||
+                        statusCorectieNormalizat.includes("LUCRU LA DISTANTA")
                     ) {
                         minuteCorectie = 480;
                     }
 
                     if (
-                        statusCorectie === "C.M" ||
-                        statusCorectie.startsWith("C.M") ||
-                        statusCorectie === "Fără plată" ||
-                        statusCorectie.startsWith("Fără plată")
+                        statusCorectieNormalizat.includes("C.M") ||
+                        statusCorectieNormalizat.includes("CM") ||
+                        statusCorectieNormalizat.includes("FARA PLATA")
                     ) {
                         minuteCorectie = 0;
                     }
 
-                    if (statusCorectie === "Lipsă card" || statusCorectie.startsWith("Lipsă card")) {
+                    if (statusCorectieNormalizat.includes("LIPSA CARD")) {
 
                         const oreCorectie = calculeazaOreNete(
                             pontaj.ora_intrare_manual,
