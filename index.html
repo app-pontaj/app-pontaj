@@ -4443,6 +4443,22 @@ function deschideZonaAngajatNou() {
 
                 }
 
+                const primulPontajPeZi = {};
+
+                pontariCitite.forEach(function(pontare) {
+
+                    const cheieZi =
+                        pontare.nume + "|" + pontare.data;
+
+                    if (
+                        primulPontajPeZi[cheieZi] === undefined ||
+                        pontare.minute < primulPontajPeZi[cheieZi]
+                    ) {
+                        primulPontajPeZi[cheieZi] = pontare.minute;
+                    }
+
+                });
+
                 const grupare = {};
 
                 pontariCitite.forEach(function(pontare) {
@@ -4462,9 +4478,16 @@ function deschideZonaAngajatNou() {
                         const existaIntrareSearaIeri =
                             pontajSearaPaza[pontare.nume + "|" + dataAnterioara];
 
+                        const primulPontajZiAnterioara =
+                            primulPontajPeZi[pontare.nume + "|" + dataAnterioara];
+
+                        const ziuaAnterioaraEsteTuraNoapte =
+                            primulPontajZiAnterioara >= 900;
+
                         if (
                             pontare.minute <= 420 &&
-                            existaIntrareSearaIeri
+                            existaIntrareSearaIeri &&
+                            ziuaAnterioaraEsteTuraNoapte
                         ) {
                             dataRaport = dataAnterioara;
                             minuteSortare = pontare.minute + 1440;
