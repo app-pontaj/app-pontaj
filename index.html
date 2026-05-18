@@ -4520,47 +4520,12 @@ function deschideZonaAngajatNou() {
 
                     if (grup.estePaza) {
 
-                        const segmente = [];
-                        let segmentCurent = [];
-
-                        grup.pontari.forEach(function(pontare, index) {
-
-                            if (index === 0) {
-                                segmentCurent.push(pontare);
-                                return;
-                            }
-
-                            const pontareAnterioara = grup.pontari[index - 1];
-                            const pauzaMinute = pontare.minute - pontareAnterioara.minute;
-
-                            // ===== PAUZA MINIMA 5 ORE LA PAZA =====
-                            // Dacă același paznic are pauză de minimum 5 ore,
-                            // nu unim artificial cele două intervale într-o singură tură.
-                            if (pauzaMinute >= 300) {
-                                segmente.push(segmentCurent);
-                                segmentCurent = [pontare];
-                            } else {
-                                segmentCurent.push(pontare);
-                            }
-
-                        });
-
-                        if (segmentCurent.length) {
-                            segmente.push(segmentCurent);
-                        }
-
-                        if (segmente.length > 1) {
-
-                            // În tabela actuală există un singur rând pe angajat + zi.
-                            // Pentru pază păstrăm segmentul cel mai lung,
-                            // ca să nu se calculeze fals de la dimineață până noaptea târziu.
-                            pontariFinale = segmente.sort(function(a, b) {
-                                const durataA = a[a.length - 1].minute - a[0].minute;
-                                const durataB = b[b.length - 1].minute - b[0].minute;
-                                return durataB - durataA;
-                            })[0];
-
-                        }
+                        // ===== PAZA - TURA DE NOAPTE RAMANE INTREAGA =====
+                        // Nu rupem tura intre seara si dimineata.
+                        // Exemplu corect:
+                        // 04.04 17:49 -> 05.04 05:12
+                        // se salveaza pe data 04.04, cu data_iesire 05.04.
+                        pontariFinale = grup.pontari;
 
                     }
 
