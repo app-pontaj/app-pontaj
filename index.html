@@ -5883,6 +5883,7 @@ function deschideZonaAngajatNou() {
             });
 
             html += "<th class='year-diff-total-head'>Total<br>2026</th>";
+            html += "<th>Diferențe</th>";
             html += "</tr></thead>";
             html += "<tbody>";
 
@@ -7677,21 +7678,34 @@ function deschideZonaAngajatNou() {
 
                 }
 
-                html += "</tr>";
+                const totalOreLucratoareMinute = totalZileLucratoare * 8 * 60;
+                const diferentaMinute = totalMinuteLucrate - totalOreLucratoareMinute;
+
+                const diferentaText =
+                    (diferentaMinute < 0 ? "-" : "") +
+                    formateazaMinuteOra(Math.abs(diferentaMinute));
+
+                const procentRealizat =
+                    totalOreLucratoareMinute > 0
+                        ? Number(((totalMinuteLucrate / totalOreLucratoareMinute) * 100).toFixed(1))
+                        : 0;
 
                 if (arePontajInLuna) {
 
-                    const totalOreLucratoareMinute = totalZileLucratoare * 8 * 60;
-                    const diferentaMinute = totalMinuteLucrate - totalOreLucratoareMinute;
+                    html +=
+                        "<td style='background:rgba(255,255,255,0.06);color:#ff3333;font-weight:900;'>" +
+                        escapeHtml(diferentaText) +
+                        "</td>";
 
-                    const diferentaText =
-                        (diferentaMinute < 0 ? "-" : "") +
-                        formateazaMinuteOra(Math.abs(diferentaMinute));
+                } else {
 
-                    const procentRealizat =
-                        totalOreLucratoareMinute > 0
-                            ? Number(((totalMinuteLucrate / totalOreLucratoareMinute) * 100).toFixed(1))
-                            : 0;
+                    html += "<td class='all-employees-empty-cell'></td>";
+
+                }
+
+                html += "</tr>";
+
+                if (arePontajInLuna) {
 
                     await salveazaRezultatRaportDiferenteLunar({
                         nume_angajat: nume,
