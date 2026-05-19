@@ -4701,23 +4701,38 @@ function deschideZonaAngajatNou() {
 
                 if (cheiImport.length) {
 
-                    const raspunsExistente = await supabaseClient
-                        .from("pontaj_zilnic")
-                        .select("*")
-                        .in("cheie_unica", cheiImport);
+                    const marimeLotChei = 50;
 
-                    if (raspunsExistente.error) {
+                    for (let indexChei = 0; indexChei < cheiImport.length; indexChei += marimeLotChei) {
 
-                        showMessage(
-                            "Eroare verificare pontaje existente",
-                            "error"
+                        const lotChei = cheiImport.slice(
+                            indexChei,
+                            indexChei + marimeLotChei
                         );
 
-                        return;
+                        const raspunsExistente = await supabaseClient
+                            .from("pontaj_zilnic")
+                            .select("*")
+                            .in("cheie_unica", lotChei);
+
+                        if (raspunsExistente.error) {
+
+                            console.log("SUPABASE ERROR VERIFICARE EXISTENTE:", raspunsExistente.error);
+
+                            showMessage(
+                                "Eroare verificare pontaje existente",
+                                "error"
+                            );
+
+                            return;
+
+                        }
+
+                        pontajeExistente = pontajeExistente.concat(
+                            raspunsExistente.data || []
+                        );
 
                     }
-
-                    pontajeExistente = raspunsExistente.data || [];
 
                 }
 
