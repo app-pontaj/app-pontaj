@@ -6793,6 +6793,7 @@ function deschideZonaAngajatNou() {
             dataStopRaportZileFaraPontaj = creeazaDataDinText(toateDatelePontaj[toateDatelePontaj.length - 1]);
 
             pregatesteSelectieZileFaraPontaj();
+            pregatesteSelectExportZileFaraPontaj();
             afiseazaRaportZileFaraPontaj();
 
         }
@@ -6800,71 +6801,9 @@ function deschideZonaAngajatNou() {
 
 
         // ===== EXPORT EXCEL - RAPORT ZILE FARA PONTAJ =====
-        function pregatesteSelectExportZileFaraPontaj() {
+        function construiesteRanduriLipsaPontajExport(lunaAleasa) {
 
-            const select = document.getElementById("missing-days-export-month");
-
-            if (!select || !dataStartRaportZileFaraPontaj || !dataStopRaportZileFaraPontaj) {
-                return;
-            }
-
-            const luniGasite = [];
-            const dataCurenta = new Date(dataStartRaportZileFaraPontaj);
-
-            while (dataCurenta <= dataStopRaportZileFaraPontaj) {
-
-                const lunaValoare =
-                    dataCurenta.getFullYear() +
-                    "-" +
-                    String(dataCurenta.getMonth() + 1).padStart(2, "0");
-
-                const lunaText =
-                    numeLunaComplet(dataCurenta.getMonth() + 1) +
-                    " " +
-                    dataCurenta.getFullYear();
-
-                if (!luniGasite.some(function(luna) { return luna.valoare === lunaValoare; })) {
-                    luniGasite.push({
-                        valoare: lunaValoare,
-                        text: lunaText
-                    });
-                }
-
-                dataCurenta.setMonth(dataCurenta.getMonth() + 1);
-                dataCurenta.setDate(1);
-
-            }
-
-            let html = "<option value='toate'>Toate lunile</option>";
-
-            luniGasite.forEach(function(luna) {
-                html +=
-                    "<option value='" +
-                    luna.valoare +
-                    "'>" +
-                    luna.text +
-                    "</option>";
-            });
-
-            select.innerHTML = html;
-
-        }
-
-        function exportaRaportZileFaraPontajExcel() {
-
-            const select = document.getElementById("missing-days-export-month");
-            const lunaAleasa = select ? select.value : "toate";
-
-            if (!dataStartRaportZileFaraPontaj || !dataStopRaportZileFaraPontaj) {
-
-                showMessage(
-                    "Nu există date pentru export",
-                    "error"
-                );
-
-                return;
-
-            }
+            const anCurent = new Date().getFullYear();
 
             const pontajeDupaAngajatZi = {};
 
@@ -6879,15 +6818,7 @@ function deschideZonaAngajatNou() {
 
             });
 
-            const randuriExcel = [
-                [
-                    "Nume angajat",
-                    "Sectie",
-                    "Data",
-                    "Zi",
-                    "Motiv"
-                ]
-            ];
+            const randuriGasite = [];
 
             angajatiRaportZileFaraPontaj.forEach(function(angajat) {
 
@@ -6917,6 +6848,11 @@ function deschideZonaAngajatNou() {
                     const dataText = formatDataPentruCheie(dataCurenta);
                     const lunaText = dataText.slice(0, 7);
                     const ziSaptamana = dataCurenta.getDay();
+
+                    if (dataCurenta.getFullYear() !== anCurent) {
+                        dataCurenta.setDate(dataCurenta.getDate() + 1);
+                        continue;
+                    }
 
                     if (
                         lunaAleasa !== "toate" &&
@@ -6948,13 +6884,14 @@ function deschideZonaAngajatNou() {
 
                             if (!pontajZi) {
 
-                                randuriExcel.push([
-                                    nume,
-                                    sectie,
-                                    formatDataAfisare(dataCurenta),
-                                    ZILE_SCURTE[dataCurenta.getDay()],
-                                    "Lipsă pontaj"
-                                ]);
+                                randuriGasite.push({
+                                    nume: nume,
+                                    sectie: sectie,
+                                    data: dataText,
+                                    dataAfisare: formatDataAfisare(dataCurenta),
+                                    zi: ZILE_SCURTE[dataCurenta.getDay()],
+                                    motiv: "Lipsă pontaj"
+                                });
 
                             }
 
@@ -6965,6 +6902,94 @@ function deschideZonaAngajatNou() {
                     dataCurenta.setDate(dataCurenta.getDate() + 1);
 
                 }
+
+            });
+
+            return randuriGasite;
+
+        }
+
+        function pregatesteSelectExportZileFaraPontaj() {
+
+            const select = document.getElementById("missing-days-export-month");
+
+            if (!select || !dataStartRaportZileFaraPontaj || !dataStopRaportZileFaraPontaj) {
+                return;
+            }
+
+            const luniCuLipsaPontaj = {};
+            const randuriLipsaPontaj = construiesteRanduriLipsaPontajExport("toate");
+
+            randuriLipsaPontaj.forEach(function(rand) {
+
+                const lunaValoare = String(rand.data || "").slice(0, 7);
+                const lunaNumar = Number(String(rand.data || "").slice(5, 7));
+
+                if (!lunaValoare || !lunaNumar) {
+                    return;
+                }
+
+                luniCuLipsaPontaj[lunaValoare] =
+                    numeLunaComplet(lunaNumar) + " " + String(rand.data).slice(0, 4);
+
+            });
+
+            let html = "<option value='toate'>Toate lunile</option>";
+
+            Object.keys(luniCuLipsaPontaj)
+                .sort()
+                .forEach(function(lunaValoare) {
+
+                    html +=
+                        "<option value='" +
+                        lunaValoare +
+                        "'>" +
+                        luniCuLipsaPontaj[lunaValoare] +
+                        "</option>";
+
+                });
+
+            select.innerHTML = html;
+
+        }
+
+        function exportaRaportZileFaraPontajExcel() {
+
+            const select = document.getElementById("missing-days-export-month");
+            const lunaAleasa = select ? select.value : "toate";
+
+            if (!dataStartRaportZileFaraPontaj || !dataStopRaportZileFaraPontaj) {
+
+                showMessage(
+                    "Nu există date pentru export",
+                    "error"
+                );
+
+                return;
+
+            }
+
+            const randuriLipsaPontaj = construiesteRanduriLipsaPontajExport(lunaAleasa);
+
+            const randuriExcel = [
+                [
+                    "Nume angajat",
+                    "Sectie",
+                    "Data",
+                    "Zi",
+                    "Motiv"
+                ]
+            ];
+
+            randuriLipsaPontaj.forEach(function(rand) {
+
+                randuriExcel.push([
+                    rand.nume,
+                    rand.sectie,
+                    rand.dataAfisare,
+                    rand.zi,
+                    rand.motiv
+                ]);
 
             });
 
@@ -6998,7 +7023,7 @@ function deschideZonaAngajatNou() {
 
             const numeFisier =
                 lunaAleasa === "toate"
-                    ? "raport_zile_fara_pontaj_toate_lunile.xlsx"
+                    ? "raport_zile_fara_pontaj_toate_lunile_an_curent.xlsx"
                     : "raport_zile_fara_pontaj_" + lunaAleasa + ".xlsx";
 
             XLSX.writeFile(
