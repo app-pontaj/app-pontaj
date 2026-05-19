@@ -1619,6 +1619,81 @@
         }
 
 
+
+
+        /* ===== EXPORT EXCEL - PONTAJ DIN RAPOARTE ===== */
+        .report-export-spacer {
+            height: 128px;
+        }
+
+        .report-export-open-button {
+            width: 100%;
+            height: 42px;
+            border-radius: 9px;
+            border: 1.5px solid #d4af37;
+            background: linear-gradient(145deg, #141414 0%, #050505 100%);
+            box-shadow:
+                inset 0 1px 0 rgba(255,255,255,0.05),
+                0 4px 10px rgba(0,0,0,0.45);
+            color: #f2c94c;
+            font-size: 13px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            font-family: 'Montserrat', Arial, sans-serif;
+            cursor: pointer;
+        }
+
+        .report-export-panel {
+            display: none;
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 14px;
+            border: 1.5px solid rgba(212,175,55,0.80);
+            background: linear-gradient(145deg, rgba(255,255,255,0.08), rgba(0,0,0,0.98));
+            box-shadow: 0 8px 18px rgba(0,0,0,0.55);
+        }
+
+        .report-export-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .report-export-select {
+            width: 100%;
+            min-height: 36px;
+            border-radius: 10px;
+            border: 1.5px solid #d4af37;
+            background: #111111;
+            color: #ffffff;
+            padding: 0 8px;
+            font-size: 11px;
+            font-weight: 900;
+            font-family: 'Montserrat', Arial, sans-serif;
+            outline: none;
+        }
+
+        .report-export-download-button {
+            width: 100%;
+            min-height: 38px;
+            border-radius: 12px;
+            border: 1px solid #ffd75a;
+            background: linear-gradient(145deg, #ffe27a 0%, #d6a72d 56%, #b98208 100%);
+            color: #050505;
+            font-size: 12px;
+            font-weight: 900;
+            margin-top: 9px;
+            cursor: pointer;
+            font-family: 'Montserrat', Arial, sans-serif;
+            box-shadow:
+                inset 0 1px 0 rgba(255,255,255,0.45),
+                0 4px 10px rgba(0,0,0,0.55);
+        }
+
+
         /* ===== FEEDBACK APLICATIE - TEST 2 SAPTAMANI ===== */
         .feedback-aplicatie-box {
             width: 100%;
@@ -2627,6 +2702,47 @@
                         <button class="month-card" data-luna="10" onclick="deschideRaportLunar(10,'Oct')">Oct</button>
                         <button class="month-card" data-luna="11" onclick="deschideRaportLunar(11,'Noi')">Noi</button>
                         <button class="month-card" data-luna="12" onclick="deschideRaportLunar(12,'Dec')">Dec</button>
+
+                    </div>
+
+                    <div class="report-export-spacer"></div>
+
+                    <button
+                        class="report-export-open-button"
+                        onclick="toggleExportPontajPanel()"
+                    >
+                        Exportă Excel
+                    </button>
+
+                    <div
+                        class="report-export-panel"
+                        id="report-export-panel"
+                    >
+
+                        <div class="report-export-grid">
+                            <select
+                                class="report-export-select"
+                                id="report-export-month"
+                            ></select>
+
+                            <select
+                                class="report-export-select"
+                                id="report-export-year"
+                            ></select>
+                        </div>
+
+                        <select
+                            class="report-export-select"
+                            id="report-export-employee"
+                            style="margin-top:8px;"
+                        ></select>
+
+                        <button
+                            class="report-export-download-button"
+                            onclick="exportaPontajRapoarteExcel()"
+                        >
+                            Descarcă Excel
+                        </button>
 
                     </div>
 
@@ -5323,6 +5439,7 @@ function deschideZonaAngajatNou() {
             }
 
             afiseazaAniRaport();
+            pregatesteExportPontajRapoarte();
 
             // ===== INCARCARE ANGAJATI PENTRU SEARCH =====
             if (!listaAngajatiSupabase.length) {
@@ -7643,6 +7760,442 @@ function deschideZonaAngajatNou() {
                 listaAngajatiSupabase = data || [];
 
             }
+
+        }
+
+
+        // ===== EXPORT EXCEL - PONTAJ DIN RAPOARTE =====
+        function toggleExportPontajPanel() {
+
+            const panel = document.getElementById("report-export-panel");
+
+            if (!panel) {
+                return;
+            }
+
+            panel.style.display =
+                panel.style.display === "block"
+                    ? "none"
+                    : "block";
+
+            pregatesteExportPontajRapoarte();
+
+        }
+
+        function pregatesteExportPontajRapoarte() {
+
+            const selectLuna = document.getElementById("report-export-month");
+            const selectAn = document.getElementById("report-export-year");
+            const selectAngajat = document.getElementById("report-export-employee");
+
+            if (!selectLuna || !selectAn || !selectAngajat) {
+                return;
+            }
+
+            const lunaCurenta = new Date().getMonth() + 1;
+            const anCurent = new Date().getFullYear();
+
+            if (!selectLuna.innerHTML) {
+
+                let htmlLuni = "";
+
+                for (let luna = 1; luna <= 12; luna++) {
+                    htmlLuni +=
+                        "<option value='" +
+                        luna +
+                        "'>" +
+                        numeLunaComplet(luna) +
+                        "</option>";
+                }
+
+                selectLuna.innerHTML = htmlLuni;
+                selectLuna.value = String(lunaCurenta);
+
+            }
+
+            if (!selectAn.innerHTML) {
+
+                let htmlAni = "";
+                const ani = [2026, 2027, 2028, 2029];
+
+                ani.forEach(function(an) {
+                    htmlAni +=
+                        "<option value='" +
+                        an +
+                        "'>" +
+                        an +
+                        "</option>";
+                });
+
+                selectAn.innerHTML = htmlAni;
+                selectAn.value = String(anCurent);
+
+            }
+
+            const valoareVecheAngajat = selectAngajat.value;
+            let htmlAngajati = "<option value='__TOTI__'>Toți angajații</option>";
+
+            listaAngajatiSupabase
+                .filter(function(angajat) {
+                    return (
+                        angajat.apare_in_rapoarte !== false &&
+                        angajatInSectiiPermise(angajat)
+                    );
+                })
+                .sort(function(a, b) {
+                    return String(a.nume || "").localeCompare(String(b.nume || ""), "ro");
+                })
+                .forEach(function(angajat) {
+
+                    const nume = String(angajat.nume || "").trim();
+
+                    if (!nume) {
+                        return;
+                    }
+
+                    htmlAngajati +=
+                        "<option value='" +
+                        escapeHtml(nume) +
+                        "'>" +
+                        escapeHtml(nume) +
+                        "</option>";
+
+                });
+
+            selectAngajat.innerHTML = htmlAngajati;
+
+            if (valoareVecheAngajat) {
+                selectAngajat.value = valoareVecheAngajat;
+            }
+
+            if (esteAngajatSimplu()) {
+                selectAngajat.value = utilizatorLogat?.nume || "";
+                selectAngajat.disabled = true;
+            } else {
+                selectAngajat.disabled = false;
+            }
+
+        }
+
+        function textStatusPontajPentruExport(status) {
+
+            const statusText = String(status || "").trim();
+            const statusNormalizat = statusText
+                .toUpperCase()
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "");
+
+            if (statusNormalizat.includes("C.O") || statusNormalizat === "CO") {
+                return "C.O";
+            }
+
+            if (statusNormalizat.includes("C.M") || statusNormalizat === "CM") {
+                return "C.M";
+            }
+
+            if (statusNormalizat.includes("FARA PLATA")) {
+                return "Fără plată";
+            }
+
+            if (statusNormalizat.includes("LUCRU LA DISTANTA")) {
+                return "Lucru la distanță";
+            }
+
+            if (statusNormalizat.includes("LIPSA CARD")) {
+                return "Lipsă card";
+            }
+
+            return statusText;
+
+        }
+
+        function esteCOExport(status) {
+
+            const statusNormalizat = String(status || "")
+                .trim()
+                .toUpperCase()
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "");
+
+            return (
+                statusNormalizat.includes("C.O") ||
+                statusNormalizat === "CO"
+            );
+
+        }
+
+        function escapeHtmlExport(text) {
+
+            return String(text || "")
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#39;");
+
+        }
+
+        function descarcaTabelHtmlCaExcel(htmlTabel, numeFisier) {
+
+            const continut =
+                "<html xmlns:o='urn:schemas-microsoft-com:office:office' " +
+                "xmlns:x='urn:schemas-microsoft-com:office:excel' " +
+                "xmlns='http://www.w3.org/TR/REC-html40'>" +
+                "<head>" +
+                "<meta charset='UTF-8'>" +
+                "<!--[if gte mso 9]>" +
+                "<xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet>" +
+                "<x:Name>Pontaj</x:Name>" +
+                "<x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions>" +
+                "</x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml>" +
+                "<![endif]-->" +
+                "</head><body>" +
+                htmlTabel +
+                "</body></html>";
+
+            const blob = new Blob(
+                [continut],
+                {
+                    type: "application/vnd.ms-excel;charset=utf-8;"
+                }
+            );
+
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = numeFisier;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(link.href);
+
+        }
+
+        async function exportaPontajRapoarteExcel() {
+
+            const selectLuna = document.getElementById("report-export-month");
+            const selectAn = document.getElementById("report-export-year");
+            const selectAngajat = document.getElementById("report-export-employee");
+
+            const luna = Number(selectLuna ? selectLuna.value : 0);
+            const an = Number(selectAn ? selectAn.value : 0);
+            const angajatAles = selectAngajat ? selectAngajat.value : "__TOTI__";
+
+            if (!luna || !an) {
+                showMessage("Alege luna și anul", "error");
+                return;
+            }
+
+            if (!listaAngajatiSupabase.length) {
+
+                const { data: angajati } = await supabaseClient
+                    .from("angajati")
+                    .select("*")
+                    .order("nume", {
+                        ascending: true
+                    });
+
+                listaAngajatiSupabase = angajati || [];
+
+            }
+
+            const zileLuna = new Date(an, luna, 0).getDate();
+
+            const primaZi =
+                an +
+                "-" +
+                String(luna).padStart(2, "0") +
+                "-01";
+
+            const ultimaZi =
+                an +
+                "-" +
+                String(luna).padStart(2, "0") +
+                "-" +
+                String(zileLuna).padStart(2, "0");
+
+            let angajatiExport = listaAngajatiSupabase
+                .filter(function(angajat) {
+                    return (
+                        angajat.apare_in_rapoarte !== false &&
+                        angajatInSectiiPermise(angajat)
+                    );
+                })
+                .sort(function(a, b) {
+                    return String(a.nume || "").localeCompare(String(b.nume || ""), "ro");
+                });
+
+            if (angajatAles !== "__TOTI__") {
+                angajatiExport = angajatiExport.filter(function(angajat) {
+                    return String(angajat.nume || "").trim() === String(angajatAles || "").trim();
+                });
+            }
+
+            if (!angajatiExport.length) {
+                showMessage("Nu există angajați pentru export", "error");
+                return;
+            }
+
+            let toatePontajeleLunii = [];
+            let startLot = 0;
+            const marimeLot = 1000;
+            let eroareCitirePontaj = null;
+
+            while (true) {
+
+                const { data: lotPontaje, error } = await supabaseClient
+                    .from("pontaj_zilnic")
+                    .select("*")
+                    .gte("data", primaZi)
+                    .lte("data", ultimaZi)
+                    .range(startLot, startLot + marimeLot - 1);
+
+                if (error) {
+                    eroareCitirePontaj = error;
+                    break;
+                }
+
+                toatePontajeleLunii = toatePontajeleLunii.concat(lotPontaje || []);
+
+                if (!lotPontaje || lotPontaje.length < marimeLot) {
+                    break;
+                }
+
+                startLot += marimeLot;
+
+            }
+
+            if (eroareCitirePontaj) {
+                showMessage("Eroare citire pontaj", "error");
+                return;
+            }
+
+            const pontajeDupaAngajatZi = {};
+
+            toatePontajeleLunii.forEach(function(pontaj) {
+
+                const cheie =
+                    String(pontaj.nume || "").trim().toUpperCase() +
+                    "|" +
+                    String(pontaj.data || "").trim();
+
+                pontajeDupaAngajatZi[cheie] = pontaj;
+
+            });
+
+            let html = "";
+
+            html +=
+                "<table border='1' style='border-collapse:collapse;font-family:Arial;font-size:10pt;'>";
+
+            html += "<tr>";
+            html += "<th style='background:#111111;color:#ffffff;font-weight:bold;width:220px;'>Angajat</th>";
+
+            for (let zi = 1; zi <= zileLuna; zi++) {
+
+                const dataObj = new Date(an, luna - 1, zi);
+                const ziText = ZILE_SCURTE[dataObj.getDay()] + " " + String(zi).padStart(2, "0") + "." + String(luna).padStart(2, "0");
+
+                html +=
+                    "<th style='background:#111111;color:#ffffff;font-weight:bold;text-align:center;width:64px;'>" +
+                    escapeHtmlExport(ziText) +
+                    "</th>";
+
+            }
+
+            html += "</tr>";
+
+            angajatiExport.forEach(function(angajat) {
+
+                const nume = String(angajat.nume || "").trim();
+
+                if (!nume) {
+                    return;
+                }
+
+                html += "<tr>";
+                html +=
+                    "<td style='background:#d4af37;color:#000000;font-weight:bold;'>" +
+                    escapeHtmlExport(nume) +
+                    "</td>";
+
+                for (let zi = 1; zi <= zileLuna; zi++) {
+
+                    const dataText =
+                        an +
+                        "-" +
+                        String(luna).padStart(2, "0") +
+                        "-" +
+                        String(zi).padStart(2, "0");
+
+                    const cheie =
+                        nume.trim().toUpperCase() +
+                        "|" +
+                        dataText;
+
+                    const pontaj = pontajeDupaAngajatZi[cheie];
+                    let valoareCelula = "";
+                    let stilCelula = "text-align:center;";
+
+                    if (pontaj && pontaj.status_corectie) {
+
+                        const statusExport = textStatusPontajPentruExport(pontaj.status_corectie);
+
+                        if (statusExport === "Lipsă card") {
+
+                            valoareCelula = calculeazaOreNete(
+                                pontaj.ora_intrare_manual,
+                                pontaj.ora_iesire_manual,
+                                angajat?.regula_start_0700,
+                                angajat?.pauza_masa,
+                                angajat?.pauza_minute
+                            );
+
+                        } else {
+
+                            valoareCelula = statusExport;
+
+                        }
+
+                        if (esteCOExport(pontaj.status_corectie)) {
+                            stilCelula += "background:#cccccc;";
+                        }
+
+                    } else if (pontaj && pontaj.ora_intrare && pontaj.ora_iesire) {
+
+                        valoareCelula = calculeazaOreNete(
+                            pontaj.ora_intrare,
+                            pontaj.ora_iesire,
+                            angajat?.regula_start_0700,
+                            angajat?.pauza_masa,
+                            angajat?.pauza_minute
+                        );
+
+                    }
+
+                    html +=
+                        "<td style='" +
+                        stilCelula +
+                        "'>" +
+                        escapeHtmlExport(valoareCelula) +
+                        "</td>";
+
+                }
+
+                html += "</tr>";
+
+            });
+
+            html += "</table>";
+
+            const numeFisier =
+                angajatAles === "__TOTI__"
+                    ? "pontaj_toti_angajatii_" + an + "_" + String(luna).padStart(2, "0") + ".xls"
+                    : "pontaj_" + angajatAles.replace(/[^a-zA-Z0-9]/g, "_") + "_" + an + "_" + String(luna).padStart(2, "0") + ".xls";
+
+            descarcaTabelHtmlCaExcel(
+                html,
+                numeFisier
+            );
 
         }
 
