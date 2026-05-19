@@ -8125,28 +8125,38 @@ function deschideZonaAngajatNou() {
 
             });
 
-            let html = "";
-
-            html +=
-                "<table border='1' style='border-collapse:collapse;font-family:Arial;font-size:8pt;'>";
-
-            html += "<tr>";
-            html += "<th style='background:#111111;color:#ffffff;font-weight:bold;width:220px;'>Angajat</th>";
+            const randuriExcel = [];
+            const randHeader = ["Angajat"];
 
             for (let zi = 1; zi <= zileLuna; zi++) {
 
                 const dataObj = new Date(an, luna - 1, zi);
-                const ziText = ZILE_SCURTE[dataObj.getDay()] + " " + String(zi).padStart(2, "0") + "." + String(luna).padStart(2, "0");
+                const ziText =
+                    ZILE_SCURTE[dataObj.getDay()] +
+                    " " +
+                    String(zi).padStart(2, "0") +
+                    "." +
+                    String(luna).padStart(2, "0");
 
-                html +=
-                    "<th style='background:#111111;color:#ffffff;font-weight:bold;text-align:center;width:52px;'>" +
-                    escapeHtmlExport(ziText) +
-                    "</th>";
+                randHeader.push(ziText);
 
             }
 
-            html += "<th style='background:#111111;color:#ffffff;font-weight:bold;text-align:center;width:70px;'>Dif.</th>";
-            html += "</tr>";
+            randHeader.push("Dif.");
+
+            randuriExcel.push(randHeader);
+
+            const metaCelule = {};
+
+            function seteazaMeta(rand, coloana, tip) {
+
+                metaCelule[rand + "|" + coloana] = tip;
+
+            }
+
+            for (let c = 0; c < randHeader.length; c++) {
+                seteazaMeta(0, c, "header");
+            }
 
             angajatiExport.forEach(function(angajat) {
 
@@ -8160,13 +8170,14 @@ function deschideZonaAngajatNou() {
                 let totalZileLucratoare = 0;
                 let arePontajInLuna = false;
 
-                html += "<tr>";
-                html +=
-                    "<td style='background:#d4af37;color:#000000;font-weight:bold;'>" +
-                    escapeHtmlExport(nume) +
-                    "</td>";
+                const randExcel = [nume];
+                const indexRandExcel = randuriExcel.length;
+
+                seteazaMeta(indexRandExcel, 0, "nume");
 
                 for (let zi = 1; zi <= zileLuna; zi++) {
+
+                    const indexColoanaExcel = zi;
 
                     const dataText =
                         an +
@@ -8194,13 +8205,13 @@ function deschideZonaAngajatNou() {
 
                     const pontaj = pontajeDupaAngajatZi[cheie];
                     let valoareCelula = "";
-                    let stilCelula = "text-align:center;";
 
                     if (
                         sarbatoare &&
                         !pontaj
                     ) {
                         valoareCelula = "S.L";
+                        seteazaMeta(indexRandExcel, indexColoanaExcel, "sl");
                     }
 
                     if (pontaj && pontaj.status_corectie) {
@@ -8231,6 +8242,8 @@ function deschideZonaAngajatNou() {
 
                             }
 
+                            seteazaMeta(indexRandExcel, indexColoanaExcel, "ore");
+
                         } else {
 
                             valoareCelula = statusExport;
@@ -8242,10 +8255,12 @@ function deschideZonaAngajatNou() {
                                 totalMinuteLucrate += 480;
                             }
 
-                        }
+                            if (esteCOExport(pontaj.status_corectie)) {
+                                seteazaMeta(indexRandExcel, indexColoanaExcel, "co");
+                            } else {
+                                seteazaMeta(indexRandExcel, indexColoanaExcel, "corectie");
+                            }
 
-                        if (esteCOExport(pontaj.status_corectie)) {
-                            stilCelula += "background:#cccccc;";
                         }
 
                     } else if (pontaj && pontaj.ora_intrare && pontaj.ora_iesire) {
@@ -8272,14 +8287,11 @@ function deschideZonaAngajatNou() {
 
                         }
 
+                        seteazaMeta(indexRandExcel, indexColoanaExcel, "ore");
+
                     }
 
-                    html +=
-                        "<td style='" +
-                        stilCelula +
-                        "'>" +
-                        escapeHtmlExport(valoareCelula) +
-                        "</td>";
+                    randExcel.push(String(valoareCelula || ""));
 
                 }
 
@@ -8292,38 +8304,156 @@ function deschideZonaAngajatNou() {
 
                 if (arePontajInLuna) {
 
-                    const stilDiferenta =
-                        diferentaMinute >= 0
-                            ? "text-align:center;background:#cccccc;color:#008000;font-weight:bold;"
-                            : "text-align:center;color:#ff0000;font-weight:bold;";
+                    randExcel.push(String(diferentaText));
 
-                    html +=
-                        "<td style='" +
-                        stilDiferenta +
-                        "'>" +
-                        escapeHtmlExport(diferentaText) +
-                        "</td>";
+                    seteazaMeta(
+                        indexRandExcel,
+                        zileLuna + 1,
+                        diferentaMinute >= 0 ? "difPlus" : "difMinus"
+                    );
 
                 } else {
 
-                    html += "<td></td>";
+                    randExcel.push("");
 
                 }
 
-                html += "</tr>";
+                randuriExcel.push(randExcel);
 
             });
 
-            html += "</table>";
+            const worksheet = XLSX.utils.aoa_to_sheet(randuriExcel);
+
+            const range = XLSX.utils.decode_range(worksheet["!ref"]);
+
+            for (let r = range.s.r; r <= range.e.r; r++) {
+
+                for (let c = range.s.c; c <= range.e.c; c++) {
+
+                    const adresaCelula = XLSX.utils.encode_cell({
+                        r: r,
+                        c: c
+                    });
+
+                    if (!worksheet[adresaCelula]) {
+                        worksheet[adresaCelula] = {
+                            t: "s",
+                            v: ""
+                        };
+                    }
+
+                    worksheet[adresaCelula].t = "s";
+                    worksheet[adresaCelula].v = String(worksheet[adresaCelula].v || "");
+                    worksheet[adresaCelula].z = "@";
+
+                    const tip = metaCelule[r + "|" + c] || "";
+
+                    worksheet[adresaCelula].s = {
+                        alignment: {
+                            horizontal: c === 0 ? "left" : "center",
+                            vertical: "center",
+                            wrapText: true
+                        },
+                        font: {
+                            bold: r === 0 || c === 0 || tip === "difPlus" || tip === "difMinus",
+                            color: {
+                                rgb:
+                                    tip === "difPlus"
+                                        ? "008000"
+                                        : tip === "difMinus"
+                                            ? "FF0000"
+                                            : "000000"
+                            }
+                        },
+                        fill: {
+                            patternType: "solid",
+                            fgColor: {
+                                rgb:
+                                    tip === "header"
+                                        ? "111111"
+                                        : tip === "co" || tip === "difPlus"
+                                            ? "CCCCCC"
+                                            : tip === "nume"
+                                                ? "FFFFFF"
+                                                : tip === "sl"
+                                                    ? "E6E6E6"
+                                                    : "FFFFFF"
+                            }
+                        },
+                        border: {
+                            top: { style: "thin", color: { rgb: "999999" } },
+                            bottom: { style: "thin", color: { rgb: "999999" } },
+                            left: { style: "thin", color: { rgb: "999999" } },
+                            right: { style: "thin", color: { rgb: "999999" } }
+                        }
+                    };
+
+                    if (tip === "header") {
+                        worksheet[adresaCelula].s.font.color.rgb = "FFFFFF";
+                    }
+
+                }
+
+            }
+
+            worksheet["!cols"] = [
+                { wch: 28 }
+            ];
+
+            for (let zi = 1; zi <= zileLuna; zi++) {
+                worksheet["!cols"].push({
+                    wch: 9
+                });
+            }
+
+            worksheet["!cols"].push({
+                wch: 10
+            });
+
+            worksheet["!margins"] = {
+                left: 0.15,
+                right: 0.15,
+                top: 0.15,
+                bottom: 0.15,
+                header: 0,
+                footer: 0
+            };
+
+            worksheet["!pageSetup"] = {
+                paperSize: 8,
+                orientation: "landscape",
+                fitToWidth: 1,
+                fitToHeight: 0
+            };
+
+            const workbook = XLSX.utils.book_new();
+
+            workbook.Workbook = {
+                Views: [
+                    {
+                        RTL: false
+                    }
+                ]
+            };
+
+            XLSX.utils.book_append_sheet(
+                workbook,
+                worksheet,
+                "Pontaj"
+            );
 
             const numeFisier =
                 angajatAles === "__TOTI__"
-                    ? "pontaj_toti_angajatii_" + an + "_" + String(luna).padStart(2, "0") + ".xls"
-                    : "pontaj_" + angajatAles.replace(/[^a-zA-Z0-9]/g, "_") + "_" + an + "_" + String(luna).padStart(2, "0") + ".xls";
+                    ? "pontaj_toti_angajatii_" + an + "_" + String(luna).padStart(2, "0") + ".xlsx"
+                    : "pontaj_" + angajatAles.replace(/[^a-zA-Z0-9]/g, "_") + "_" + an + "_" + String(luna).padStart(2, "0") + ".xlsx";
 
-            descarcaTabelHtmlCaExcel(
-                html,
-                numeFisier
+            XLSX.writeFile(
+                workbook,
+                numeFisier,
+                {
+                    bookType: "xlsx",
+                    cellStyles: true
+                }
             );
 
         }
