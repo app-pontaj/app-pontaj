@@ -1582,6 +1582,80 @@
                 0 0 10px rgba(255,23,68,0.42) !important;
         }
 
+
+        /* ===== FEEDBACK APLICATIE - TEST 2 SAPTAMANI ===== */
+        .feedback-aplicatie-box {
+            width: 100%;
+            border-radius: 18px;
+            border: 1.5px solid rgba(212,175,55,0.78);
+            background: linear-gradient(145deg, rgba(255,255,255,0.08), rgba(0,0,0,0.98));
+            padding: 12px;
+            margin: 14px 0 14px;
+            box-sizing: border-box;
+            box-shadow: 0 8px 18px rgba(0,0,0,0.55);
+            font-family: 'Montserrat', Arial, sans-serif;
+            display: none;
+        }
+
+        .feedback-aplicatie-title {
+            color: #ffffff;
+            font-size: 13px;
+            font-weight: 900;
+            margin-bottom: 10px;
+            text-transform: lowercase;
+        }
+
+        .feedback-aplicatie-label {
+            color: #d4af37;
+            font-size: 10px;
+            font-weight: 800;
+            line-height: 1.25;
+            margin: 8px 0 6px;
+        }
+
+        .feedback-aplicatie-select,
+        .feedback-aplicatie-textarea {
+            width: 100%;
+            border-radius: 12px;
+            border: 1px solid rgba(212,175,55,0.70);
+            background: #0b0b0b;
+            color: #ffffff;
+            padding: 8px 10px;
+            font-size: 12px;
+            font-weight: 800;
+            outline: none;
+            box-sizing: border-box;
+            font-family: 'Montserrat', Arial, sans-serif;
+        }
+
+        .feedback-aplicatie-select {
+            height: 36px;
+        }
+
+        .feedback-aplicatie-textarea {
+            min-height: 82px;
+            resize: none;
+            line-height: 1.25;
+        }
+
+        .feedback-aplicatie-button {
+            width: 100%;
+            height: 38px;
+            border-radius: 14px;
+            border: 1px solid rgba(255,217,91,0.95);
+            background: linear-gradient(145deg,#ffe071 0%,#d4af37 58%,#b8860b 100%);
+            color: #050505;
+            font-size: 13px;
+            font-weight: 900;
+            margin-top: 10px;
+            cursor: pointer;
+            font-family: 'Montserrat', Arial, sans-serif;
+            box-shadow:
+                inset 0 1px 0 rgba(255,255,255,0.44),
+                0 6px 14px rgba(0,0,0,0.56);
+        }
+
+
 </style>
 
 </head>
@@ -1823,6 +1897,56 @@
                         <div class="quick-menu-card"></div>
 
                     </div>
+
+                    <!-- ===== FEEDBACK APLICATIE - TEST 2 SAPTAMANI ===== -->
+                    <div
+                        class="feedback-aplicatie-box"
+                        id="feedback-aplicatie-box"
+                    >
+                        <div class="feedback-aplicatie-title">
+                            evaluați aplicația
+                        </div>
+
+                        <div class="feedback-aplicatie-label">
+                            1. Dați o notă de la 1-10 (1 - f. slabă; 10 - f. bună)
+                        </div>
+
+                        <select
+                            class="feedback-aplicatie-select"
+                            id="feedback-nota"
+                        >
+                            <option value="">Alege nota</option>
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                            <option value="6">6</option>
+                            <option value="7">7</option>
+                            <option value="8">8</option>
+                            <option value="9">9</option>
+                            <option value="10">10</option>
+                        </select>
+
+                        <div class="feedback-aplicatie-label">
+                            Ce îmbunătățiri ar trebui aduse
+                        </div>
+
+                        <textarea
+                            class="feedback-aplicatie-textarea"
+                            id="feedback-imbunatatiri"
+                            maxlength="1000"
+                            placeholder="Scrie aici... maxim 1000 caractere"
+                        ></textarea>
+
+                        <button
+                            class="feedback-aplicatie-button"
+                            onclick="salveazaFeedbackAplicatie()"
+                        >
+                            Trimite feedback
+                        </button>
+                    </div>
+
 <div
                         class="menu-card"
                         onclick="deschidePaginaRaportTest()"
@@ -2826,6 +2950,7 @@
             incarcaContorZileFaraPontaj();
             incarcaContorAngajati();
             incarcaUltimaDataImport();
+            verificaFeedbackAplicatie();
 
         }
 
@@ -3429,6 +3554,94 @@
 
         }
 
+
+
+        // ===== FEEDBACK APLICATIE - TEST 2 SAPTAMANI =====
+        async function verificaFeedbackAplicatie() {
+
+            const box = document.getElementById("feedback-aplicatie-box");
+
+            if (!box || !utilizatorLogat || !utilizatorLogat.nume) {
+                return;
+            }
+
+            box.style.display = "none";
+
+            const { data, error } = await supabaseClient
+                .from("feedback_aplicatie")
+                .select("id")
+                .eq("nume_angajat", utilizatorLogat.nume)
+                .limit(1);
+
+            if (error) {
+                return;
+            }
+
+            if (data && data.length) {
+                box.style.display = "none";
+                return;
+            }
+
+            box.style.display = "block";
+
+        }
+
+        async function salveazaFeedbackAplicatie() {
+
+            if (!utilizatorLogat || !utilizatorLogat.nume) {
+                showMessage("Utilizator nelogat", "error");
+                return;
+            }
+
+            const notaSelect = document.getElementById("feedback-nota");
+            const imbunatatiriInput = document.getElementById("feedback-imbunatatiri");
+
+            const nota = Number(notaSelect ? notaSelect.value : 0);
+            const imbunatatiri = imbunatatiriInput
+                ? imbunatatiriInput.value.trim().slice(0, 1000)
+                : "";
+
+            if (!nota || nota < 1 || nota > 10) {
+                showMessage("Alege nota de la 1 la 10", "error");
+                return;
+            }
+
+            const { data: feedbackExistent, error: eroareVerificare } = await supabaseClient
+                .from("feedback_aplicatie")
+                .select("id")
+                .eq("nume_angajat", utilizatorLogat.nume)
+                .limit(1);
+
+            if (eroareVerificare) {
+                showMessage("Eroare verificare feedback", "error");
+                return;
+            }
+
+            if (feedbackExistent && feedbackExistent.length) {
+                document.getElementById("feedback-aplicatie-box").style.display = "none";
+                showMessage("Feedback deja trimis", "success");
+                return;
+            }
+
+            const { error } = await supabaseClient
+                .from("feedback_aplicatie")
+                .insert({
+                    nume_angajat: utilizatorLogat.nume,
+                    nota: nota,
+                    imbunatatiri: imbunatatiri,
+                    data_completare: new Date().toISOString()
+                });
+
+            if (error) {
+                showMessage("Eroare salvare feedback", "error");
+                return;
+            }
+
+            document.getElementById("feedback-aplicatie-box").style.display = "none";
+
+            showMessage("Feedback trimis", "success");
+
+        }
 
 
         // ===== ULTIMA DATA IMPORT PONTAJ =====
