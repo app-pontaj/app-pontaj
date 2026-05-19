@@ -2278,6 +2278,7 @@
                             <select
                                 class="missing-days-export-select"
                                 id="missing-days-export-month"
+                                onchange="afiseazaRaportZileFaraPontaj()"
                             >
                                 <option value="toate">Toate lunile</option>
                             </select>
@@ -7047,6 +7048,8 @@ function deschideZonaAngajatNou() {
                 return;
             }
 
+            select.onchange = afiseazaRaportZileFaraPontaj;
+
             const luniCuLipsaPontaj = {};
             const randuriLipsaPontaj = construiesteRanduriLipsaPontajExport("toate");
 
@@ -7241,6 +7244,18 @@ function deschideZonaAngajatNou() {
                 while (dataCurenta <= dataStopRaportZileFaraPontaj) {
 
                     const dataText = formatDataPentruCheie(dataCurenta);
+                    const lunaSelectataExport = document.getElementById("missing-days-export-month")
+                        ? document.getElementById("missing-days-export-month").value
+                        : "toate";
+
+                    if (
+                        lunaSelectataExport !== "toate" &&
+                        String(dataText).slice(0, 7) !== lunaSelectataExport
+                    ) {
+                        dataCurenta.setDate(dataCurenta.getDate() + 1);
+                        continue;
+                    }
+
                     const ziSaptamana = dataCurenta.getDay();
 
                     if (
@@ -8180,6 +8195,13 @@ function deschideZonaAngajatNou() {
                     const pontaj = pontajeDupaAngajatZi[cheie];
                     let valoareCelula = "";
                     let stilCelula = "text-align:center;";
+
+                    if (
+                        sarbatoare &&
+                        !pontaj
+                    ) {
+                        valoareCelula = "S.L";
+                    }
 
                     if (pontaj && pontaj.status_corectie) {
 
