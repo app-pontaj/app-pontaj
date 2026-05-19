@@ -491,12 +491,24 @@
             z-index: 4;
             min-width: 88px;
             max-width: 88px;
-            background: linear-gradient(145deg, #ffe27a 0%, #d6a72d 56%, #b98208 100%);
-            color: #050505;
+            background: #050505;
+            color: #d4af37;
             text-align: left;
             overflow: hidden;
             text-overflow: ellipsis;
             font-size: 8px;
+        }
+
+        .all-employees-diff-positive {
+            background: rgba(255,255,255,0.06);
+            color: #00d26a;
+            font-weight: 900;
+        }
+
+        .all-employees-diff-negative {
+            background: rgba(255,255,255,0.06);
+            color: #ff3333;
+            font-weight: 900;
         }
 
         .all-employees-value-cell {
@@ -6589,6 +6601,7 @@ function deschideZonaAngajatNou() {
 
             html += "<th class='year-diff-total-head'>Total<br>2026</th>";
             html += "<th>Diferențe</th>";
+            html += "<th>Dif.</th>";
             html += "</tr></thead>";
             html += "<tbody>";
 
@@ -7943,10 +7956,25 @@ function deschideZonaAngajatNou() {
                 "xmlns='http://www.w3.org/TR/REC-html40'>" +
                 "<head>" +
                 "<meta charset='UTF-8'>" +
+                "<style>" +
+                "@page{size:A3 landscape;margin:0.15in;mso-page-orientation:landscape;}" +
+                "table{mso-fit-to-page:yes;}" +
+                "</style>" +
                 "<!--[if gte mso 9]>" +
                 "<xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet>" +
                 "<x:Name>Pontaj</x:Name>" +
-                "<x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions>" +
+                "<x:WorksheetOptions>" +
+                "<x:DisplayGridlines/>" +
+                "<x:PageSetup>" +
+                "<x:Layout x:Orientation='Landscape'/>" +
+                "<x:PaperSizeIndex>8</x:PaperSizeIndex>" +
+                "</x:PageSetup>" +
+                "<x:FitToPage/>" +
+                "<x:Print>" +
+                "<x:FitWidth>1</x:FitWidth>" +
+                "<x:FitHeight>0</x:FitHeight>" +
+                "</x:Print>" +
+                "</x:WorksheetOptions>" +
                 "</x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml>" +
                 "<![endif]-->" +
                 "</head><body>" +
@@ -8085,7 +8113,7 @@ function deschideZonaAngajatNou() {
             let html = "";
 
             html +=
-                "<table border='1' style='border-collapse:collapse;font-family:Arial;font-size:10pt;'>";
+                "<table border='1' style='border-collapse:collapse;font-family:Arial;font-size:8pt;'>";
 
             html += "<tr>";
             html += "<th style='background:#111111;color:#ffffff;font-weight:bold;width:220px;'>Angajat</th>";
@@ -8096,12 +8124,13 @@ function deschideZonaAngajatNou() {
                 const ziText = ZILE_SCURTE[dataObj.getDay()] + " " + String(zi).padStart(2, "0") + "." + String(luna).padStart(2, "0");
 
                 html +=
-                    "<th style='background:#111111;color:#ffffff;font-weight:bold;text-align:center;width:64px;'>" +
+                    "<th style='background:#111111;color:#ffffff;font-weight:bold;text-align:center;width:52px;'>" +
                     escapeHtmlExport(ziText) +
                     "</th>";
 
             }
 
+            html += "<th style='background:#111111;color:#ffffff;font-weight:bold;text-align:center;width:70px;'>Dif.</th>";
             html += "</tr>";
 
             angajatiExport.forEach(function(angajat) {
@@ -8111,6 +8140,10 @@ function deschideZonaAngajatNou() {
                 if (!nume) {
                     return;
                 }
+
+                let totalMinuteLucrate = 0;
+                let totalZileLucratoare = 0;
+                let arePontajInLuna = false;
 
                 html += "<tr>";
                 html +=
@@ -8127,6 +8160,18 @@ function deschideZonaAngajatNou() {
                         "-" +
                         String(zi).padStart(2, "0");
 
+                    const dataObj = new Date(an, luna - 1, zi);
+
+                    const weekend =
+                        dataObj.getDay() === 0 ||
+                        dataObj.getDay() === 6;
+
+                    const sarbatoare = esteZiLiberaLegala(dataText);
+
+                    if (!weekend && !sarbatoare) {
+                        totalZileLucratoare++;
+                    }
+
                     const cheie =
                         nume.trim().toUpperCase() +
                         "|" +
@@ -8137,6 +8182,8 @@ function deschideZonaAngajatNou() {
                     let stilCelula = "text-align:center;";
 
                     if (pontaj && pontaj.status_corectie) {
+
+                        arePontajInLuna = true;
 
                         const statusExport = textStatusPontajPentruExport(pontaj.status_corectie);
 
@@ -8150,9 +8197,28 @@ function deschideZonaAngajatNou() {
                                 angajat?.pauza_minute
                             );
 
+                            if (valoareCelula) {
+
+                                const minuteCorectie = transformaOraMinute(
+                                    valoareCelula.replace("-", "")
+                                );
+
+                                totalMinuteLucrate += valoareCelula.startsWith("-")
+                                    ? -minuteCorectie
+                                    : minuteCorectie;
+
+                            }
+
                         } else {
 
                             valoareCelula = statusExport;
+
+                            if (
+                                statusExport === "C.O" ||
+                                statusExport === "Lucru la distanță"
+                            ) {
+                                totalMinuteLucrate += 480;
+                            }
 
                         }
 
@@ -8162,6 +8228,8 @@ function deschideZonaAngajatNou() {
 
                     } else if (pontaj && pontaj.ora_intrare && pontaj.ora_iesire) {
 
+                        arePontajInLuna = true;
+
                         valoareCelula = calculeazaOreNete(
                             pontaj.ora_intrare,
                             pontaj.ora_iesire,
@@ -8169,6 +8237,18 @@ function deschideZonaAngajatNou() {
                             angajat?.pauza_masa,
                             angajat?.pauza_minute
                         );
+
+                        if (valoareCelula) {
+
+                            const minuteLucrate = transformaOraMinute(
+                                valoareCelula.replace("-", "")
+                            );
+
+                            if (!valoareCelula.startsWith("-")) {
+                                totalMinuteLucrate += minuteLucrate;
+                            }
+
+                        }
 
                     }
 
@@ -8178,6 +8258,33 @@ function deschideZonaAngajatNou() {
                         "'>" +
                         escapeHtmlExport(valoareCelula) +
                         "</td>";
+
+                }
+
+                const totalOreLucratoareMinute = totalZileLucratoare * 8 * 60;
+                const diferentaMinute = totalMinuteLucrate - totalOreLucratoareMinute;
+
+                const diferentaText =
+                    (diferentaMinute < 0 ? "-" : "") +
+                    formateazaMinuteOra(Math.abs(diferentaMinute));
+
+                if (arePontajInLuna) {
+
+                    const stilDiferenta =
+                        diferentaMinute >= 0
+                            ? "text-align:center;background:#cccccc;color:#008000;font-weight:bold;"
+                            : "text-align:center;color:#ff0000;font-weight:bold;";
+
+                    html +=
+                        "<td style='" +
+                        stilDiferenta +
+                        "'>" +
+                        escapeHtmlExport(diferentaText) +
+                        "</td>";
+
+                } else {
+
+                    html += "<td></td>";
 
                 }
 
@@ -9102,8 +9209,13 @@ function deschideZonaAngajatNou() {
 
                 if (arePontajInLuna) {
 
+                    const clasaDiferenta =
+                        diferentaMinute >= 0
+                            ? "all-employees-diff-positive"
+                            : "all-employees-diff-negative";
+
                     html +=
-                        "<td style='background:rgba(255,255,255,0.06);color:#ff3333;font-weight:900;'>" +
+                        "<td class='" + clasaDiferenta + "'>" +
                         escapeHtml(diferentaText) +
                         "</td>";
 
