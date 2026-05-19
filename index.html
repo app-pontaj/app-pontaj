@@ -2612,6 +2612,21 @@
 
             const button = document.getElementById("message-button");
 
+            const confirmButton = document.getElementById("message-confirm-button");
+
+            if (confirmButton) {
+                confirmButton.remove();
+            }
+
+            if (button) {
+                button.innerHTML = "OK";
+                button.onclick = closeMessage;
+                button.style.removeProperty("background");
+                button.style.removeProperty("color");
+                button.style.removeProperty("width");
+                button.style.removeProperty("margin-left");
+            }
+
             box.style.display = "block";
 
             messageText.innerHTML = text;
@@ -2642,10 +2657,19 @@
             document.getElementById("custom-message").style.display = "none";
 
             const button = document.getElementById("message-button");
+            const confirmButton = document.getElementById("message-confirm-button");
+
+            if (confirmButton) {
+                confirmButton.remove();
+            }
 
             if (button) {
                 button.innerHTML = "OK";
                 button.onclick = closeMessage;
+                button.style.removeProperty("background");
+                button.style.removeProperty("color");
+                button.style.removeProperty("width");
+                button.style.removeProperty("margin-left");
             }
 
             pontajDeStersDinRaport = null;
@@ -7519,6 +7543,23 @@ function deschideZonaAngajatNou() {
             const icon = document.getElementById("message-icon");
             const button = document.getElementById("message-button");
 
+            const confirmButtonVechi = document.getElementById("message-confirm-button");
+
+            if (confirmButtonVechi) {
+                confirmButtonVechi.remove();
+            }
+
+            const confirmButton = document.createElement("button");
+
+            confirmButton.id = "message-confirm-button";
+            confirmButton.className = "message-button";
+            confirmButton.innerHTML = "CONFIRM";
+            confirmButton.onclick = confirmaStergerePontajZi;
+
+            confirmButton.style.setProperty("background", "#008f39", "important");
+            confirmButton.style.setProperty("color", "#ffffff", "important");
+            confirmButton.style.setProperty("width", "92px", "important");
+
             box.style.display = "block";
 
             icon.innerHTML = "!";
@@ -7527,8 +7568,14 @@ function deschideZonaAngajatNou() {
                 "Ștergi pontajul din această zi?<br>Ziua va deveni FARA PONTAJ.";
 
             button.className = "message-button error-button";
-            button.innerHTML = "ȘTERGE";
-            button.onclick = confirmaStergerePontajZi;
+            button.innerHTML = "RENUNȚ";
+            button.onclick = closeMessage;
+            button.style.setProperty("background", "#c00000", "important");
+            button.style.setProperty("color", "#ffffff", "important");
+            button.style.setProperty("width", "92px", "important");
+            button.style.setProperty("margin-left", "8px", "important");
+
+            box.insertBefore(confirmButton, button);
 
         }
 
@@ -7551,9 +7598,18 @@ function deschideZonaAngajatNou() {
             pontajDeStersDinRaport = null;
 
             const button = document.getElementById("message-button");
+            const confirmButton = document.getElementById("message-confirm-button");
+
+            if (confirmButton) {
+                confirmButton.remove();
+            }
 
             button.innerHTML = "OK";
             button.onclick = closeMessage;
+            button.style.removeProperty("background");
+            button.style.removeProperty("color");
+            button.style.removeProperty("width");
+            button.style.removeProperty("margin-left");
 
             if (error) {
 
