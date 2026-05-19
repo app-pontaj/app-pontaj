@@ -976,6 +976,42 @@
             color: #050505;
         }
 
+
+
+        /* ===== EXPORT EXCEL - RAPORT ZILE FARA PONTAJ ===== */
+        .missing-days-export-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .missing-days-export-select,
+        .missing-days-export-button {
+            min-height: 34px;
+            border-radius: 10px;
+            border: 1.5px solid #d4af37;
+            font-size: 11px;
+            font-weight: 900;
+            font-family: 'Montserrat', Arial, sans-serif;
+            outline: none;
+        }
+
+        .missing-days-export-select {
+            background: #111111;
+            color: #ffffff;
+            padding: 0 8px;
+        }
+
+        .missing-days-export-button {
+            background: linear-gradient(145deg, #ffe27a 0%, #d6a72d 56%, #b98208 100%);
+            color: #050505;
+            cursor: pointer;
+            box-shadow:
+                inset 0 1px 0 rgba(255,255,255,0.45),
+                0 4px 10px rgba(0,0,0,0.55);
+        }
+
         .missing-days-select-area {
             display: none;
             margin-top: 10px;
@@ -2147,6 +2183,23 @@
                                 onclick="seteazaFiltruZileFaraPontaj('toti')"
                             >
                                 Toți angajații
+                            </button>
+                        </div>
+
+
+                        <div class="missing-days-export-row">
+                            <select
+                                class="missing-days-export-select"
+                                id="missing-days-export-month"
+                            >
+                                <option value="toate">Toate lunile</option>
+                            </select>
+
+                            <button
+                                class="missing-days-export-button"
+                                onclick="exportaRaportZileFaraPontajExcel()"
+                            >
+                                Export Excel
                             </button>
                         </div>
 
@@ -6539,6 +6592,7 @@ function deschideZonaAngajatNou() {
             document.getElementById("missing-filter-" + mod).classList.add("active");
 
             pregatesteSelectieZileFaraPontaj();
+            pregatesteSelectExportZileFaraPontaj();
             afiseazaRaportZileFaraPontaj();
 
         }
@@ -6740,6 +6794,217 @@ function deschideZonaAngajatNou() {
 
             pregatesteSelectieZileFaraPontaj();
             afiseazaRaportZileFaraPontaj();
+
+        }
+
+
+
+        // ===== EXPORT EXCEL - RAPORT ZILE FARA PONTAJ =====
+        function pregatesteSelectExportZileFaraPontaj() {
+
+            const select = document.getElementById("missing-days-export-month");
+
+            if (!select || !dataStartRaportZileFaraPontaj || !dataStopRaportZileFaraPontaj) {
+                return;
+            }
+
+            const luniGasite = [];
+            const dataCurenta = new Date(dataStartRaportZileFaraPontaj);
+
+            while (dataCurenta <= dataStopRaportZileFaraPontaj) {
+
+                const lunaValoare =
+                    dataCurenta.getFullYear() +
+                    "-" +
+                    String(dataCurenta.getMonth() + 1).padStart(2, "0");
+
+                const lunaText =
+                    numeLunaComplet(dataCurenta.getMonth() + 1) +
+                    " " +
+                    dataCurenta.getFullYear();
+
+                if (!luniGasite.some(function(luna) { return luna.valoare === lunaValoare; })) {
+                    luniGasite.push({
+                        valoare: lunaValoare,
+                        text: lunaText
+                    });
+                }
+
+                dataCurenta.setMonth(dataCurenta.getMonth() + 1);
+                dataCurenta.setDate(1);
+
+            }
+
+            let html = "<option value='toate'>Toate lunile</option>";
+
+            luniGasite.forEach(function(luna) {
+                html +=
+                    "<option value='" +
+                    luna.valoare +
+                    "'>" +
+                    luna.text +
+                    "</option>";
+            });
+
+            select.innerHTML = html;
+
+        }
+
+        function exportaRaportZileFaraPontajExcel() {
+
+            const select = document.getElementById("missing-days-export-month");
+            const lunaAleasa = select ? select.value : "toate";
+
+            if (!dataStartRaportZileFaraPontaj || !dataStopRaportZileFaraPontaj) {
+
+                showMessage(
+                    "Nu există date pentru export",
+                    "error"
+                );
+
+                return;
+
+            }
+
+            const pontajeDupaAngajatZi = {};
+
+            pontajeRaportZileFaraPontaj.forEach(function(pontaj) {
+
+                const cheiePontaj =
+                    String(pontaj.nume || "").trim().toUpperCase() +
+                    "|" +
+                    String(pontaj.data || "").trim();
+
+                pontajeDupaAngajatZi[cheiePontaj] = pontaj;
+
+            });
+
+            const randuriExcel = [
+                [
+                    "Nume angajat",
+                    "Sectie",
+                    "Data",
+                    "Zi",
+                    "Motiv"
+                ]
+            ];
+
+            angajatiRaportZileFaraPontaj.forEach(function(angajat) {
+
+                const nume = String(angajat.nume || "").trim();
+                const sectie = String(angajat.sectie || "").trim();
+
+                if (!nume) {
+                    return;
+                }
+
+                if (angajat.apare_in_rapoarte === false) {
+                    return;
+                }
+
+                if (angajat.afiseaza_lipsa_pontaj === false) {
+                    return;
+                }
+
+                if (!angajatInSectiiPermise(angajat)) {
+                    return;
+                }
+
+                const dataCurenta = new Date(dataStartRaportZileFaraPontaj);
+
+                while (dataCurenta <= dataStopRaportZileFaraPontaj) {
+
+                    const dataText = formatDataPentruCheie(dataCurenta);
+                    const lunaText = dataText.slice(0, 7);
+                    const ziSaptamana = dataCurenta.getDay();
+
+                    if (
+                        lunaAleasa !== "toate" &&
+                        lunaText !== lunaAleasa
+                    ) {
+                        dataCurenta.setDate(dataCurenta.getDate() + 1);
+                        continue;
+                    }
+
+                    if (
+                        ziSaptamana !== 0 &&
+                        ziSaptamana !== 6 &&
+                        !esteZiLiberaLegala(dataText)
+                    ) {
+
+                        const angajatInactivLaData =
+                            angajat.activ === false &&
+                            angajat.data_inactiv &&
+                            dataText >= angajat.data_inactiv;
+
+                        if (!angajatInactivLaData) {
+
+                            const cheieCautare =
+                                nume.trim().toUpperCase() +
+                                "|" +
+                                dataText;
+
+                            const pontajZi = pontajeDupaAngajatZi[cheieCautare];
+
+                            if (!pontajZi) {
+
+                                randuriExcel.push([
+                                    nume,
+                                    sectie,
+                                    formatDataAfisare(dataCurenta),
+                                    ZILE_SCURTE[dataCurenta.getDay()],
+                                    "Lipsă pontaj"
+                                ]);
+
+                            }
+
+                        }
+
+                    }
+
+                    dataCurenta.setDate(dataCurenta.getDate() + 1);
+
+                }
+
+            });
+
+            if (randuriExcel.length <= 1) {
+
+                showMessage(
+                    "Nu există zile fără pontaj pentru export",
+                    "error"
+                );
+
+                return;
+
+            }
+
+            const worksheet = XLSX.utils.aoa_to_sheet(randuriExcel);
+            const workbook = XLSX.utils.book_new();
+
+            XLSX.utils.book_append_sheet(
+                workbook,
+                worksheet,
+                "Zile fara pontaj"
+            );
+
+            worksheet["!cols"] = [
+                { wch: 28 },
+                { wch: 18 },
+                { wch: 12 },
+                { wch: 8 },
+                { wch: 18 }
+            ];
+
+            const numeFisier =
+                lunaAleasa === "toate"
+                    ? "raport_zile_fara_pontaj_toate_lunile.xlsx"
+                    : "raport_zile_fara_pontaj_" + lunaAleasa + ".xlsx";
+
+            XLSX.writeFile(
+                workbook,
+                numeFisier
+            );
 
         }
 
