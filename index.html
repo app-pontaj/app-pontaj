@@ -8125,6 +8125,390 @@ function deschideZonaAngajatNou() {
 
             });
 
+            // ===== EXPORT EXCEL - RAPORT INDIVIDUAL ANGAJAT =====
+            // Se aplica doar cand este ales un singur angajat.
+            // Exportul "Toti angajatii" ramane separat si neschimbat.
+            if (angajatAles !== "__TOTI__") {
+
+                const angajat = angajatiExport[0];
+                const numeAngajat = String(angajat?.nume || angajatAles || "").trim();
+
+                if (!numeAngajat) {
+                    showMessage("Alege angajatul pentru export", "error");
+                    return;
+                }
+
+                const randuriIndividual = [];
+                const metaIndividual = {};
+
+                function adaugaRandIndividual(valori, tip) {
+
+                    const indexRand = randuriIndividual.length;
+
+                    randuriIndividual.push(valori);
+
+                    for (let indexColoana = 0; indexColoana < valori.length; indexColoana++) {
+                        metaIndividual[indexRand + "|" + indexColoana] = tip || "normal";
+                    }
+
+                    return indexRand;
+
+                }
+
+                adaugaRandIndividual(
+                    [
+                        "Raport pontaj angajat",
+                        "",
+                        "",
+                        ""
+                    ],
+                    "titlu"
+                );
+
+                adaugaRandIndividual(
+                    [
+                        numeAngajat,
+                        numeLunaComplet(luna) + " " + an,
+                        "",
+                        ""
+                    ],
+                    "subtitlu"
+                );
+
+                adaugaRandIndividual(
+                    [
+                        "Zi / Data",
+                        "Intrare - Iesire",
+                        "Total ore",
+                        "Motiv / modificare"
+                    ],
+                    "header"
+                );
+
+                let totalMinuteLucrateIndividual = 0;
+                let totalZileLucratoareIndividual = 0;
+
+                for (let zi = 1; zi <= zileLuna; zi++) {
+
+                    const dataText =
+                        an +
+                        "-" +
+                        String(luna).padStart(2, "0") +
+                        "-" +
+                        String(zi).padStart(2, "0");
+
+                    const dataObj = new Date(an, luna - 1, zi);
+
+                    const ziText =
+                        ZILE_SCURTE[dataObj.getDay()] +
+                        " " +
+                        String(zi).padStart(2, "0") +
+                        "." +
+                        String(luna).padStart(2, "0");
+
+                    const weekend =
+                        dataObj.getDay() === 0 ||
+                        dataObj.getDay() === 6;
+
+                    const sarbatoare = esteZiLiberaLegala(dataText);
+
+                    if (!weekend && !sarbatoare) {
+                        totalZileLucratoareIndividual++;
+                    }
+
+                    const cheiePontaj =
+                        numeAngajat.toUpperCase() +
+                        "|" +
+                        dataText;
+
+                    const pontaj = pontajeDupaAngajatZi[cheiePontaj];
+
+                    let interval = "";
+                    let totalOre = "";
+                    let motiv = "";
+                    let tipRand = weekend ? "weekend" : "normal";
+
+                    if (pontaj && pontaj.status_corectie) {
+
+                        const statusExport = textStatusPontajPentruExport(pontaj.status_corectie);
+
+                        motiv = statusExport;
+                        tipRand = esteCOExport(pontaj.status_corectie) ? "co" : "corectie";
+
+                        if (statusExport === "Lipsă card") {
+
+                            interval =
+                                String(pontaj.ora_intrare_manual || "") +
+                                " - " +
+                                String(pontaj.ora_iesire_manual || "");
+
+                            totalOre = calculeazaOreNete(
+                                pontaj.ora_intrare_manual,
+                                pontaj.ora_iesire_manual,
+                                angajat?.regula_start_0700,
+                                angajat?.pauza_masa,
+                                angajat?.pauza_minute
+                            );
+
+                            if (totalOre) {
+
+                                const minuteCorectie = transformaOraMinute(
+                                    totalOre.replace("-", "")
+                                );
+
+                                totalMinuteLucrateIndividual += totalOre.startsWith("-")
+                                    ? -minuteCorectie
+                                    : minuteCorectie;
+
+                            }
+
+                        } else if (
+                            statusExport === "C.O" ||
+                            statusExport === "Lucru la distanță"
+                        ) {
+
+                            interval = statusExport;
+                            totalOre = "08:00";
+                            totalMinuteLucrateIndividual += 480;
+
+                        } else {
+
+                            interval = statusExport;
+                            totalOre = "00:00";
+
+                        }
+
+                    } else if (pontaj && pontaj.ora_intrare && pontaj.ora_iesire) {
+
+                        interval = calculeazaIntervalPontat(
+                            pontaj.ora_intrare,
+                            pontaj.ora_iesire,
+                            angajat?.regula_start_0700
+                        );
+
+                        totalOre = calculeazaOreNete(
+                            pontaj.ora_intrare,
+                            pontaj.ora_iesire,
+                            angajat?.regula_start_0700,
+                            angajat?.pauza_masa,
+                            angajat?.pauza_minute
+                        );
+
+                        if (totalOre) {
+
+                            const minuteLucrate = transformaOraMinute(
+                                totalOre.replace("-", "")
+                            );
+
+                            if (!totalOre.startsWith("-")) {
+                                totalMinuteLucrateIndividual += minuteLucrate;
+                            }
+
+                        }
+
+                    } else if (sarbatoare) {
+
+                        interval = "S.L";
+                        totalOre = "";
+                        motiv = "S.L";
+                        tipRand = "sl";
+
+                    } else if (!weekend && angajat?.afiseaza_lipsa_pontaj !== false) {
+
+                        interval = "FARA PONTAJ";
+                        totalOre = "";
+                        motiv = "Lipsă pontaj";
+                        tipRand = "lipsa";
+
+                    }
+
+                    adaugaRandIndividual(
+                        [
+                            ziText,
+                            interval,
+                            totalOre,
+                            motiv
+                        ],
+                        tipRand
+                    );
+
+                }
+
+                const totalOreLucratoareIndividual = totalZileLucratoareIndividual * 8 * 60;
+                const diferentaMinuteIndividual = totalMinuteLucrateIndividual - totalOreLucratoareIndividual;
+                const diferentaTextIndividual =
+                    (diferentaMinuteIndividual < 0 ? "-" : "") +
+                    formateazaMinuteOra(Math.abs(diferentaMinuteIndividual));
+
+                const procentIndividual =
+                    totalOreLucratoareIndividual > 0
+                        ? ((totalMinuteLucrateIndividual / totalOreLucratoareIndividual) * 100).toFixed(1) + "%"
+                        : "0.0%";
+
+                adaugaRandIndividual(["", "", "", ""], "gol");
+                adaugaRandIndividual(["Total ore lucratoare pe luna", "", formateazaMinuteOra(totalOreLucratoareIndividual), ""], "total");
+                adaugaRandIndividual(["Total ore lucrate pe luna", "", formateazaMinuteOra(totalMinuteLucrateIndividual), ""], "total");
+                adaugaRandIndividual(["Diferenta", "", diferentaTextIndividual, ""], diferentaMinuteIndividual < 0 ? "difMinus" : "difPlus");
+                adaugaRandIndividual(["Procent", "", procentIndividual, ""], "procent");
+
+                const worksheetIndividual = XLSX.utils.aoa_to_sheet(randuriIndividual);
+
+                worksheetIndividual["!merges"] = [
+                    { s: { r: 0, c: 0 }, e: { r: 0, c: 3 } },
+                    { s: { r: 1, c: 0 }, e: { r: 1, c: 1 } },
+                    { s: { r: 1, c: 2 }, e: { r: 1, c: 3 } }
+                ];
+
+                const rangeIndividual = XLSX.utils.decode_range(worksheetIndividual["!ref"]);
+
+                for (let r = rangeIndividual.s.r; r <= rangeIndividual.e.r; r++) {
+
+                    for (let c = rangeIndividual.s.c; c <= rangeIndividual.e.c; c++) {
+
+                        const adresaCelula = XLSX.utils.encode_cell({
+                            r: r,
+                            c: c
+                        });
+
+                        if (!worksheetIndividual[adresaCelula]) {
+                            worksheetIndividual[adresaCelula] = {
+                                t: "s",
+                                v: ""
+                            };
+                        }
+
+                        worksheetIndividual[adresaCelula].t = "s";
+                        worksheetIndividual[adresaCelula].v = String(worksheetIndividual[adresaCelula].v || "");
+                        worksheetIndividual[adresaCelula].z = "@";
+
+                        const tip = metaIndividual[r + "|" + c] || "normal";
+
+                        worksheetIndividual[adresaCelula].s = {
+                            alignment: {
+                                horizontal: "center",
+                                vertical: "center",
+                                wrapText: true
+                            },
+                            font: {
+                                bold:
+                                    tip === "titlu" ||
+                                    tip === "subtitlu" ||
+                                    tip === "header" ||
+                                    tip === "total" ||
+                                    tip === "difPlus" ||
+                                    tip === "difMinus" ||
+                                    tip === "procent",
+                                sz:
+                                    tip === "titlu"
+                                        ? 16
+                                        : tip === "subtitlu"
+                                            ? 13
+                                            : 10,
+                                color: {
+                                    rgb:
+                                        tip === "difPlus"
+                                            ? "008000"
+                                            : tip === "difMinus" || tip === "lipsa"
+                                                ? "FF0000"
+                                                : "000000"
+                                }
+                            },
+                            fill: {
+                                patternType: "solid",
+                                fgColor: {
+                                    rgb:
+                                        tip === "header"
+                                            ? "D9D9D9"
+                                            : tip === "co"
+                                                ? "CCCCCC"
+                                                : tip === "sl"
+                                                    ? "E6E6E6"
+                                                    : "FFFFFF"
+                                }
+                            },
+                            border: {
+                                top: { style: "thin", color: { rgb: "000000" } },
+                                bottom: { style: "thin", color: { rgb: "000000" } },
+                                left: { style: "thin", color: { rgb: "000000" } },
+                                right: { style: "thin", color: { rgb: "000000" } }
+                            }
+                        };
+
+                        if (tip === "gol") {
+                            worksheetIndividual[adresaCelula].s.border = {};
+                        }
+
+                    }
+
+                }
+
+                worksheetIndividual["!cols"] = [
+                    { wch: 13 },
+                    { wch: 21 },
+                    { wch: 11 },
+                    { wch: 22 }
+                ];
+
+                worksheetIndividual["!rows"] = randuriIndividual.map(function(_, index) {
+                    return {
+                        hpt: index <= 1 ? 22 : 18
+                    };
+                });
+
+                worksheetIndividual["!margins"] = {
+                    left: 0.15,
+                    right: 0.15,
+                    top: 0.15,
+                    bottom: 0.15,
+                    header: 0,
+                    footer: 0
+                };
+
+                worksheetIndividual["!pageSetup"] = {
+                    paperSize: 9,
+                    orientation: "portrait",
+                    fitToWidth: 1,
+                    fitToHeight: 1
+                };
+
+                const workbookIndividual = XLSX.utils.book_new();
+
+                workbookIndividual.Workbook = {
+                    Views: [
+                        {
+                            RTL: false
+                        }
+                    ]
+                };
+
+                XLSX.utils.book_append_sheet(
+                    workbookIndividual,
+                    worksheetIndividual,
+                    "Pontaj angajat"
+                );
+
+                const numeFisierIndividual =
+                    "pontaj_" +
+                    numeAngajat.replace(/[^a-zA-Z0-9]/g, "_") +
+                    "_" +
+                    an +
+                    "_" +
+                    String(luna).padStart(2, "0") +
+                    ".xlsx";
+
+                XLSX.writeFile(
+                    workbookIndividual,
+                    numeFisierIndividual,
+                    {
+                        bookType: "xlsx",
+                        cellStyles: true
+                    }
+                );
+
+                return;
+
+            }
+
             const randuriExcel = [];
             const randHeader = ["Angajat"];
 
