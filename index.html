@@ -8565,6 +8565,17 @@ function deschideZonaAngajatNou() {
 
             randHeader.push("Dif.");
 
+            const randTitluPontajLunar = [
+                "PONTAJ LUNAR " + numeLunaComplet(luna).toUpperCase() + " " + an
+            ];
+
+            while (randTitluPontajLunar.length < randHeader.length) {
+                randTitluPontajLunar.push("");
+            }
+
+            randuriExcel.push(randTitluPontajLunar);
+            randuriExcel.push(new Array(randHeader.length).fill(""));
+            randuriExcel.push(new Array(randHeader.length).fill(""));
             randuriExcel.push(randHeader);
 
             const metaCelule = {};
@@ -8576,7 +8587,10 @@ function deschideZonaAngajatNou() {
             }
 
             for (let c = 0; c < randHeader.length; c++) {
-                seteazaMeta(0, c, "header");
+                seteazaMeta(0, c, "titluPontajLunar");
+                seteazaMeta(1, c, "spatiuTitluPontajLunar");
+                seteazaMeta(2, c, "spatiuTitluPontajLunar");
+                seteazaMeta(3, c, "header");
             }
 
             angajatiExport.forEach(function(angajat) {
@@ -8745,6 +8759,13 @@ function deschideZonaAngajatNou() {
 
             const worksheet = XLSX.utils.aoa_to_sheet(randuriExcel);
 
+            worksheet["!merges"] = [
+                {
+                    s: { r: 0, c: 0 },
+                    e: { r: 0, c: randHeader.length - 1 }
+                }
+            ];
+
             const range = XLSX.utils.decode_range(worksheet["!ref"]);
 
             for (let r = range.s.r; r <= range.e.r; r++) {
@@ -8771,12 +8792,13 @@ function deschideZonaAngajatNou() {
 
                     worksheet[adresaCelula].s = {
                         alignment: {
-                            horizontal: c === 0 ? "left" : "center",
+                            horizontal: tip === "titluPontajLunar" ? "center" : (c === 0 ? "left" : "center"),
                             vertical: "center",
                             wrapText: true
                         },
                         font: {
-                            bold: r === 0 || c === 0 || tip === "difPlus" || tip === "difMinus",
+                            bold: tip === "titluPontajLunar" || tip === "header" || c === 0 || tip === "difPlus" || tip === "difMinus",
+                            sz: tip === "titluPontajLunar" ? 11 : undefined,
                             color: {
                                 rgb:
                                     tip === "difPlus"
@@ -8801,12 +8823,14 @@ function deschideZonaAngajatNou() {
                                                     : "FFFFFF"
                             }
                         },
-                        border: {
-                            top: { style: "thin", color: { rgb: "999999" } },
-                            bottom: { style: "thin", color: { rgb: "999999" } },
-                            left: { style: "thin", color: { rgb: "999999" } },
-                            right: { style: "thin", color: { rgb: "999999" } }
-                        }
+                        border: tip === "spatiuTitluPontajLunar" || tip === "titluPontajLunar"
+                            ? {}
+                            : {
+                                top: { style: "thin", color: { rgb: "999999" } },
+                                bottom: { style: "thin", color: { rgb: "999999" } },
+                                left: { style: "thin", color: { rgb: "999999" } },
+                                right: { style: "thin", color: { rgb: "999999" } }
+                            }
                     };
 
                     if (tip === "header") {
