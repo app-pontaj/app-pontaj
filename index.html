@@ -2135,6 +2135,15 @@
                     >
                     </div>
 
+                    <div
+                        class="menu-card"
+                        onclick="deschidePaginaPontajeSub3H()"
+                    >
+                        <span class="menu-icon">⏱</span>
+                        <span class="menu-text" style="color:#d4af37;">Pontaje zilnice &lt;3H</span>
+                        <span class="menu-arrow">›</span>
+                    </div>
+
                     <button
                         class="menu-card logout-card"
                         onclick="logoutUser()"
@@ -2309,6 +2318,59 @@
                         id="missing-days-list"
                     >
                     </div>
+
+                </div>
+
+
+                <!-- ===== PAGINA PONTAJE ZILNICE SUB 3H ===== -->
+                <div
+                    class="missing-days-page"
+                    id="short-days-page"
+                    style="display:none;"
+                >
+
+                    <div class="missing-days-header">
+                        <div class="report-top-row">
+                            <button
+                                class="report-back-modern"
+                                onclick="inchidePaginaPontajeSub3H()"
+                            >
+                                ‹ BACK
+                            </button>
+
+                            <div>
+                                <div class="missing-days-title" style="margin-top:0;text-align:center;">
+                                    Pontaje zilnice &lt;3H
+                                </div>
+
+                                <div class="missing-days-subtitle" style="text-align:center;">
+                                    Pontaje peste 0 și sub 3 ore
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="missing-days-filter-row">
+                            <button class="missing-days-filter-button" id="short-filter-angajat" onclick="seteazaFiltruPontajeSub3H('angajat')">Angajat</button>
+                            <button class="missing-days-filter-button" id="short-filter-sectie" onclick="seteazaFiltruPontajeSub3H('sectie')">Secție</button>
+                            <button class="missing-days-filter-button active" id="short-filter-toti" onclick="seteazaFiltruPontajeSub3H('toti')">Toți angajații</button>
+                        </div>
+
+                        <div class="missing-days-export-row">
+                            <select class="missing-days-export-select" id="short-days-export-month" onchange="afiseazaPontajeSub3H()">
+                                <option value="toate">Toate lunile</option>
+                            </select>
+
+                            <button class="missing-days-export-button" onclick="exportaPontajeSub3HExcel()">
+                                Export Excel
+                            </button>
+                        </div>
+
+                        <div class="missing-days-select-area" id="short-days-select-area">
+                            <select class="missing-days-select" id="short-days-select" onchange="schimbaSelectiePontajeSub3H()"></select>
+                        </div>
+                    </div>
+
+                    <div class="missing-days-list" id="short-days-list"></div>
 
                 </div>
 
@@ -7372,6 +7434,418 @@ function deschideZonaAngajatNou() {
 
 
         
+
+
+        // ===== PAGINA PONTAJE ZILNICE SUB 3H =====
+        let modFiltruPontajeSub3H = "toti";
+        let selectieFiltruPontajeSub3H = "";
+        let angajatiPontajeSub3H = [];
+        let pontajeSub3H = [];
+
+        async function deschidePaginaPontajeSub3H() {
+
+            document.querySelector(".premium-header").style.display = "none";
+            document.querySelector(".premium-line").style.display = "none";
+
+            document.getElementById("main-menu").style.display = "none";
+            document.getElementById("short-days-page").style.display = "block";
+
+            await incarcaPontajeSub3H();
+
+        }
+
+        function inchidePaginaPontajeSub3H() {
+
+            document.getElementById("short-days-page").style.display = "none";
+            document.getElementById("main-menu").style.display = "flex";
+
+            document.querySelector(".premium-header").style.display = "flex";
+            document.querySelector(".premium-line").style.display = "block";
+
+        }
+
+        function seteazaFiltruPontajeSub3H(mod) {
+
+            modFiltruPontajeSub3H = mod;
+            selectieFiltruPontajeSub3H = "";
+
+            document.getElementById("short-filter-angajat").classList.remove("active");
+            document.getElementById("short-filter-sectie").classList.remove("active");
+            document.getElementById("short-filter-toti").classList.remove("active");
+
+            document.getElementById("short-filter-" + mod).classList.add("active");
+
+            pregatesteSelectiePontajeSub3H();
+            afiseazaPontajeSub3H();
+
+        }
+
+        function schimbaSelectiePontajeSub3H() {
+
+            selectieFiltruPontajeSub3H = document.getElementById("short-days-select").value;
+
+            afiseazaPontajeSub3H();
+
+        }
+
+        async function incarcaPontajeSub3H() {
+
+            const lista = document.getElementById("short-days-list");
+
+            lista.innerHTML = "<div class='missing-days-empty'>Se încarcă raportul...</div>";
+
+            const { data: angajati, error: eroareAngajati } = await supabaseClient
+                .from("angajati")
+                .select("*")
+                .order("nume", {
+                    ascending: true
+                });
+
+            if (eroareAngajati) {
+                lista.innerHTML = "";
+                showMessage("Eroare citire angajați", "error");
+                return;
+            }
+
+            let toatePontajele = [];
+            let startLotPontaje = 0;
+            const marimeLotPontaje = 1000;
+            let eroarePontaje = null;
+
+            while (true) {
+
+                const { data: lotPontaje, error } = await supabaseClient
+                    .from("pontaj_zilnic")
+                    .select("*")
+                    .order("data", {
+                        ascending: true
+                    })
+                    .range(startLotPontaje, startLotPontaje + marimeLotPontaje - 1);
+
+                if (error) {
+                    eroarePontaje = error;
+                    break;
+                }
+
+                toatePontajele = toatePontajele.concat(lotPontaje || []);
+
+                if (!lotPontaje || lotPontaje.length < marimeLotPontaje) {
+                    break;
+                }
+
+                startLotPontaje += marimeLotPontaje;
+
+            }
+
+            if (eroarePontaje) {
+                lista.innerHTML = "";
+                showMessage("Eroare citire pontaj", "error");
+                return;
+            }
+
+            angajatiPontajeSub3H = angajati || [];
+            pontajeSub3H = toatePontajele || [];
+
+            pregatesteSelectiePontajeSub3H();
+            pregatesteSelectExportPontajeSub3H();
+            afiseazaPontajeSub3H();
+
+        }
+
+        function pregatesteSelectiePontajeSub3H() {
+
+            const zonaSelectie = document.getElementById("short-days-select-area");
+            const select = document.getElementById("short-days-select");
+
+            select.innerHTML = "";
+
+            if (modFiltruPontajeSub3H === "toti") {
+                zonaSelectie.style.display = "none";
+                return;
+            }
+
+            zonaSelectie.style.display = "block";
+
+            let optiuni = [];
+
+            if (modFiltruPontajeSub3H === "angajat") {
+
+                optiuni = angajatiPontajeSub3H
+                    .filter(function(angajat) {
+                        return angajat.apare_in_rapoarte !== false && angajatInSectiiPermise(angajat);
+                    })
+                    .map(function(angajat) {
+                        return String(angajat.nume || "").trim();
+                    })
+                    .filter(function(nume) {
+                        return !!nume;
+                    })
+                    .sort(function(a, b) {
+                        return a.localeCompare(b, "ro");
+                    });
+
+                select.innerHTML = "<option value=''>Alege angajatul</option>";
+
+            }
+
+            if (modFiltruPontajeSub3H === "sectie") {
+
+                const sectiiGasite = {};
+
+                angajatiPontajeSub3H.forEach(function(angajat) {
+
+                    if (angajat.apare_in_rapoarte === false) {
+                        return;
+                    }
+
+                    if (!angajatInSectiiPermise(angajat)) {
+                        return;
+                    }
+
+                    const sectie = String(angajat.sectie || "").trim();
+
+                    if (sectie) {
+                        sectiiGasite[sectie] = true;
+                    }
+
+                });
+
+                optiuni = Object.keys(sectiiGasite).sort(function(a, b) {
+                    return a.localeCompare(b, "ro");
+                });
+
+                select.innerHTML = "<option value=''>Alege secția</option>";
+
+            }
+
+            optiuni.forEach(function(optiune) {
+                select.innerHTML += "<option value='" + optiune.replace(/'/g, "&#39;") + "'>" + optiune + "</option>";
+            });
+
+        }
+
+        function obtineMinutePontajSub3H(pontaj, angajat) {
+
+            if (!pontaj || !pontaj.ora_intrare || !pontaj.ora_iesire) {
+                return null;
+            }
+
+            if (pontaj.status_corectie) {
+                return null;
+            }
+
+            const oreNete = calculeazaOreNete(
+                pontaj.ora_intrare,
+                pontaj.ora_iesire,
+                angajat?.regula_start_0700,
+                angajat?.pauza_masa,
+                angajat?.pauza_minute
+            );
+
+            if (!oreNete || oreNete.startsWith("-")) {
+                return null;
+            }
+
+            return transformaOraMinute(oreNete);
+
+        }
+
+        function construiesteRanduriPontajeSub3H(lunaAleasa) {
+
+            const randuriGasite = [];
+
+            angajatiPontajeSub3H.forEach(function(angajat) {
+
+                const nume = String(angajat.nume || "").trim();
+                const sectie = String(angajat.sectie || "").trim();
+
+                if (!nume) {
+                    return;
+                }
+
+                if (angajat.apare_in_rapoarte === false) {
+                    return;
+                }
+
+                if (!angajatInSectiiPermise(angajat)) {
+                    return;
+                }
+
+                if (modFiltruPontajeSub3H === "angajat" && nume !== selectieFiltruPontajeSub3H) {
+                    return;
+                }
+
+                if (modFiltruPontajeSub3H === "sectie" && sectie !== selectieFiltruPontajeSub3H) {
+                    return;
+                }
+
+                pontajeSub3H.forEach(function(pontaj) {
+
+                    if (String(pontaj.nume || "").trim() !== nume) {
+                        return;
+                    }
+
+                    const dataText = String(pontaj.data || "").trim();
+
+                    if (!dataText) {
+                        return;
+                    }
+
+                    if (lunaAleasa !== "toate" && dataText.slice(0, 7) !== lunaAleasa) {
+                        return;
+                    }
+
+                    const minute = obtineMinutePontajSub3H(pontaj, angajat);
+
+                    if (minute === null) {
+                        return;
+                    }
+
+                    if (minute > 0 && minute < 180) {
+
+                        const dataObj = creeazaDataDinText(dataText);
+
+                        randuriGasite.push({
+                            nume: nume,
+                            sectie: sectie,
+                            data: dataText,
+                            dataAfisare: formatZiScurtaData(dataObj),
+                            ore: formateazaMinuteOra(minute)
+                        });
+
+                    }
+
+                });
+
+            });
+
+            randuriGasite.sort(function(a, b) {
+                return a.nume.localeCompare(b.nume, "ro") || a.data.localeCompare(b.data);
+            });
+
+            return randuriGasite;
+
+        }
+
+        function pregatesteSelectExportPontajeSub3H() {
+
+            const select = document.getElementById("short-days-export-month");
+
+            if (!select) {
+                return;
+            }
+
+            const luniGasite = {};
+            const randuri = construiesteRanduriPontajeSub3H("toate");
+
+            randuri.forEach(function(rand) {
+
+                const lunaValoare = String(rand.data || "").slice(0, 7);
+                const lunaNumar = Number(String(rand.data || "").slice(5, 7));
+
+                if (!lunaValoare || !lunaNumar) {
+                    return;
+                }
+
+                luniGasite[lunaValoare] = numeLunaComplet(lunaNumar) + " " + String(rand.data).slice(0, 4);
+
+            });
+
+            let html = "<option value='toate'>Toate lunile</option>";
+
+            Object.keys(luniGasite).sort().forEach(function(lunaValoare) {
+                html += "<option value='" + lunaValoare + "'>" + luniGasite[lunaValoare] + "</option>";
+            });
+
+            select.innerHTML = html;
+
+        }
+
+        function afiseazaPontajeSub3H() {
+
+            const lista = document.getElementById("short-days-list");
+            const selectLuna = document.getElementById("short-days-export-month");
+            const lunaAleasa = selectLuna ? selectLuna.value : "toate";
+
+            if (modFiltruPontajeSub3H !== "toti" && !selectieFiltruPontajeSub3H) {
+                lista.innerHTML = "<div class='missing-days-empty'>Alege o opțiune pentru filtrare.</div>";
+                return;
+            }
+
+            const randuri = construiesteRanduriPontajeSub3H(lunaAleasa);
+
+            if (!randuri.length) {
+                lista.innerHTML = "<div class='missing-days-empty'>Nu există pontaje sub 3 ore pentru selecția aleasă.</div>";
+                return;
+            }
+
+            const randuriPeAngajat = {};
+
+            randuri.forEach(function(rand) {
+                if (!randuriPeAngajat[rand.nume]) {
+                    randuriPeAngajat[rand.nume] = [];
+                }
+                randuriPeAngajat[rand.nume].push(rand);
+            });
+
+            let html = "";
+
+            Object.keys(randuriPeAngajat).forEach(function(nume) {
+
+                html += "<div class='missing-days-card'>";
+                html += "<div class='missing-days-name'>" + escapeHtml(nume) + "</div>";
+
+                randuriPeAngajat[nume].forEach(function(rand) {
+                    html += "<div class='missing-days-row'>";
+                    html += "<div class='missing-days-line'>" + escapeHtml(rand.dataAfisare) + " — " + escapeHtml(rand.ore) + "</div>";
+                    html += "</div>";
+                });
+
+                html += "</div>";
+
+            });
+
+            lista.innerHTML = html;
+
+        }
+
+        function exportaPontajeSub3HExcel() {
+
+            const selectLuna = document.getElementById("short-days-export-month");
+            const lunaAleasa = selectLuna ? selectLuna.value : "toate";
+            const randuri = construiesteRanduriPontajeSub3H(lunaAleasa);
+
+            if (!randuri.length) {
+                showMessage("Nu există pontaje sub 3 ore pentru export", "error");
+                return;
+            }
+
+            const randuriExcel = [["Nume angajat", "Sectie", "Data", "Ore pontate"]];
+
+            randuri.forEach(function(rand) {
+                randuriExcel.push([rand.nume, rand.sectie, rand.dataAfisare, rand.ore]);
+            });
+
+            const worksheet = XLSX.utils.aoa_to_sheet(randuriExcel);
+            const workbook = XLSX.utils.book_new();
+
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Pontaje sub 3H");
+
+            worksheet["!cols"] = [
+                { wch: 28 },
+                { wch: 20 },
+                { wch: 14 },
+                { wch: 12 }
+            ];
+
+            const numeFisier = lunaAleasa === "toate"
+                ? "pontaje_zilnice_sub_3h_toate_lunile.xlsx"
+                : "pontaje_zilnice_sub_3h_" + lunaAleasa + ".xlsx";
+
+            XLSX.writeFile(workbook, numeFisier);
+
+        }
+
 
         // ===== SELECTIE RAPORT =====
         let modRaportSelectat = "";
