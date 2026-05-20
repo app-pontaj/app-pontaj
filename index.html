@@ -8168,8 +8168,8 @@ function deschideZonaAngajatNou() {
                 adaugaRandIndividual(
                     [
                         numeAngajat,
-                        numeLunaComplet(luna) + " " + an,
                         "",
+                        numeLunaComplet(luna) + " " + an,
                         ""
                     ],
                     "subtitlu"
@@ -8180,7 +8180,7 @@ function deschideZonaAngajatNou() {
                         "Zi / Data",
                         "Intrare - Iesire",
                         "Total ore",
-                        "Motiv / modificare"
+                        "Motiv"
                     ],
                     "header"
                 );
@@ -8274,7 +8274,7 @@ function deschideZonaAngajatNou() {
                         } else {
 
                             interval = statusExport;
-                            totalOre = "00:00";
+                            totalOre = "";
 
                         }
 
@@ -8345,7 +8345,7 @@ function deschideZonaAngajatNou() {
                         ? ((totalMinuteLucrateIndividual / totalOreLucratoareIndividual) * 100).toFixed(1) + "%"
                         : "0.0%";
 
-                adaugaRandIndividual(["", "", "", ""], "gol");
+                adaugaRandIndividual(["", "", "", ""], "spatiu");
                 adaugaRandIndividual(["Total ore lucratoare pe luna", "", formateazaMinuteOra(totalOreLucratoareIndividual), ""], "total");
                 adaugaRandIndividual(["Total ore lucrate pe luna", "", formateazaMinuteOra(totalMinuteLucrateIndividual), ""], "total");
                 adaugaRandIndividual(["Diferenta", "", diferentaTextIndividual, ""], diferentaMinuteIndividual < 0 ? "difMinus" : "difPlus");
@@ -8353,13 +8353,88 @@ function deschideZonaAngajatNou() {
 
                 const worksheetIndividual = XLSX.utils.aoa_to_sheet(randuriIndividual);
 
+                const randSpatiu = 3 + zileLuna;
+                const randTotalStart = randSpatiu + 1;
+
                 worksheetIndividual["!merges"] = [
                     { s: { r: 0, c: 0 }, e: { r: 0, c: 3 } },
                     { s: { r: 1, c: 0 }, e: { r: 1, c: 1 } },
-                    { s: { r: 1, c: 2 }, e: { r: 1, c: 3 } }
+                    { s: { r: 1, c: 2 }, e: { r: 1, c: 3 } },
+                    { s: { r: randTotalStart, c: 0 }, e: { r: randTotalStart, c: 1 } },
+                    { s: { r: randTotalStart, c: 2 }, e: { r: randTotalStart, c: 3 } },
+                    { s: { r: randTotalStart + 1, c: 0 }, e: { r: randTotalStart + 1, c: 1 } },
+                    { s: { r: randTotalStart + 1, c: 2 }, e: { r: randTotalStart + 1, c: 3 } },
+                    { s: { r: randTotalStart + 2, c: 0 }, e: { r: randTotalStart + 2, c: 1 } },
+                    { s: { r: randTotalStart + 2, c: 2 }, e: { r: randTotalStart + 2, c: 3 } },
+                    { s: { r: randTotalStart + 3, c: 0 }, e: { r: randTotalStart + 3, c: 1 } },
+                    { s: { r: randTotalStart + 3, c: 2 }, e: { r: randTotalStart + 3, c: 3 } }
                 ];
 
                 const rangeIndividual = XLSX.utils.decode_range(worksheetIndividual["!ref"]);
+
+                function stilCelulaExport(tip, coloana) {
+
+                    const esteTitlu = tip === "titlu";
+                    const esteSubtitlu = tip === "subtitlu";
+                    const esteHeader = tip === "header";
+                    const esteTotal =
+                        tip === "total" ||
+                        tip === "difPlus" ||
+                        tip === "difMinus" ||
+                        tip === "procent";
+
+                    const faraBorder = tip === "spatiu";
+
+                    return {
+                        alignment: {
+                            horizontal: "center",
+                            vertical: "center",
+                            wrapText: true
+                        },
+                        font: {
+                            bold:
+                                esteTitlu ||
+                                esteSubtitlu ||
+                                esteHeader ||
+                                esteTotal ||
+                                tip === "weekend",
+                            sz:
+                                esteTitlu
+                                    ? 18
+                                    : esteSubtitlu
+                                        ? 14
+                                        : 10,
+                            color: {
+                                rgb:
+                                    tip === "difPlus"
+                                        ? "008000"
+                                        : tip === "difMinus" || tip === "lipsa"
+                                            ? "FF0000"
+                                            : "000000"
+                            }
+                        },
+                        fill: {
+                            patternType: "solid",
+                            fgColor: {
+                                rgb:
+                                    esteHeader
+                                        ? "D9D9D9"
+                                        : tip === "co" || tip === "sl"
+                                            ? "D9D9D9"
+                                            : "FFFFFF"
+                            }
+                        },
+                        border: faraBorder
+                            ? {}
+                            : {
+                                top: { style: "thin", color: { rgb: "000000" } },
+                                bottom: { style: "thin", color: { rgb: "000000" } },
+                                left: { style: "thin", color: { rgb: "000000" } },
+                                right: { style: "thin", color: { rgb: "000000" } }
+                            }
+                    };
+
+                }
 
                 for (let r = rangeIndividual.s.r; r <= rangeIndividual.e.r; r++) {
 
@@ -8383,76 +8458,35 @@ function deschideZonaAngajatNou() {
 
                         const tip = metaIndividual[r + "|" + c] || "normal";
 
-                        worksheetIndividual[adresaCelula].s = {
-                            alignment: {
-                                horizontal: "center",
-                                vertical: "center",
-                                wrapText: true
-                            },
-                            font: {
-                                bold:
-                                    tip === "titlu" ||
-                                    tip === "subtitlu" ||
-                                    tip === "header" ||
-                                    tip === "total" ||
-                                    tip === "difPlus" ||
-                                    tip === "difMinus" ||
-                                    tip === "procent",
-                                sz:
-                                    tip === "titlu"
-                                        ? 16
-                                        : tip === "subtitlu"
-                                            ? 13
-                                            : 10,
-                                color: {
-                                    rgb:
-                                        tip === "difPlus"
-                                            ? "008000"
-                                            : tip === "difMinus" || tip === "lipsa"
-                                                ? "FF0000"
-                                                : "000000"
-                                }
-                            },
-                            fill: {
-                                patternType: "solid",
-                                fgColor: {
-                                    rgb:
-                                        tip === "header"
-                                            ? "D9D9D9"
-                                            : tip === "co"
-                                                ? "CCCCCC"
-                                                : tip === "sl"
-                                                    ? "E6E6E6"
-                                                    : "FFFFFF"
-                                }
-                            },
-                            border: {
-                                top: { style: "thin", color: { rgb: "000000" } },
-                                bottom: { style: "thin", color: { rgb: "000000" } },
-                                left: { style: "thin", color: { rgb: "000000" } },
-                                right: { style: "thin", color: { rgb: "000000" } }
-                            }
-                        };
-
-                        if (tip === "gol") {
-                            worksheetIndividual[adresaCelula].s.border = {};
-                        }
+                        worksheetIndividual[adresaCelula].s = stilCelulaExport(tip, c);
 
                     }
 
                 }
 
                 worksheetIndividual["!cols"] = [
-                    { wch: 13 },
-                    { wch: 21 },
-                    { wch: 11 },
-                    { wch: 22 }
+                    { wch: 12.5 },
+                    { wch: 19.2 },
+                    { wch: 14.5 },
+                    { wch: 15.6 }
                 ];
 
                 worksheetIndividual["!rows"] = randuriIndividual.map(function(_, index) {
-                    return {
-                        hpt: index <= 1 ? 22 : 18
-                    };
+
+                    if (index === randSpatiu) {
+                        return { hpt: 8 };
+                    }
+
+                    if (index === 0) {
+                        return { hpt: 25 };
+                    }
+
+                    if (index === 1) {
+                        return { hpt: 24 };
+                    }
+
+                    return { hpt: 15 };
+
                 });
 
                 worksheetIndividual["!margins"] = {
@@ -8470,6 +8504,9 @@ function deschideZonaAngajatNou() {
                     fitToWidth: 1,
                     fitToHeight: 1
                 };
+
+                worksheetIndividual["!printHeader"] = [];
+                worksheetIndividual["!autofilter"] = undefined;
 
                 const workbookIndividual = XLSX.utils.book_new();
 
