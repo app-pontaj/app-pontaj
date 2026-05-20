@@ -7441,6 +7441,7 @@ function deschideZonaAngajatNou() {
         let selectieFiltruPontajeSub3H = "";
         let angajatiPontajeSub3H = [];
         let pontajeSub3H = [];
+        let pontajeSub3HAscunseDinRaport = {};
 
         async function deschidePaginaPontajeSub3H() {
 
@@ -7705,7 +7706,24 @@ function deschideZonaAngajatNou() {
 
                         const dataObj = creeazaDataDinText(dataText);
 
+                        const cheieRaport =
+                            String(pontaj.id || "") ||
+                            (
+                                nume +
+                                "|" +
+                                dataText +
+                                "|" +
+                                String(pontaj.ora_intrare || "") +
+                                "|" +
+                                String(pontaj.ora_iesire || "")
+                            );
+
+                        if (pontajeSub3HAscunseDinRaport[cheieRaport]) {
+                            return;
+                        }
+
                         randuriGasite.push({
+                            cheieRaport: cheieRaport,
                             nume: nume,
                             sectie: sectie,
                             data: dataText,
@@ -7796,9 +7814,24 @@ function deschideZonaAngajatNou() {
                 html += "<div class='missing-days-name'>" + escapeHtml(nume) + "</div>";
 
                 randuriPeAngajat[nume].forEach(function(rand) {
-                    html += "<div class='missing-days-row'>";
+
+                    const idRand =
+                        "sub3h_" +
+                        String(rand.cheieRaport || "")
+                            .replace(/[^a-zA-Z0-9]/g, "");
+
+                    html += "<div class='missing-days-row' id='sub3h-row-" + idRand + "'>";
                     html += "<div class='missing-days-line'>" + escapeHtml(rand.dataAfisare) + " — " + escapeHtml(rand.ore) + "</div>";
+                    html += "<button class='missing-days-action-button' onclick='cereStergerePontajSub3H(" + JSON.stringify(idRand) + "," + JSON.stringify(rand.cheieRaport) + ")'>ȘTERGE</button>";
                     html += "</div>";
+
+                    html += "<div class='missing-days-reason-box' id='sub3h-confirm-" + idRand + "' style='display:none;'>";
+                    html += "<div class='missing-days-row'>";
+                    html += "<button class='missing-days-save-button' style='margin-top:0;' onclick='confirmaStergerePontajSub3H(" + JSON.stringify(rand.cheieRaport) + ")'>Confirm</button>";
+                    html += "<button class='missing-days-save-button' style='margin-top:0;background:#111111;color:#d4af37;' onclick='renuntaStergerePontajSub3H(" + JSON.stringify(idRand) + ")'>Renunță</button>";
+                    html += "</div>";
+                    html += "</div>";
+
                 });
 
                 html += "</div>";
@@ -7808,6 +7841,48 @@ function deschideZonaAngajatNou() {
             lista.innerHTML = html;
 
         }
+
+        function cereStergerePontajSub3H(idRand, cheieRaport) {
+
+            const box = document.getElementById("sub3h-confirm-" + idRand);
+
+            if (!box) {
+                return;
+            }
+
+            box.style.display = "block";
+
+        }
+
+        function renuntaStergerePontajSub3H(idRand) {
+
+            const box = document.getElementById("sub3h-confirm-" + idRand);
+
+            if (!box) {
+                return;
+            }
+
+            box.style.display = "none";
+
+        }
+
+        function confirmaStergerePontajSub3H(cheieRaport) {
+
+            if (!cheieRaport) {
+                return;
+            }
+
+            pontajeSub3HAscunseDinRaport[cheieRaport] = true;
+
+            afiseazaPontajeSub3H();
+
+            showMessage(
+                "Rând șters doar din acest raport",
+                "success"
+            );
+
+        }
+
 
         function exportaPontajeSub3HExcel() {
 
