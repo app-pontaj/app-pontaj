@@ -2080,6 +2080,12 @@
             font-weight: 900;
         }
 
+        .entry-exit-low-hours-cell {
+            background: rgba(217,217,217,0.30);
+            color: #ffffff;
+            font-weight: 900;
+        }
+
         .entry-exit-error-cell {
             background: #d10000;
             color: #ffffff;
@@ -12030,7 +12036,7 @@ function deschideZonaAngajatNou() {
 
                     const pontaj = pontajeDupaAngajatZi[cheie];
 
-                    const detaliiCelula = construiesteCelulaIntrareIesire(pontaj);
+                    const detaliiCelula = construiesteCelulaIntrareIesire(pontaj, dataText);
 
                     html +=
                         "<td class='" +
@@ -12051,13 +12057,57 @@ function deschideZonaAngajatNou() {
 
         }
 
-        function construiesteCelulaIntrareIesire(pontaj) {
+        function esteZiLucratoareRaportIntrareIesire(dataText) {
+
+            if (!dataText) {
+                return false;
+            }
+
+            const dataObj = creeazaDataDinText(dataText);
+            const ziSaptamana = dataObj.getDay();
+
+            return (
+                ziSaptamana !== 0 &&
+                ziSaptamana !== 6 &&
+                !esteZiLiberaLegala(dataText)
+            );
+
+        }
+
+        function pontajSubMinimIntrareIesire(pontaj, dataText) {
+
+            if (!esteZiLucratoareRaportIntrareIesire(dataText)) {
+                return false;
+            }
+
+            if (
+                !pontaj ||
+                !pontaj.ora_intrare ||
+                !pontaj.ora_iesire
+            ) {
+                return true;
+            }
+
+            const durataMinute = durataPontajIntrareIesire(pontaj);
+
+            return durataMinute < 450;
+
+        }
+
+        function construiesteCelulaIntrareIesire(pontaj, dataText) {
+
+            const esteSubMinim = pontajSubMinimIntrareIesire(
+                pontaj,
+                dataText
+            );
 
             if (!pontaj) {
 
                 return {
                     text: "-",
-                    clasa: "entry-exit-empty-cell"
+                    clasa: esteSubMinim
+                        ? "entry-exit-low-hours-cell"
+                        : "entry-exit-empty-cell"
                 };
 
             }
@@ -12069,7 +12119,9 @@ function deschideZonaAngajatNou() {
 
                 return {
                     text: "-",
-                    clasa: "entry-exit-empty-cell"
+                    clasa: esteSubMinim
+                        ? "entry-exit-low-hours-cell"
+                        : "entry-exit-empty-cell"
                 };
 
             }
@@ -12078,21 +12130,18 @@ function deschideZonaAngajatNou() {
 
                 return {
                     text: escapeHtml((intrare || "?") + " - " + (iesire || "?")),
-                    clasa: "entry-exit-error-cell"
+                    clasa: esteSubMinim
+                        ? "entry-exit-low-hours-cell"
+                        : "entry-exit-error-cell"
                 };
 
             }
 
-            const durataMinute = durataPontajIntrareIesire(pontaj);
-
-            if (
-                durataMinute > 0 &&
-                durataMinute < 180
-            ) {
+            if (esteSubMinim) {
 
                 return {
                     text: escapeHtml(intrare + " - " + iesire),
-                    clasa: "entry-exit-warning-cell"
+                    clasa: "entry-exit-low-hours-cell"
                 };
 
             }
@@ -12228,6 +12277,81 @@ function deschideZonaAngajatNou() {
 
         }
 
+        function aplicaStilGriRaportIntrareIesireExcel(worksheet) {
+
+            const select = document.getElementById("entry-exit-month");
+
+            if (!select || !select.value) {
+                return;
+            }
+
+            const parti = select.value.split("-");
+            const an = Number(parti[0]);
+            const luna = Number(parti[1]);
+
+            const pontajeDupaAngajatZi = {};
+
+            entryExitPontaje.forEach(function(pontaj) {
+
+                const cheie =
+                    String(pontaj.nume || "").trim().toUpperCase() +
+                    "|" +
+                    String(pontaj.data || "").trim();
+
+                pontajeDupaAngajatZi[cheie] = pontaj;
+
+            });
+
+            entryExitAngajati.forEach(function(angajat, indexAngajat) {
+
+                const nume = String(angajat.nume || "").trim();
+
+                if (!nume) {
+                    return;
+                }
+
+                for (let zi = 1; zi <= new Date(an, luna, 0).getDate(); zi++) {
+
+                    const dataText =
+                        an +
+                        "-" +
+                        String(luna).padStart(2, "0") +
+                        "-" +
+                        String(zi).padStart(2, "0");
+
+                    const cheie =
+                        nume.toUpperCase() +
+                        "|" +
+                        dataText;
+
+                    const pontaj = pontajeDupaAngajatZi[cheie];
+
+                    if (!pontajSubMinimIntrareIesire(pontaj, dataText)) {
+                        continue;
+                    }
+
+                    const adresaCelula = XLSX.utils.encode_cell({
+                        r: indexAngajat + 1,
+                        c: zi
+                    });
+
+                    if (!worksheet[adresaCelula]) {
+                        continue;
+                    }
+
+                    worksheet[adresaCelula].s = {
+                        fill: {
+                            patternType: "solid",
+                            fgColor: { rgb: "D9D9D9" }
+                        }
+                    };
+
+                }
+
+            });
+
+        }
+
         function exportaRaportIntrareIesireExcel() {
 
             const randuriExcel = construiesteRanduriRaportIntrareIesireExport();
@@ -12260,6 +12384,8 @@ function deschideZonaAngajatNou() {
                     wch: index === 0 ? 28 : 13
                 };
             });
+
+            aplicaStilGriRaportIntrareIesireExcel(worksheet);
 
             XLSX.writeFile(
                 workbook,
