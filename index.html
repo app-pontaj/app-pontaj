@@ -1915,6 +1915,200 @@
         }
 
 
+
+        /* ===== RAPORT INTRARE - IESIRE ===== */
+        .entry-exit-page {
+            width: 100%;
+            height: 100%;
+            padding: 8px 14px 10px;
+            overflow: hidden;
+            background: #050505;
+            display: none;
+            box-sizing: border-box;
+        }
+
+        .entry-exit-header {
+            width: 100%;
+            display: grid;
+            grid-template-columns: 70px 1fr;
+            column-gap: 12px;
+            align-items: start;
+            margin-bottom: 4px;
+        }
+
+        .entry-exit-title {
+            color: #d4af37;
+            font-size: 15px;
+            font-weight: 900;
+            line-height: 1;
+            letter-spacing: 0.2px;
+            font-family: 'Montserrat', Arial, sans-serif;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .entry-exit-subtitle {
+            color: #ffffff;
+            font-size: 12px;
+            font-weight: 900;
+            line-height: 1.1;
+            margin-top: 3px;
+            font-family: 'Montserrat', Arial, sans-serif;
+        }
+
+        .entry-exit-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin: 8px 0 6px;
+        }
+
+        .entry-exit-select,
+        .entry-exit-button {
+            min-height: 34px;
+            border-radius: 10px;
+            border: 1.5px solid #d4af37;
+            font-size: 11px;
+            font-weight: 900;
+            font-family: 'Montserrat', Arial, sans-serif;
+            outline: none;
+        }
+
+        .entry-exit-select {
+            background: #111111;
+            color: #ffffff;
+            padding: 0 8px;
+        }
+
+        .entry-exit-button {
+            background: linear-gradient(145deg, #ffe27a 0%, #d6a72d 56%, #b98208 100%);
+            color: #050505;
+            cursor: pointer;
+            box-shadow:
+                inset 0 1px 0 rgba(255,255,255,0.45),
+                0 4px 10px rgba(0,0,0,0.55);
+        }
+
+        .entry-exit-gold-line {
+            width: 100%;
+            height: 1px;
+            background: rgba(212,175,55,0.95);
+            margin-bottom: 6px;
+        }
+
+        .entry-exit-table-wrap {
+            width: 100%;
+            height: calc(100% - 88px);
+            overflow: auto;
+            border: 1px solid rgba(212,175,55,0.88);
+            border-radius: 0 12px 12px 12px;
+            background: #050505;
+            box-shadow: 0 8px 18px rgba(0,0,0,0.55);
+        }
+
+        .entry-exit-table {
+            border-collapse: separate;
+            border-spacing: 0;
+            font-family: 'Montserrat', Arial, sans-serif;
+            font-size: 8px;
+            font-weight: 900;
+            color: #050505;
+        }
+
+        .entry-exit-table th,
+        .entry-exit-table td {
+            min-width: 58px;
+            height: 26px;
+            border-right: 1px solid rgba(0,0,0,0.45);
+            border-bottom: 1px solid rgba(0,0,0,0.45);
+            text-align: center;
+            vertical-align: middle;
+            padding: 1px 3px;
+            white-space: nowrap;
+        }
+
+        .entry-exit-table thead th {
+            position: sticky;
+            top: 0;
+            z-index: 5;
+            background: #050505;
+            color: #d4af37;
+            border-bottom: 1px solid rgba(212,175,55,0.9);
+            height: 32px;
+            line-height: 1.05;
+            font-weight: 900;
+        }
+
+        .entry-exit-name-head {
+            position: sticky;
+            left: 0;
+            top: 0;
+            z-index: 7 !important;
+            min-width: 92px !important;
+            background: #050505 !important;
+            color: #d4af37 !important;
+        }
+
+        .entry-exit-name-cell {
+            position: sticky;
+            left: 0;
+            z-index: 4;
+            min-width: 92px !important;
+            max-width: 92px !important;
+            background: #050505;
+            color: #d4af37;
+            text-align: left !important;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-size: 8px;
+        }
+
+        .entry-exit-normal-cell {
+            background: linear-gradient(145deg, #ffe27a 0%, #d6a72d 56%, #b98208 100%);
+            color: #050505;
+        }
+
+        .entry-exit-empty-cell {
+            background: rgba(255,255,255,0.06);
+            color: #d4af37;
+        }
+
+        .entry-exit-warning-cell {
+            background: #ff8c00;
+            color: #050505;
+            font-weight: 900;
+        }
+
+        .entry-exit-error-cell {
+            background: #d10000;
+            color: #ffffff;
+            font-weight: 900;
+        }
+
+        .entry-exit-day-small {
+            display: block;
+            font-size: 8px;
+            line-height: 1;
+        }
+
+        .entry-exit-date-small {
+            display: block;
+            font-size: 8px;
+            line-height: 1;
+            margin-top: 2px;
+        }
+
+        .entry-exit-loading {
+            color: #d4af37;
+            font-size: 13px;
+            font-weight: 900;
+            text-align: center;
+            padding: 26px 0;
+            font-family: 'Montserrat', Arial, sans-serif;
+        }
+
+
 </style>
 
 </head>
@@ -2281,6 +2475,18 @@
                     </div>
 
 
+                    <div
+                        class="menu-card"
+                        id="entry-exit-report-menu-card"
+                        onclick="deschidePaginaRaportIntrareIesire()"
+                        style="display:none;"
+                    >
+                        <span class="menu-icon">🕘</span>
+                        <span class="menu-text" style="color:#d4af37;">Raport intrare - iesire</span>
+                        <span class="menu-arrow">›</span>
+                    </div>
+
+
 
                     <div
                         class="menu-card"
@@ -2524,6 +2730,65 @@
                 </div>
 
                 
+
+
+
+
+                <!-- ===== PAGINA RAPORT INTRARE - IESIRE ===== -->
+                <div
+                    class="entry-exit-page"
+                    id="entry-exit-page"
+                    style="display:none;"
+                >
+
+                    <div class="entry-exit-header">
+
+                        <button
+                            class="monthly-back-button"
+                            onclick="inchidePaginaRaportIntrareIesire()"
+                        >
+                            ‹ Back
+                        </button>
+
+                        <div>
+                            <div class="entry-exit-title">
+                                Raport intrare - iesire
+                            </div>
+
+                            <div
+                                class="entry-exit-subtitle"
+                                id="entry-exit-subtitle"
+                            >
+                                Toți angajații
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="entry-exit-controls">
+                        <select
+                            class="entry-exit-select"
+                            id="entry-exit-month"
+                            onchange="afiseazaRaportIntrareIesire()"
+                        ></select>
+
+                        <button
+                            class="entry-exit-button"
+                            onclick="exportaRaportIntrareIesireExcel()"
+                        >
+                            Export Excel
+                        </button>
+                    </div>
+
+                    <div class="entry-exit-gold-line"></div>
+
+                    <div
+                        class="entry-exit-table-wrap"
+                        id="entry-exit-table-wrap"
+                    >
+                    </div>
+
+                </div>
 
 
                 <!-- ===== PAGINA CORECTII PONTAJ SERVER - ADMIN ===== -->
@@ -3375,6 +3640,7 @@
 
             aplicaRestrictiiMeniu(userData);
             actualizeazaVizibilitateMeniuCorectiiPontajServer();
+            actualizeazaVizibilitateMeniuRaportIntrareIesire();
 
             localStorage.setItem(
                 "utilizatorLogat",
@@ -11472,6 +11738,535 @@ function deschideZonaAngajatNou() {
             }
 
         });
+
+
+
+        // ===== RAPORT INTRARE - IESIRE =====
+        let entryExitPontaje = [];
+        let entryExitAngajati = [];
+
+        function actualizeazaVizibilitateMeniuRaportIntrareIesire() {
+
+            const card = document.getElementById("entry-exit-report-menu-card");
+
+            if (!card) {
+                return;
+            }
+
+            card.style.display = esteAngajatSimplu() ? "none" : "";
+
+        }
+
+        async function deschidePaginaRaportIntrareIesire() {
+
+            if (esteAngajatSimplu()) {
+
+                showMessage(
+                    "Nu ai acces la acest raport",
+                    "error"
+                );
+
+                return;
+
+            }
+
+            document.querySelector(".premium-header").style.display = "none";
+            document.querySelector(".premium-line").style.display = "none";
+
+            document.getElementById("main-menu").style.display = "none";
+            document.getElementById("entry-exit-page").style.display = "block";
+
+            pregatesteSelectRaportIntrareIesire();
+
+            await incarcaDateRaportIntrareIesire();
+
+        }
+
+        function inchidePaginaRaportIntrareIesire() {
+
+            document.getElementById("entry-exit-page").style.display = "none";
+            document.getElementById("main-menu").style.display = "flex";
+
+            document.querySelector(".premium-header").style.display = "flex";
+            document.querySelector(".premium-line").style.display = "block";
+
+        }
+
+        function pregatesteSelectRaportIntrareIesire() {
+
+            const select = document.getElementById("entry-exit-month");
+
+            if (!select) {
+                return;
+            }
+
+            const acum = new Date();
+            const an = 2026;
+            const lunaCurenta = acum.getFullYear() === an
+                ? acum.getMonth() + 1
+                : 5;
+
+            let html = "";
+
+            for (let luna = 1; luna <= 12; luna++) {
+
+                const valoare =
+                    an +
+                    "-" +
+                    String(luna).padStart(2, "0");
+
+                html +=
+                    "<option value='" +
+                    valoare +
+                    "' " +
+                    (luna === lunaCurenta ? "selected" : "") +
+                    ">" +
+                    numeLunaComplet(luna) +
+                    " " +
+                    an +
+                    "</option>";
+
+            }
+
+            select.innerHTML = html;
+
+        }
+
+        async function incarcaDateRaportIntrareIesire() {
+
+            const container = document.getElementById("entry-exit-table-wrap");
+
+            if (container) {
+                container.innerHTML = "<div class='entry-exit-loading'>Se încarcă raportul...</div>";
+            }
+
+            const { data: angajati, error: eroareAngajati } = await supabaseClient
+                .from("angajati")
+                .select("*")
+                .order("nume", {
+                    ascending: true
+                });
+
+            if (eroareAngajati) {
+
+                showMessage(
+                    "Eroare citire angajați",
+                    "error"
+                );
+
+                return;
+
+            }
+
+            entryExitAngajati = (angajati || []).filter(function(angajat) {
+
+                if (angajat.apare_in_rapoarte === false) {
+                    return false;
+                }
+
+                if (!angajatInSectiiPermise(angajat)) {
+                    return false;
+                }
+
+                return true;
+
+            });
+
+            await afiseazaRaportIntrareIesire();
+
+        }
+
+        async function afiseazaRaportIntrareIesire() {
+
+            const container = document.getElementById("entry-exit-table-wrap");
+            const select = document.getElementById("entry-exit-month");
+            const subtitle = document.getElementById("entry-exit-subtitle");
+
+            if (!container || !select || !select.value) {
+                return;
+            }
+
+            container.innerHTML = "<div class='entry-exit-loading'>Se încarcă pontajele...</div>";
+
+            const parti = select.value.split("-");
+            const an = Number(parti[0]);
+            const luna = Number(parti[1]);
+            const zileLuna = new Date(an, luna, 0).getDate();
+
+            const primaZi =
+                an +
+                "-" +
+                String(luna).padStart(2, "0") +
+                "-01";
+
+            const ultimaZi =
+                an +
+                "-" +
+                String(luna).padStart(2, "0") +
+                "-" +
+                String(zileLuna).padStart(2, "0");
+
+            if (subtitle) {
+                subtitle.innerHTML = numeLunaComplet(luna) + " " + an;
+            }
+
+            let toatePontajele = [];
+            let startLot = 0;
+            const marimeLot = 1000;
+            let eroarePontaje = null;
+
+            while (true) {
+
+                const { data: lotPontaje, error } = await supabaseClient
+                    .from("pontaj_zilnic")
+                    .select("*")
+                    .gte("data", primaZi)
+                    .lte("data", ultimaZi)
+                    .order("data", {
+                        ascending: true
+                    })
+                    .range(startLot, startLot + marimeLot - 1);
+
+                if (error) {
+                    eroarePontaje = error;
+                    break;
+                }
+
+                toatePontajele = toatePontajele.concat(lotPontaje || []);
+
+                if (!lotPontaje || lotPontaje.length < marimeLot) {
+                    break;
+                }
+
+                startLot += marimeLot;
+
+            }
+
+            if (eroarePontaje) {
+
+                container.innerHTML = "";
+
+                showMessage(
+                    "Eroare citire pontaj",
+                    "error"
+                );
+
+                return;
+
+            }
+
+            entryExitPontaje = toatePontajele || [];
+
+            const pontajeDupaAngajatZi = {};
+
+            entryExitPontaje.forEach(function(pontaj) {
+
+                const cheie =
+                    String(pontaj.nume || "").trim().toUpperCase() +
+                    "|" +
+                    String(pontaj.data || "").trim();
+
+                pontajeDupaAngajatZi[cheie] = pontaj;
+
+            });
+
+            let html = "";
+
+            html += "<table class='entry-exit-table'>";
+            html += "<thead><tr>";
+            html += "<th class='entry-exit-name-head'>Angajat</th>";
+
+            for (let zi = 1; zi <= zileLuna; zi++) {
+
+                const dataObj = new Date(an, luna - 1, zi);
+                const dataText =
+                    an +
+                    "-" +
+                    String(luna).padStart(2, "0") +
+                    "-" +
+                    String(zi).padStart(2, "0");
+
+                html +=
+                    "<th>" +
+                    "<span class='entry-exit-day-small'>" +
+                    ZILE_SCURTE[dataObj.getDay()] +
+                    "</span>" +
+                    "<span class='entry-exit-date-small'>" +
+                    String(zi).padStart(2, "0") +
+                    "." +
+                    String(luna).padStart(2, "0") +
+                    "</span>" +
+                    "</th>";
+
+            }
+
+            html += "</tr></thead>";
+            html += "<tbody>";
+
+            entryExitAngajati.forEach(function(angajat) {
+
+                const nume = String(angajat.nume || "").trim();
+
+                if (!nume) {
+                    return;
+                }
+
+                html += "<tr>";
+                html += "<td class='entry-exit-name-cell'>" + escapeHtml(nume) + "</td>";
+
+                for (let zi = 1; zi <= zileLuna; zi++) {
+
+                    const dataText =
+                        an +
+                        "-" +
+                        String(luna).padStart(2, "0") +
+                        "-" +
+                        String(zi).padStart(2, "0");
+
+                    const cheie =
+                        nume.toUpperCase() +
+                        "|" +
+                        dataText;
+
+                    const pontaj = pontajeDupaAngajatZi[cheie];
+
+                    const detaliiCelula = construiesteCelulaIntrareIesire(pontaj);
+
+                    html +=
+                        "<td class='" +
+                        detaliiCelula.clasa +
+                        "'>" +
+                        detaliiCelula.text +
+                        "</td>";
+
+                }
+
+                html += "</tr>";
+
+            });
+
+            html += "</tbody></table>";
+
+            container.innerHTML = html;
+
+        }
+
+        function construiesteCelulaIntrareIesire(pontaj) {
+
+            if (!pontaj) {
+
+                return {
+                    text: "-",
+                    clasa: "entry-exit-empty-cell"
+                };
+
+            }
+
+            const intrare = String(pontaj.ora_intrare || "").trim();
+            const iesire = String(pontaj.ora_iesire || "").trim();
+
+            if (!intrare && !iesire) {
+
+                return {
+                    text: "-",
+                    clasa: "entry-exit-empty-cell"
+                };
+
+            }
+
+            if (!intrare || !iesire) {
+
+                return {
+                    text: escapeHtml((intrare || "?") + " - " + (iesire || "?")),
+                    clasa: "entry-exit-error-cell"
+                };
+
+            }
+
+            const durataMinute = durataPontajIntrareIesire(pontaj);
+
+            if (
+                durataMinute > 0 &&
+                durataMinute < 180
+            ) {
+
+                return {
+                    text: escapeHtml(intrare + " - " + iesire),
+                    clasa: "entry-exit-warning-cell"
+                };
+
+            }
+
+            return {
+                text: escapeHtml(intrare + " - " + iesire),
+                clasa: "entry-exit-normal-cell"
+            };
+
+        }
+
+        function durataPontajIntrareIesire(pontaj) {
+
+            if (
+                !pontaj ||
+                !pontaj.ora_intrare ||
+                !pontaj.ora_iesire
+            ) {
+                return 0;
+            }
+
+            const dataIntrare = pontaj.data;
+            const dataIesire = pontaj.data_iesire || pontaj.data;
+
+            const minutIntrare = transformaOraMinute(pontaj.ora_intrare);
+            const minutIesire = transformaOraMinute(pontaj.ora_iesire);
+
+            const dataStart = creeazaDataDinText(dataIntrare);
+            const dataStop = creeazaDataDinText(dataIesire);
+
+            const diferentaZile = Math.round(
+                (dataStop - dataStart) / (24 * 60 * 60 * 1000)
+            );
+
+            return minutIesire + (diferentaZile * 1440) - minutIntrare;
+
+        }
+
+        function construiesteRanduriRaportIntrareIesireExport() {
+
+            const select = document.getElementById("entry-exit-month");
+
+            if (!select || !select.value) {
+                return [];
+            }
+
+            const parti = select.value.split("-");
+            const an = Number(parti[0]);
+            const luna = Number(parti[1]);
+            const zileLuna = new Date(an, luna, 0).getDate();
+
+            const pontajeDupaAngajatZi = {};
+
+            entryExitPontaje.forEach(function(pontaj) {
+
+                const cheie =
+                    String(pontaj.nume || "").trim().toUpperCase() +
+                    "|" +
+                    String(pontaj.data || "").trim();
+
+                pontajeDupaAngajatZi[cheie] = pontaj;
+
+            });
+
+            const randuri = [];
+
+            const header = ["Angajat"];
+
+            for (let zi = 1; zi <= zileLuna; zi++) {
+
+                const dataObj = new Date(an, luna - 1, zi);
+
+                header.push(
+                    ZILE_SCURTE[dataObj.getDay()] +
+                    " " +
+                    String(zi).padStart(2, "0") +
+                    "." +
+                    String(luna).padStart(2, "0")
+                );
+
+            }
+
+            randuri.push(header);
+
+            entryExitAngajati.forEach(function(angajat) {
+
+                const nume = String(angajat.nume || "").trim();
+
+                if (!nume) {
+                    return;
+                }
+
+                const rand = [nume];
+
+                for (let zi = 1; zi <= zileLuna; zi++) {
+
+                    const dataText =
+                        an +
+                        "-" +
+                        String(luna).padStart(2, "0") +
+                        "-" +
+                        String(zi).padStart(2, "0");
+
+                    const cheie =
+                        nume.toUpperCase() +
+                        "|" +
+                        dataText;
+
+                    const pontaj = pontajeDupaAngajatZi[cheie];
+
+                    if (
+                        pontaj &&
+                        pontaj.ora_intrare &&
+                        pontaj.ora_iesire
+                    ) {
+                        rand.push(pontaj.ora_intrare + " - " + pontaj.ora_iesire);
+                    } else if (
+                        pontaj &&
+                        (pontaj.ora_intrare || pontaj.ora_iesire)
+                    ) {
+                        rand.push((pontaj.ora_intrare || "?") + " - " + (pontaj.ora_iesire || "?"));
+                    } else {
+                        rand.push("-");
+                    }
+
+                }
+
+                randuri.push(rand);
+
+            });
+
+            return randuri;
+
+        }
+
+        function exportaRaportIntrareIesireExcel() {
+
+            const randuriExcel = construiesteRanduriRaportIntrareIesireExport();
+
+            if (!randuriExcel.length || randuriExcel.length <= 1) {
+
+                showMessage(
+                    "Nu există date pentru export",
+                    "error"
+                );
+
+                return;
+
+            }
+
+            const select = document.getElementById("entry-exit-month");
+            const lunaAleasa = select ? select.value : "raport";
+
+            const worksheet = XLSX.utils.aoa_to_sheet(randuriExcel);
+            const workbook = XLSX.utils.book_new();
+
+            XLSX.utils.book_append_sheet(
+                workbook,
+                worksheet,
+                "Intrare iesire"
+            );
+
+            worksheet["!cols"] = randuriExcel[0].map(function(_, index) {
+                return {
+                    wch: index === 0 ? 28 : 13
+                };
+            });
+
+            XLSX.writeFile(
+                workbook,
+                "raport_intrare_iesire_" + lunaAleasa + ".xlsx"
+            );
+
+        }
 
 
         checkSession();
