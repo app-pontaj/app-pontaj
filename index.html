@@ -2570,7 +2570,7 @@
 
                         <button
                             class="server-correction-button"
-                            onclick="verificaCorectiiPontajServer()"
+                            onclick="aplicaCorectiiPontajServer()"
                         >
                             Aplica
                         </button>
@@ -10957,7 +10957,7 @@ function deschideZonaAngajatNou() {
 
 
 
-        // ===== CORECTII PONTAJ SERVER - ADMIN - PAS 1 FORMULAR =====
+        // ===== CORECTII PONTAJ SERVER - ADMIN - PAS 2 SUPABASE =====
         let numarRanduriCorectiePontajServer = 0;
 
         function actualizeazaVizibilitateMeniuCorectiiPontajServer() {
@@ -11059,7 +11059,7 @@ function deschideZonaAngajatNou() {
             return /^([01][0-9]|2[0-3]):[0-5][0-9]$/.test(String(text || "").trim());
         }
 
-        function verificaCorectiiPontajServer() {
+        function citesteCorectiiPontajServerDinFormular() {
 
             const randuri = Array.from(
                 document.querySelectorAll("#server-corrections-list .server-correction-row")
@@ -11067,10 +11067,10 @@ function deschideZonaAngajatNou() {
 
             if (!randuri.length) {
                 showMessage("Adauga cel putin un rand", "error");
-                return;
+                return null;
             }
 
-            const rezultate = [];
+            const corectii = [];
 
             for (let index = 0; index < randuri.length; index++) {
 
@@ -11085,63 +11085,367 @@ function deschideZonaAngajatNou() {
 
                 if (!dataPontaj) {
                     showMessage("Rand " + numarRand + ": alege Data pontaj", "error");
-                    return;
+                    return null;
                 }
 
                 if (!oraCorectiePontajServerValida(oraStart)) {
                     showMessage("Rand " + numarRand + ": ora inceput gresita", "error");
-                    return;
+                    return null;
                 }
 
                 if (!oraCorectiePontajServerValida(oraStop)) {
                     showMessage("Rand " + numarRand + ": ora final gresita", "error");
-                    return;
+                    return null;
+                }
+
+                if (transformaOraMinute(oraStart) > transformaOraMinute(oraStop)) {
+                    showMessage("Rand " + numarRand + ": intervalul trebuie sa fie in aceeasi zi", "error");
+                    return null;
                 }
 
                 if (!dataNoua && !oreDeltaText) {
                     showMessage("Rand " + numarRand + ": completeaza Noua data sau Cu cate ore", "error");
-                    return;
+                    return null;
                 }
 
                 if (oreDeltaText && !/^[+-]\d+(\.\d+)?$/.test(oreDeltaText)) {
                     showMessage("Rand " + numarRand + ": scrie orele ca +2 sau -2", "error");
-                    return;
+                    return null;
                 }
 
-                rezultate.push({
+                corectii.push({
+                    numarRand: numarRand,
                     dataPontaj: dataPontaj,
-                    dataNoua: dataNoua || "fara schimbare data",
-                    interval: oraStart + " - " + oraStop,
-                    ore: oreDeltaText || "fara schimbare ora"
+                    dataNoua: dataNoua,
+                    oraStart: oraStart,
+                    oraStop: oraStop,
+                    minuteStart: transformaOraMinute(oraStart),
+                    minuteStop: transformaOraMinute(oraStop),
+                    minuteDelta: oreDeltaText ? Math.round(Number(oreDeltaText) * 60) : 0,
+                    areSchimbareData: !!dataNoua,
+                    areSchimbareOra: !!oreDeltaText
                 });
 
             }
 
-            let html = "Verificare formular:<br>";
-
-            rezultate.forEach(function(rand, index) {
-                html +=
-                    "Rand " + (index + 1) + ": " +
-                    rand.dataPontaj + " → " +
-                    rand.dataNoua + ", interval " +
-                    rand.interval + ", ore " +
-                    rand.ore + "<br>";
-            });
-
-            html += "<br>Pasul acesta NU modifica Supabase.";
-
-            const sumar = document.getElementById("server-correction-summary");
-
-            if (sumar) {
-                sumar.innerHTML = html;
-            }
-
-            showMessage(
-                "Formular verificat. Supabase nu a fost modificat.",
-                "success"
-            );
+            return corectii;
 
         }
+
+        function adaugaZileLaDataText(dataText, zile) {
+
+            const dataObj = creeazaDataDinText(dataText);
+
+            dataObj.setDate(dataObj.getDate() + zile);
+
+            return formatDataPentruCheie(dataObj);
+
+        }
+
+        function aplicaDeltaPeOraSiData(dataText, oraText, minuteDelta) {
+
+            let minute = transformaOraMinute(oraText) + minuteDelta;
+            let zileDelta = 0;
+
+            while (minute < 0) {
+                minute += 1440;
+                zileDelta--;
+            }
+
+            while (minute >= 1440) {
+                minute -= 1440;
+                zileDelta++;
+            }
+
+            return {
+                data: adaugaZileLaDataText(dataText, zileDelta),
+                ora: formateazaMinuteOra(minute)
+            };
+
+        }
+
+        function oraEsteInIntervalCorectie(oraText, minutStart, minutStop) {
+
+            if (!oraCorectiePontajServerValida(oraText)) {
+                return false;
+            }
+
+            const minuteOra = transformaOraMinute(oraText);
+
+            return minuteOra >= minutStart && minuteOra <= minutStop;
+
+        }
+
+        function construiesteUpdateCorectiePontajServer(pontaj, corectie) {
+
+            const update = {};
+
+            let dataIntrare = String(pontaj.data || "").trim();
+            let dataIesire = String(pontaj.data_iesire || pontaj.data || "").trim();
+            let oraIntrare = String(pontaj.ora_intrare || "").trim();
+            let oraIesire = String(pontaj.ora_iesire || "").trim();
+
+            let intrareSchimbata = false;
+            let iesireSchimbata = false;
+
+            if (
+                dataIntrare === corectie.dataPontaj &&
+                oraEsteInIntervalCorectie(oraIntrare, corectie.minuteStart, corectie.minuteStop)
+            ) {
+
+                if (corectie.areSchimbareData) {
+                    dataIntrare = corectie.dataNoua;
+                }
+
+                if (corectie.areSchimbareOra) {
+                    const rezultatIntrare = aplicaDeltaPeOraSiData(
+                        dataIntrare,
+                        oraIntrare,
+                        corectie.minuteDelta
+                    );
+
+                    dataIntrare = rezultatIntrare.data;
+                    oraIntrare = rezultatIntrare.ora;
+                }
+
+                intrareSchimbata = true;
+
+            }
+
+            if (
+                dataIesire === corectie.dataPontaj &&
+                oraEsteInIntervalCorectie(oraIesire, corectie.minuteStart, corectie.minuteStop)
+            ) {
+
+                if (corectie.areSchimbareData) {
+                    dataIesire = corectie.dataNoua;
+                }
+
+                if (corectie.areSchimbareOra) {
+                    const rezultatIesire = aplicaDeltaPeOraSiData(
+                        dataIesire,
+                        oraIesire,
+                        corectie.minuteDelta
+                    );
+
+                    dataIesire = rezultatIesire.data;
+                    oraIesire = rezultatIesire.ora;
+                }
+
+                iesireSchimbata = true;
+
+            }
+
+            if (!intrareSchimbata && !iesireSchimbata) {
+                return null;
+            }
+
+            update.data = dataIntrare;
+            update.data_iesire = dataIesire;
+            update.ora_intrare = oraIntrare;
+            update.ora_iesire = oraIesire;
+            update.cheie_unica = String(pontaj.nume || "").trim() + "|" + dataIntrare;
+
+            return update;
+
+        }
+
+        let corectiiPontajServerDeAplicat = null;
+
+        async function aplicaCorectiiPontajServer() {
+
+            const corectii = citesteCorectiiPontajServerDinFormular();
+
+            if (!corectii) {
+                return;
+            }
+
+            let totalGasite = 0;
+            let sumar = "Vor fi cautate pontajele pentru:<br>";
+
+            for (const corectie of corectii) {
+
+                const { data: pontaje, error } = await supabaseClient
+                    .from("pontaj_zilnic")
+                    .select("*")
+                    .or("data.eq." + corectie.dataPontaj + ",data_iesire.eq." + corectie.dataPontaj);
+
+                if (error) {
+                    showMessage("Eroare verificare pontaje", "error");
+                    return;
+                }
+
+                const pontajeAfectate = (pontaje || []).filter(function(pontaj) {
+                    return !!construiesteUpdateCorectiePontajServer(pontaj, corectie);
+                });
+
+                totalGasite += pontajeAfectate.length;
+
+                sumar +=
+                    "Rand " + corectie.numarRand + ": " +
+                    corectie.dataPontaj +
+                    (corectie.areSchimbareData ? " → " + corectie.dataNoua : "") +
+                    ", interval " + corectie.oraStart + " - " + corectie.oraStop +
+                    (corectie.areSchimbareOra ? ", ore " + (corectie.minuteDelta / 60) : "") +
+                    ", gasite " + pontajeAfectate.length + "<br>";
+
+            }
+
+            if (!totalGasite) {
+                const sumarBox = document.getElementById("server-correction-summary");
+
+                if (sumarBox) {
+                    sumarBox.innerHTML = sumar + "<br>Nu s-a gasit niciun pontaj de modificat.";
+                }
+
+                showMessage("Nu s-a gasit niciun pontaj", "error");
+                return;
+            }
+
+            corectiiPontajServerDeAplicat = corectii;
+
+            const sumarBox = document.getElementById("server-correction-summary");
+
+            if (sumarBox) {
+                sumarBox.innerHTML = sumar + "<br>Apasa CONFIRM ca sa modifici Supabase.";
+            }
+
+            cereConfirmareAplicareCorectiiPontajServer(totalGasite);
+
+        }
+
+        function cereConfirmareAplicareCorectiiPontajServer(totalGasite) {
+
+            const box = document.getElementById("custom-message");
+            const messageText = document.getElementById("message-text");
+            const icon = document.getElementById("message-icon");
+            const button = document.getElementById("message-button");
+
+            const confirmButtonVechi = document.getElementById("message-confirm-button");
+
+            if (confirmButtonVechi) {
+                confirmButtonVechi.remove();
+            }
+
+            const confirmButton = document.createElement("button");
+
+            confirmButton.id = "message-confirm-button";
+            confirmButton.className = "message-button";
+            confirmButton.innerHTML = "CONFIRM";
+            confirmButton.onclick = confirmaAplicareCorectiiPontajServer;
+
+            confirmButton.style.setProperty("background", "#008f39", "important");
+            confirmButton.style.setProperty("color", "#ffffff", "important");
+            confirmButton.style.setProperty("width", "92px", "important");
+
+            box.style.display = "block";
+
+            icon.innerHTML = "!";
+            messageText.className = "custom-message-text error-text";
+            messageText.innerHTML =
+                "Se vor modifica " + totalGasite + " pontaje in Supabase.<br>Continui?";
+
+            button.className = "message-button error-button";
+            button.innerHTML = "RENUNT";
+            button.onclick = closeMessage;
+            button.style.setProperty("background", "#c00000", "important");
+            button.style.setProperty("color", "#ffffff", "important");
+            button.style.setProperty("width", "92px", "important");
+            button.style.setProperty("margin-left", "8px", "important");
+
+            box.insertBefore(confirmButton, button);
+
+        }
+
+        async function confirmaAplicareCorectiiPontajServer() {
+
+            const corectii = corectiiPontajServerDeAplicat;
+
+            corectiiPontajServerDeAplicat = null;
+
+            closeMessage();
+
+            if (!corectii || !corectii.length) {
+                showMessage("Nu exista corectii de aplicat", "error");
+                return;
+            }
+
+            let totalModificate = 0;
+            let erori = 0;
+
+            for (const corectie of corectii) {
+
+                const { data: pontaje, error } = await supabaseClient
+                    .from("pontaj_zilnic")
+                    .select("*")
+                    .or("data.eq." + corectie.dataPontaj + ",data_iesire.eq." + corectie.dataPontaj);
+
+                if (error) {
+                    erori++;
+                    continue;
+                }
+
+                for (const pontaj of (pontaje || [])) {
+
+                    const update = construiesteUpdateCorectiePontajServer(
+                        pontaj,
+                        corectie
+                    );
+
+                    if (!update) {
+                        continue;
+                    }
+
+                    let raspunsUpdate;
+
+                    if (pontaj.id !== undefined && pontaj.id !== null) {
+
+                        raspunsUpdate = await supabaseClient
+                            .from("pontaj_zilnic")
+                            .update(update)
+                            .eq("id", pontaj.id);
+
+                    } else {
+
+                        raspunsUpdate = await supabaseClient
+                            .from("pontaj_zilnic")
+                            .update(update)
+                            .eq("cheie_unica", pontaj.cheie_unica);
+
+                    }
+
+                    if (raspunsUpdate.error) {
+                        erori++;
+                        continue;
+                    }
+
+                    totalModificate++;
+
+                }
+
+            }
+
+            const sumarBox = document.getElementById("server-correction-summary");
+
+            if (sumarBox) {
+                sumarBox.innerHTML =
+                    "Corectii aplicate.<br>Randuri modificate: " +
+                    totalModificate +
+                    (erori ? "<br>Erori: " + erori : "");
+            }
+
+            if (erori) {
+                showMessage("Corectii aplicate partial. Verifica sumarul.", "error");
+                return;
+            }
+
+            showMessage("Corectii aplicate in Supabase", "success");
+
+            incarcaUltimaDataImport();
+            incarcaContorZileFaraPontaj();
+
+        }
+
 
 
         // ===== CONFIRMARE VIZUALA PAROLE IDENTICE =====
