@@ -2115,6 +2115,51 @@
         }
 
 
+        /* ===== CONT BLOCAT - MESAJ PE TELEFON ===== */
+        .blocked-account-screen {
+            width: 100%;
+            height: 100%;
+            padding: 28px 18px;
+            background: #050505;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+            font-family: 'Montserrat', Arial, sans-serif;
+        }
+
+        .blocked-account-card {
+            width: 100%;
+            border-radius: 22px;
+            border: 1.5px solid rgba(212,175,55,0.85);
+            background:
+                radial-gradient(circle at top, rgba(212,175,55,0.16), transparent 42%),
+                linear-gradient(145deg, rgba(255,255,255,0.08), rgba(0,0,0,0.98));
+            padding: 22px 16px;
+            box-shadow:
+                0 0 24px rgba(212,175,55,0.16),
+                0 14px 28px rgba(0,0,0,0.72);
+            text-align: center;
+        }
+
+        .blocked-account-title {
+            color: #d4af37;
+            font-size: 18px;
+            font-weight: 900;
+            line-height: 1.15;
+            margin-bottom: 14px;
+        }
+
+        .blocked-account-message {
+            color: #ffffff;
+            font-size: 15px;
+            font-weight: 800;
+            line-height: 1.35;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+
 </style>
 
 </head>
@@ -2136,6 +2181,26 @@
                 </div>
 
                 <div class="premium-line"></div>
+
+
+                <!-- ===== CONT BLOCAT ===== -->
+                <div
+                    class="blocked-account-screen"
+                    id="blocked-account-screen"
+                    style="display:none;"
+                >
+                    <div class="blocked-account-card">
+                        <div class="blocked-account-title">
+                            Acces blocat
+                        </div>
+
+                        <div
+                            class="blocked-account-message"
+                            id="blocked-account-message"
+                        >
+                        </div>
+                    </div>
+                </div>
 
                 <!-- ===== LOGIN ===== -->
                 <div
@@ -3525,6 +3590,73 @@
 
         }
 
+
+        // ===== AFISARE CONT BLOCAT =====
+        function afiseazaContBlocat(mesajBlocare) {
+
+            utilizatorLogat = null;
+
+            const mesajFinal = String(
+                mesajBlocare ||
+                "Accesul la aplicație este blocat. Contactează administratorul."
+            ).trim();
+
+            const blockedScreen = document.getElementById("blocked-account-screen");
+            const blockedMessage = document.getElementById("blocked-account-message");
+
+            if (blockedMessage) {
+                blockedMessage.innerText = mesajFinal;
+            }
+
+            [
+                "login-box",
+                "main-menu",
+                "report-page",
+                "missing-days-page",
+                "short-days-page",
+                "entry-exit-page",
+                "server-corrections-page",
+                "employees-page",
+                "year-diff-page",
+                "monthly-report-page",
+                "all-employees-report-page"
+            ].forEach(function(id) {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.style.display = "none";
+                }
+            });
+
+            const header = document.querySelector(".premium-header");
+            const line = document.querySelector(".premium-line");
+
+            if (header) {
+                header.style.display = "flex";
+            }
+
+            if (line) {
+                line.style.display = "block";
+            }
+
+            if (blockedScreen) {
+                blockedScreen.style.display = "flex";
+            }
+
+        }
+
+        // ===== VERIFICARE CONT BLOCAT =====
+        function esteContBlocat(userData) {
+
+            return (
+                userData &&
+                (
+                    userData.cont_blocat === true ||
+                    String(userData.cont_blocat || "").toLowerCase() === "true"
+                )
+            );
+
+        }
+
         // ===== INCARCARE SECTII PERMISE UTILIZATOR =====
         async function incarcaSectiiPermiseUtilizator(userData) {
 
@@ -3637,6 +3769,17 @@
 
         // ===== AFISARE MENIU PRINCIPAL =====
         async function showMainMenu(userData) {
+
+            if (esteContBlocat(userData)) {
+                afiseazaContBlocat(userData.mesaj_blocare);
+                return;
+            }
+
+            const blockedScreen = document.getElementById("blocked-account-screen");
+
+            if (blockedScreen) {
+                blockedScreen.style.display = "none";
+            }
 
             utilizatorLogat = userData;
 
@@ -3859,6 +4002,11 @@
                 ? conturi[0]
                 : null;
 
+            if (esteContBlocat(data)) {
+                afiseazaContBlocat(data.mesaj_blocare);
+                return;
+            }
+
             if (!data || !data.parola) {
 
                 if (parola2Wrap) {
@@ -3988,6 +4136,11 @@
 
                 return;
 
+            }
+
+            if (esteContBlocat(data)) {
+                afiseazaContBlocat(data.mesaj_blocare);
+                return;
             }
 
             // ===== RECUPERARE PAROLA =====
@@ -4140,6 +4293,11 @@
             const contExistent = conturiGasite && conturiGasite.length
                 ? conturiGasite[0]
                 : null;
+
+            if (esteContBlocat(contExistent)) {
+                afiseazaContBlocat(contExistent.mesaj_blocare);
+                return;
+            }
 
             if (conturiGasite && conturiGasite.length > 1) {
 
