@@ -7988,6 +7988,11 @@ function deschideZonaAngajatNou() {
                             html += "<option value='C.O'>C.O</option>";
                             html += "<option value='C.M'>C.M</option>";
                             html += "<option value='Lipsă card'>Lipsă card</option>";
+
+                            if (esteFlorescuMihaiLogat()) {
+                                html += "<option value='Introdu ore'>Introdu ore</option>";
+                            }
+
                             html += "<option value='Lucru la distanță'>Lucru la distanță</option>";
                             html += "<option value='Fără plată'>Fără plată</option>";
 
@@ -11028,6 +11033,20 @@ function deschideZonaAngajatNou() {
 
 
         // ===== DESCHIDE MENIU MOTIV =====
+        // ===== PERMISIUNE SPECIALA INTRODU ORE =====
+        function esteFlorescuMihaiLogat() {
+
+            const numeLogat = String(utilizatorLogat?.nume || "")
+                .trim()
+                .toUpperCase()
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "");
+
+            return numeLogat === "FLORESCU MIHAI";
+
+        }
+
+
         function toggleMotivLipsaPontaj(id) {
 
             const box = document.getElementById("motiv-box-" + id);
@@ -11053,7 +11072,10 @@ function deschideZonaAngajatNou() {
                 return;
             }
 
-            if (select.value === "Lipsă card") {
+            if (
+                select.value === "Lipsă card" ||
+                select.value === "Introdu ore"
+            ) {
                 oreBox.style.display = "grid";
             } else {
                 oreBox.style.display = "none";
@@ -11084,7 +11106,10 @@ function deschideZonaAngajatNou() {
             const dataObj = creeazaDataDinText(dataText);
             const dataScurta = formatZiScurtaData(dataObj);
 
-            if (motiv === "Lipsă card") {
+            if (
+                motiv === "Lipsă card" ||
+                motiv === "Introdu ore"
+            ) {
                 return dataScurta + " — " + oraIntrare + " - " + oraIesire;
             }
 
@@ -11115,7 +11140,24 @@ function deschideZonaAngajatNou() {
             }
 
             if (
-                motiv === "Lipsă card" &&
+                motiv === "Introdu ore" &&
+                !esteFlorescuMihaiLogat()
+            ) {
+
+                showMessage(
+                    "Nu ai acces la acest motiv",
+                    "error"
+                );
+
+                return;
+
+            }
+
+            if (
+                (
+                    motiv === "Lipsă card" ||
+                    motiv === "Introdu ore"
+                ) &&
                 (!oraIntrare || !oraIesire || oraIntrare.length !== 5 || oraIesire.length !== 5)
             ) {
 
@@ -11128,16 +11170,45 @@ function deschideZonaAngajatNou() {
 
             }
 
-            const dateCorectie = {
-                nume: nume,
-                data: dataText,
-                cheie_unica: nume + "|" + dataText,
-                status_corectie: motiv,
-                ora_intrare_manual: motiv === "Lipsă card" ? oraIntrare : null,
-                ora_iesire_manual: motiv === "Lipsă card" ? oraIesire : null,
-                modificat_de: utilizatorLogat?.nume || "",
-                modificat_la: new Date().toISOString()
-            };
+            let dateCorectie;
+
+            if (motiv === "Introdu ore") {
+
+                const angajatGasitPentruCorectie = angajatiRaportZileFaraPontaj.find(function(angajat) {
+                    return String(angajat.nume || "").trim() === String(nume || "").trim();
+                });
+
+                dateCorectie = {
+                    nume: nume,
+                    departament: angajatGasitPentruCorectie?.sectie || "",
+                    data: dataText,
+                    data_iesire: dataText,
+                    ora_intrare: oraIntrare,
+                    ora_iesire: oraIesire,
+                    nr_pontari: 2,
+                    cheie_unica: nume + "|" + dataText,
+                    status_corectie: null,
+                    ora_intrare_manual: null,
+                    ora_iesire_manual: null,
+                    modificat_de: null,
+                    modificat_la: null,
+                    importat_de: ""
+                };
+
+            } else {
+
+                dateCorectie = {
+                    nume: nume,
+                    data: dataText,
+                    cheie_unica: nume + "|" + dataText,
+                    status_corectie: motiv,
+                    ora_intrare_manual: motiv === "Lipsă card" ? oraIntrare : null,
+                    ora_iesire_manual: motiv === "Lipsă card" ? oraIesire : null,
+                    modificat_de: utilizatorLogat?.nume || "",
+                    modificat_la: new Date().toISOString()
+                };
+
+            }
 
             const { error } = await supabaseClient
                 .from("pontaj_zilnic")
@@ -11178,10 +11249,12 @@ function deschideZonaAngajatNou() {
                     oraIesire
                 );
 
-                textRand.insertAdjacentHTML(
-                    "afterend",
-                    "<div class='missing-days-modificat'>Modificat de: " + (utilizatorLogat?.nume || "") + "</div>"
-                );
+                if (motiv !== "Introdu ore") {
+                    textRand.insertAdjacentHTML(
+                        "afterend",
+                        "<div class='missing-days-modificat'>Modificat de: " + (utilizatorLogat?.nume || "") + "</div>"
+                    );
+                }
 
             }
 
@@ -11198,17 +11271,34 @@ function deschideZonaAngajatNou() {
             });
 
             if (randPontaj) {
-                randPontaj.status_corectie = motiv;
-                randPontaj.ora_intrare_manual = motiv === "Lipsă card" ? oraIntrare : null;
-                randPontaj.ora_iesire_manual = motiv === "Lipsă card" ? oraIesire : null;
-                randPontaj.modificat_de = utilizatorLogat?.nume || "";
-                randPontaj.modificat_la = new Date().toISOString();
+
+                if (motiv === "Introdu ore") {
+                    randPontaj.status_corectie = null;
+                    randPontaj.ora_intrare = oraIntrare;
+                    randPontaj.ora_iesire = oraIesire;
+                    randPontaj.data_iesire = dataText;
+                    randPontaj.ora_intrare_manual = null;
+                    randPontaj.ora_iesire_manual = null;
+                    randPontaj.modificat_de = null;
+                    randPontaj.modificat_la = null;
+                } else {
+                    randPontaj.status_corectie = motiv;
+                    randPontaj.ora_intrare_manual = motiv === "Lipsă card" ? oraIntrare : null;
+                    randPontaj.ora_iesire_manual = motiv === "Lipsă card" ? oraIesire : null;
+                    randPontaj.modificat_de = utilizatorLogat?.nume || "";
+                    randPontaj.modificat_la = new Date().toISOString();
+                }
+
             } else {
                 pontajeRaportZileFaraPontaj.push(dateCorectie);
             }
 
+            if (motiv === "Introdu ore") {
+                afiseazaRaportZileFaraPontaj();
+            }
+
             showMessage(
-                "Motiv salvat",
+                motiv === "Introdu ore" ? "Ore introduse" : "Motiv salvat",
                 "success"
             );
 
