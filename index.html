@@ -5633,25 +5633,7 @@ function deschideZonaAngajatNou() {
 
             try {
 
-                // ===== REGULA FINALA TESTATA IN EXCEL =====
-                // 1. Nu se mai foloseste primul pontaj + ultimul pontaj pe zi.
-                // 2. Pontajele se interpreteaza cronologic, pe ture reale.
-                // 3. Pauza >= 8 ore inseamna tura noua.
-                // 4. Tura de noapte se salveaza pe ziua in care incepe.
-                // 5. Paza si angajatii folosesc aceeasi regula pentru schimbul de noapte.
-                // 6. Balan Ionel poate incepe dimineata foarte devreme.
-                // 7. La reimport, pontajul nou suprascrie pontajul vechi din Supabase.
-
-                if (!Array.isArray(randuri) || randuri.length <= 1) {
-                    showMessage("Fisier pontaj gol", "error");
-                    return;
-                }
-
-                const PAUZA_TURA_NOUA_MINUTE = 8 * 60;
-                const DURATA_MINIMA_PAZA_MINUTE = 60;
-
-                const pontariCitite = [];
-
+                // ===== INCARCARE REGULI ANGAJATI =====
                 const { data: angajatiSupabase, error: eroareAngajati } = await supabaseClient
                     .from("angajati")
                     .select("*");
@@ -5663,154 +5645,107 @@ function deschideZonaAngajatNou() {
 
                 listaAngajatiSupabase = angajatiSupabase || [];
 
-                function dataZiAnterioara(dataText) {
+                const angajatiDupaNume = {};
 
-                    const dataObj = creeazaDataDinText(dataText);
+                listaAngajatiSupabase.forEach(function(angajat) {
+                    const cheie = normalizeazaTextPontaj(angajat.nume);
+                    if (cheie) {
+                        angajatiDupaNume[cheie] = angajat;
+                    }
+                });
 
-                    dataObj.setDate(dataObj.getDate() - 1);
-
-                    return formatDataPentruCheie(dataObj);
-
-                }
-
-                function adaugaZileLaData(dataText, zile) {
-
-                    const dataObj = creeazaDataDinText(dataText);
-
-                    dataObj.setDate(dataObj.getDate() + zile);
-
-                    return formatDataPentruCheie(dataObj);
-
-                }
-
-                function minuteAbsolute(dataText, minuteZi) {
-
-                    const dataObj = creeazaDataDinText(dataText);
-
-                    return dataObj.getTime() + (minuteZi * 60 * 1000);
-
-                }
-
-                function diferentaMinuteAbsolute(startMs, stopMs) {
-
-                    return Math.round((stopMs - startMs) / (60 * 1000));
-
-                }
-
-                function esteAngajatPaza(nume, departament) {
-
-                    const angajatGasit = listaAngajatiSupabase.find(function(angajat) {
-                        return String(angajat.nume || "").trim() === String(nume || "").trim();
-                    });
-
-                    const sectieAngajat = String(angajatGasit?.sectie || "")
-                        .trim()
-                        .toLowerCase();
-
-                    const departamentPontaj = String(departament || "")
-                        .trim()
-                        .toLowerCase();
-
-                    return (
-                        sectieAngajat.includes("paza") ||
-                        sectieAngajat.includes("pază") ||
-                        departamentPontaj.includes("paza") ||
-                        departamentPontaj.includes("pază")
-                    );
-
-                }
-
-                function esteBalanIonel(nume) {
-
-                    const numeCurat = String(nume || "")
+                // ===== FUNCTII MICI PENTRU LOGICA TESTATA IN EXCEL =====
+                function normalizeazaTextPontaj(text) {
+                    return String(text || "")
                         .trim()
                         .toUpperCase()
                         .normalize("NFD")
                         .replace(/[\u0300-\u036f]/g, "");
-
-                    return numeCurat === "BALAN IONEL";
-
                 }
 
-                function descrieSchimb(pontaj) {
+                function esteAngajatPaza(nume, departament) {
+                    const angajat = angajatiDupaNume[normalizeazaTextPontaj(nume)];
 
-                    const intrare = pontaj.oraIntrareMinute;
-                    const iesire = pontaj.oraIesireMinute;
-                    const treceNoaptea = pontaj.dataIesire !== pontaj.data;
-                    const durata = pontaj.durataMinute;
+                    const sectie = normalizeazaTextPontaj(angajat?.sectie || "");
+                    const departamentText = normalizeazaTextPontaj(departament || "");
 
-                    if (durata > 14 * 60) {
-                        return "Suspect peste 14h";
-                    }
-
-                    if (treceNoaptea) {
-                        return pontaj.estePaza ? "Paza - tura noapte" : "Schimb noapte";
-                    }
-
-                    if (pontaj.estePaza) {
-                        if (intrare >= 300 && intrare <= 450 && iesire >= 960 && iesire <= 1140) {
-                            return "Paza - tura zi";
-                        }
-
-                        return "Paza - zi normala";
-                    }
-
-                    if (esteBalanIonel(pontaj.nume) && intrare >= 210 && intrare <= 540) {
-                        return "Balan - schimb dimineata devreme";
-                    }
-
-                    if (intrare >= 240 && intrare <= 540) {
-                        return "Schimb dimineata";
-                    }
-
-                    if (intrare >= 540 && intrare <= 1380) {
-                        return "Schimb 2";
-                    }
-
-                    return "Zi normala";
-
-                }
-
-                function construiestePontajDinTura(tura) {
-
-                    if (!tura || !tura.length) {
-                        return null;
-                    }
-
-                    const prima = tura[0];
-                    const ultima = tura[tura.length - 1];
-
-                    const durataMinute = diferentaMinuteAbsolute(
-                        prima.absoluteMs,
-                        ultima.absoluteMs
+                    return (
+                        sectie.includes("PAZA") ||
+                        departamentText.includes("PAZA")
                     );
+                }
 
-                    if (
-                        prima.estePaza &&
-                        durataMinute < DURATA_MINIMA_PAZA_MINUTE
-                    ) {
-                        return null;
+                function dataOraAbsoluta(dataText, minuteZi) {
+                    const parti = String(dataText || "").split("-");
+
+                    const an = Number(parti[0]);
+                    const luna = Number(parti[1]) - 1;
+                    const zi = Number(parti[2]);
+                    const ora = Math.floor(Number(minuteZi || 0) / 60);
+                    const minut = Number(minuteZi || 0) % 60;
+
+                    return new Date(an, luna, zi, ora, minut, 0, 0).getTime();
+                }
+
+                function durataSegmentMinute(segment) {
+                    if (!segment || segment.length < 2) {
+                        return 0;
                     }
 
-                    const pontaj = {
+                    return Math.round(
+                        (segment[segment.length - 1].timp - segment[0].timp) / 60000
+                    );
+                }
+
+                function ziAnterioaraText(dataText) {
+                    const dataObj = creeazaDataDinText(dataText);
+                    dataObj.setDate(dataObj.getDate() - 1);
+                    return formatDataPentruCheie(dataObj);
+                }
+
+                function ziUrmatoareText(dataText) {
+                    const dataObj = creeazaDataDinText(dataText);
+                    dataObj.setDate(dataObj.getDate() + 1);
+                    return formatDataPentruCheie(dataObj);
+                }
+
+                function existaPontajInInterval(lista, dataText, minutStart, minutStop) {
+                    return lista.some(function(pontaj) {
+                        return (
+                            pontaj.data === dataText &&
+                            pontaj.minute >= minutStart &&
+                            pontaj.minute <= minutStop
+                        );
+                    });
+                }
+
+                function arePontajNoapte00_04(lista, dataText) {
+                    return existaPontajInInterval(lista, dataText, 1, 240);
+                }
+
+                function arePontajSearaNoapte(lista, dataText) {
+                    return existaPontajInInterval(lista, dataText, 16 * 60, 23 * 60 + 59);
+                }
+
+                function creeazaRezultatDinSegment(segment) {
+                    const prima = segment[0];
+                    const ultima = segment[segment.length - 1];
+
+                    return {
                         nume: prima.nume,
                         departament: prima.departament,
                         data: prima.data,
-                        dataIesire: ultima.data,
-                        oraIntrare: prima.ora,
-                        oraIesire: ultima.ora,
-                        oraIntrareMinute: prima.minute,
-                        oraIesireMinute: ultima.minute,
-                        durataMinute: durataMinute,
-                        nrPontari: tura.length,
-                        estePaza: prima.estePaza
+                        data_iesire: ultima.data,
+                        ora_intrare: prima.ora,
+                        ora_iesire: ultima.ora,
+                        nr_pontari: segment.length,
+                        estePaza: prima.estePaza,
+                        durataMinute: durataSegmentMinute(segment)
                     };
-
-                    pontaj.interpretare = descrieSchimb(pontaj);
-
-                    return pontaj;
-
                 }
+
+                // ===== CITIRE PONTAJE BRUTE =====
+                const pontariCitite = [];
 
                 for (let i = 1; i < randuri.length; i++) {
 
@@ -5821,22 +5756,19 @@ function deschideZonaAngajatNou() {
                     const dataOraRaw = rand[5];
                     const eveniment = String(rand[7] || "").trim().toUpperCase();
 
-                    if (
-                        eveniment.includes("DOOR OPEN") ||
-                        !nume ||
-                        !dataOraRaw
-                    ) {
+                    if (!nume || !dataOraRaw) {
                         continue;
                     }
 
-                    const angajatGasit = listaAngajatiSupabase.find(function(angajat) {
-                        return String(angajat.nume || "").trim() === nume;
-                    });
+                    // ===== EXCLUDERE DOOR OPEN =====
+                    if (eveniment.includes("DOOR OPEN")) {
+                        continue;
+                    }
 
-                    if (
-                        angajatGasit &&
-                        angajatGasit.apare_in_rapoarte === false
-                    ) {
+                    // ===== EXCLUDERE ANGAJATI ASCUNSI DIN RAPOARTE =====
+                    const angajatGasit = angajatiDupaNume[normalizeazaTextPontaj(nume)];
+
+                    if (angajatGasit && angajatGasit.apare_in_rapoarte === false) {
                         continue;
                     }
 
@@ -5846,132 +5778,307 @@ function deschideZonaAngajatNou() {
                         continue;
                     }
 
+                    const estePaza = esteAngajatPaza(nume, departament);
+
                     pontariCitite.push({
                         nume: nume,
                         departament: departament,
                         data: dateInfo.data,
                         ora: dateInfo.ora,
                         minute: dateInfo.minute,
-                        absoluteMs: minuteAbsolute(dateInfo.data, dateInfo.minute),
-                        estePaza: esteAngajatPaza(nume, departament)
+                        timp: dataOraAbsoluta(dateInfo.data, dateInfo.minute),
+                        estePaza: estePaza
                     });
 
                 }
 
-                const pontariDupaAngajat = {};
+                if (!pontariCitite.length) {
+                    showMessage("Nu exista pontaje valide in fisier", "error");
+                    return;
+                }
 
-                pontariCitite.forEach(function(pontare) {
+                // ===== GRUPARE PE ANGAJAT =====
+                const pontajePeAngajat = {};
 
-                    const cheie = String(pontare.nume || "").trim();
+                pontariCitite.forEach(function(pontaj, indexPontaj) {
+                    const cheie = normalizeazaTextPontaj(pontaj.nume);
 
-                    if (!pontariDupaAngajat[cheie]) {
-                        pontariDupaAngajat[cheie] = [];
+                    if (!pontajePeAngajat[cheie]) {
+                        pontajePeAngajat[cheie] = [];
                     }
 
-                    pontariDupaAngajat[cheie].push(pontare);
-
+                    pontaj._idPontaj = cheie + "|" + indexPontaj;
+                    pontajePeAngajat[cheie].push(pontaj);
                 });
 
-                const rezultate = [];
+                const rezultateBrute = [];
 
-                Object.values(pontariDupaAngajat).forEach(function(listaPontari) {
+                Object.values(pontajePeAngajat).forEach(function(listaPontaje) {
 
-                    listaPontari.sort(function(a, b) {
-                        return a.absoluteMs - b.absoluteMs;
+                    listaPontaje.sort(function(a, b) {
+                        return a.timp - b.timp;
                     });
 
-                    let turaCurenta = [];
+                    const consumate = {};
+                    const pontajePeZi = {};
+                    const zileGasite = {};
 
-                    listaPontari.forEach(function(pontare) {
+                    listaPontaje.forEach(function(pontaj) {
+                        if (!pontajePeZi[pontaj.data]) {
+                            pontajePeZi[pontaj.data] = [];
+                        }
 
-                        if (!turaCurenta.length) {
-                            turaCurenta.push(pontare);
+                        pontajePeZi[pontaj.data].push(pontaj);
+                        zileGasite[pontaj.data] = true;
+                        zileGasite[ziAnterioaraText(pontaj.data)] = true;
+                    });
+
+                    const listaZile = Object.keys(zileGasite).sort();
+                    const estePazaAngajat = listaPontaje.some(function(pontaj) {
+                        return pontaj.estePaza;
+                    });
+
+                    function pontajeNeconsumateDinZi(dataText) {
+                        return (pontajePeZi[dataText] || []).filter(function(pontaj) {
+                            return !consumate[pontaj._idPontaj];
+                        }).sort(function(a, b) {
+                            return a.timp - b.timp;
+                        });
+                    }
+
+                    function consumaInterval(startPontaj, stopPontaj) {
+                        listaPontaje.forEach(function(pontaj) {
+                            if (
+                                pontaj.timp >= startPontaj.timp &&
+                                pontaj.timp <= stopPontaj.timp
+                            ) {
+                                consumate[pontaj._idPontaj] = true;
+                            }
+                        });
+                    }
+
+                    // ===== PAS 1: TURE DE NOAPTE =====
+                    // Regula validata in Excel:
+                    // daca ziua urmatoare are pontaje intre 00:01-04:00,
+                    // acele pontaje sunt iesiri din tura inceputa seara in ziua anterioara.
+                    listaZile.forEach(function(dataText) {
+
+                        const ziUrmatoare = ziUrmatoareText(dataText);
+                        const pontajeAzi = pontajeNeconsumateDinZi(dataText);
+                        const pontajeMaine = pontajeNeconsumateDinZi(ziUrmatoare);
+
+                        if (!pontajeAzi.length || !pontajeMaine.length) {
                             return;
                         }
 
-                        const ultimaPontare = turaCurenta[turaCurenta.length - 1];
+                        const pragStartNoapte = estePazaAngajat
+                            ? 16 * 60
+                            : 12 * 60;
 
-                        const pauzaMinute = diferentaMinuteAbsolute(
-                            ultimaPontare.absoluteMs,
-                            pontare.absoluteMs
-                        );
+                        const pontajeStartNoapte = pontajeAzi.filter(function(pontaj, index) {
 
-                        if (pauzaMinute >= PAUZA_TURA_NOUA_MINUTE) {
-
-                            const pontajFinalizat = construiestePontajDinTura(turaCurenta);
-
-                            if (pontajFinalizat) {
-                                rezultate.push(pontajFinalizat);
+                            if (pontaj.minute < pragStartNoapte) {
+                                return false;
                             }
 
-                            turaCurenta = [pontare];
+                            if (index === 0) {
+                                return true;
+                            }
 
-                        } else {
+                            const pontajAnteriorAzi = pontajeAzi[index - 1];
+                            const pauzaFataDeAnterior = Math.round(
+                                (pontaj.timp - pontajAnteriorAzi.timp) / 60000
+                            );
 
-                            turaCurenta.push(pontare);
+                            return pauzaFataDeAnterior >= 480;
+
+                        });
+
+                        if (!pontajeStartNoapte.length) {
+                            return;
+                        }
+
+                        if (!estePazaAngajat) {
+
+                            const existaNoapteMaineNonPaza = pontajeMaine.some(function(pontaj) {
+                                return pontaj.minute >= 1 && pontaj.minute <= 240;
+                            });
+
+                            if (!existaNoapteMaineNonPaza) {
+                                return;
+                            }
 
                         }
 
+                        const pontajeIesireNoapte = pontajeMaine.filter(function(pontaj) {
+                            return pontaj.minute >= 0 && pontaj.minute <= 7 * 60 + 30;
+                        });
+
+                        if (!pontajeIesireNoapte.length) {
+                            return;
+                        }
+
+                        const start = pontajeStartNoapte[0];
+                        const stop = pontajeIesireNoapte[pontajeIesireNoapte.length - 1];
+
+                        rezultateBrute.push({
+                            nume: start.nume,
+                            departament: start.departament,
+                            data: start.data,
+                            data_iesire: stop.data,
+                            ora_intrare: start.ora,
+                            ora_iesire: stop.ora,
+                            nr_pontari: listaPontaje.filter(function(pontaj) {
+                                return pontaj.timp >= start.timp && pontaj.timp <= stop.timp;
+                            }).length,
+                            estePaza: start.estePaza,
+                            durataMinute: Math.round((stop.timp - start.timp) / 60000)
+                        });
+
+                        consumaInterval(start, stop);
+
                     });
 
-                    const pontajFinal = construiestePontajDinTura(turaCurenta);
+                    // ===== PAS 2: TURE DE ZI / DIMINEATA / SCHIMB 2 =====
+                    // Dupa ce turele de noapte au fost scoase separat,
+                    // orice pontaje ramase in aceeasi zi formeaza o singura linie.
+                    Object.keys(pontajePeZi).sort().forEach(function(dataText) {
 
-                    if (pontajFinal) {
-                        rezultate.push(pontajFinal);
+                        const ramase = pontajeNeconsumateDinZi(dataText);
+
+                        if (ramase.length < 2) {
+                            return;
+                        }
+
+                        const start = ramase[0];
+                        const stop = ramase[ramase.length - 1];
+
+                        // Protectie: daca este doar iesire izolata dupa noapte si nu are start real,
+                        // nu cream tura falsa.
+                        let dataStartRezultat = start.data;
+
+                        if (
+                            start.minute >= 0 &&
+                            start.minute <= 240 &&
+                            !arePontajSearaNoapte(listaPontaje, ziAnterioaraText(dataText))
+                        ) {
+
+                            if (estePazaAngajat) {
+                                dataStartRezultat = ziAnterioaraText(start.data);
+                            } else if (normalizeazaTextPontaj(start.nume) !== "BALAN IONEL") {
+                                return;
+                            }
+
+                        }
+
+                        rezultateBrute.push({
+                            nume: start.nume,
+                            departament: start.departament,
+                            data: dataStartRezultat,
+                            data_iesire: stop.data,
+                            ora_intrare: start.ora,
+                            ora_iesire: stop.ora,
+                            nr_pontari: ramase.length,
+                            estePaza: start.estePaza,
+                            durataMinute: Math.round((stop.timp - start.timp) / 60000)
+                        });
+
+                        consumaInterval(start, stop);
+
+                    });
+
+                });
+
+                // ===== O SINGURA LINIE PE ANGAJAT + ZI =====
+                // Daca apar doua rezultate cu aceeasi zi de intrare, pastram tura cea mai completa.
+                const rezultateDupaCheie = {};
+
+                rezultateBrute.forEach(function(pontaj) {
+
+                    const cheie = normalizeazaTextPontaj(pontaj.nume) + "|" + pontaj.data;
+                    const existent = rezultateDupaCheie[cheie];
+
+                    if (!existent) {
+                        rezultateDupaCheie[cheie] = pontaj;
+                        return;
+                    }
+
+                    const pontajNouMaiBun =
+                        Number(pontaj.nr_pontari || 0) > Number(existent.nr_pontari || 0) ||
+                        Number(pontaj.durataMinute || 0) > Number(existent.durataMinute || 0);
+
+                    if (pontajNouMaiBun) {
+                        rezultateDupaCheie[cheie] = pontaj;
                     }
 
                 });
 
-                const randuriImport = rezultate.map(function(pontaj) {
+                const rezultate = Object.values(rezultateDupaCheie)
+                    .filter(function(pontaj) {
+                        return pontaj.ora_intrare && pontaj.ora_iesire;
+                    })
+                    .sort(function(a, b) {
+                        const numeA = normalizeazaTextPontaj(a.nume);
+                        const numeB = normalizeazaTextPontaj(b.nume);
+
+                        if (numeA !== numeB) {
+                            return numeA.localeCompare(numeB, "ro");
+                        }
+
+                        return String(a.data).localeCompare(String(b.data));
+                    });
+
+                // ===== RANDURI FINALE PENTRU SUPABASE =====
+                const randuriFinale = rezultate.map(function(pontaj) {
 
                     return {
                         nume: pontaj.nume,
                         departament: pontaj.departament,
                         data: pontaj.data,
-                        data_iesire: pontaj.dataIesire,
-                        ora_intrare: pontaj.oraIntrare,
-                        ora_iesire: pontaj.oraIesire,
-                        nr_pontari: pontaj.nrPontari,
+                        data_iesire: pontaj.data_iesire || pontaj.data,
+                        ora_intrare: pontaj.ora_intrare,
+                        ora_iesire: pontaj.ora_iesire,
+                        nr_pontari: pontaj.nr_pontari,
                         importat_de: utilizatorLogat?.nume || "",
                         cheie_unica: pontaj.nume + "|" + pontaj.data
                     };
 
                 });
 
-                if (!randuriImport.length) {
-                    showMessage("Nu exista pontaje valide de salvat", "error");
+                if (!randuriFinale.length) {
+                    showMessage("Nu exista ture valide de salvat", "error");
                     return;
                 }
 
-                // ===== REIMPORT CORECT =====
-                // Nu mai pastram varianta veche mai lunga din Supabase.
-                // Logica noua testata in Excel este sursa corecta.
-                const { error } = await supabaseClient
-                    .from("pontaj_zilnic")
-                    .upsert(
-                        randuriImport,
-                        {
-                            onConflict: "cheie_unica"
-                        }
-                    );
+                // ===== SALVARE DIRECTA =====
+                // Nu mai pastram varianta veche daca era mai lunga.
+                // Logica Excel este sursa corecta si suprascrie pontajul vechi la reimport.
+                const marimeLot = 500;
 
-                if (error) {
+                for (let index = 0; index < randuriFinale.length; index += marimeLot) {
 
-                    console.log("SUPABASE ERROR:", error);
+                    const lot = randuriFinale.slice(index, index + marimeLot);
 
-                    showMessage(
-                        "Eroare salvare Supabase",
-                        "error"
-                    );
+                    const { error } = await supabaseClient
+                        .from("pontaj_zilnic")
+                        .upsert(
+                            lot,
+                            {
+                                onConflict: "cheie_unica"
+                            }
+                        );
 
-                    return;
+                    if (error) {
+                        console.log("SUPABASE ERROR:", error);
+                        showMessage("Eroare salvare Supabase", "error");
+                        return;
+                    }
 
                 }
 
-                showMessage(
-                    "Import salvat in Supabase",
-                    "success"
-                );
+                console.log("REZULTATE LOGICA EXCEL:", randuriFinale);
+
+                showMessage("Import salvat in Supabase", "success");
 
             } catch(err) {
 
