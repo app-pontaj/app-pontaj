@@ -5633,20 +5633,75 @@ function deschideZonaAngajatNou() {
 
             try {
 
+                // ===== LOGICA NOUA VALIDATA IN EXCEL =====
+                // Reguli incluse:
+                // - Paza: tura zi / tura noapte, orele de noapte pe ziua intrarii.
+                // - Angajati: schimb dimineata, schimb dupa-amiaza, schimb noapte ca la Paza.
+                // - Balan Ionel: dimineata foarte devreme de la 03:30, daca ieri nu are pontaj dupa 19:00.
+                // - O singura linie pe zi pentru acelasi angajat.
+                // - Pauza de minimum 8 ore separa turele reale.
+
                 const pontariCitite = [];
-                const pontajDupaOra21 = {};
-                const pontajIntreOra00Si04 = {};
-                const pontajePazaPeZi = {};
-                const pontajePazaExistentePeZi = {};
+                const pontariPeAngajatZi = {};
+                const pontariPeAngajat = {};
+                const pontariPeAngajatZiExistente = {};
+
+                function cheieZi(nume, dataText) {
+                    return String(nume || "").trim() + "|" + String(dataText || "").trim();
+                }
 
                 function dataZiAnterioara(dataText) {
-
                     const dataObj = creeazaDataDinText(dataText);
-
                     dataObj.setDate(dataObj.getDate() - 1);
-
                     return formatDataPentruCheie(dataObj);
+                }
 
+                function dataZiUrmatoare(dataText) {
+                    const dataObj = creeazaDataDinText(dataText);
+                    dataObj.setDate(dataObj.getDate() + 1);
+                    return formatDataPentruCheie(dataObj);
+                }
+
+                function adaugaPontajInIndex(index, pontare) {
+                    const cheie = cheieZi(pontare.nume, pontare.data);
+
+                    if (!index[cheie]) {
+                        index[cheie] = [];
+                    }
+
+                    index[cheie].push(pontare.minute);
+                }
+
+                function listaMinute(index, nume, dataText) {
+                    return index[cheieZi(nume, dataText)] || [];
+                }
+
+                function existaInInterval(index, nume, dataText, minutStart, minutStop) {
+                    return listaMinute(index, nume, dataText).some(function(minut) {
+                        return minut >= minutStart && minut <= minutStop;
+                    });
+                }
+
+                function arePontajDupaOra(index, nume, dataText, minutStart) {
+                    return listaMinute(index, nume, dataText).some(function(minut) {
+                        return minut >= minutStart;
+                    });
+                }
+
+                function primaOraZi(index, nume, dataText) {
+                    const lista = listaMinute(index, nume, dataText).slice().sort(function(a, b) {
+                        return a - b;
+                    });
+
+                    return lista.length ? lista[0] : null;
+                }
+
+                function esteBalanIonel(nume) {
+                    return String(nume || "")
+                        .trim()
+                        .toUpperCase()
+                        .normalize("NFD")
+                        .replace(/[\u0300-\u036f]/g, "") === "BALAN IONEL";
                 }
 
                 function esteAngajatPaza(nume, departament) {
@@ -5672,73 +5727,155 @@ function deschideZonaAngajatNou() {
 
                 }
 
-                function cheiePaza(nume, dataText) {
-                    return String(nume || "").trim() + "|" + String(dataText || "").trim();
-                }
+                function estePontajDimineataBalan(pontare) {
 
-                function existaPontajPazaInInterval(nume, dataText, minutStart, minutStop) {
+                    if (!esteBalanIonel(pontare.nume)) {
+                        return false;
+                    }
 
-                    const lista = pontajePazaPeZi[cheiePaza(nume, dataText)] || [];
-
-                    return lista.some(function(minut) {
-                        return minut >= minutStart && minut <= minutStop;
-                    });
-
-                }
-
-                function existaPontajPazaExistentInInterval(nume, dataText, minutStart, minutStop) {
-
-                    const lista = pontajePazaExistentePeZi[cheiePaza(nume, dataText)] || [];
-
-                    return lista.some(function(minut) {
-                        return minut >= minutStart && minut <= minutStop;
-                    });
-
-                }
-
-                function esteZiStartTuraNoaptePaza(nume, dataText) {
-
-                    const arePontajSeara =
-                        existaPontajPazaInInterval(
-                            nume,
-                            dataText,
-                            990,   // 16:30
-                            1260   // 21:00, cu mici variatii
-                        ) ||
-                        existaPontajPazaExistentInInterval(
-                            nume,
-                            dataText,
-                            990,
-                            1260
-                        );
-
-                    const arePontajZiInainte =
-                        existaPontajPazaInInterval(
-                            nume,
-                            dataText,
-                            600,   // 10:00
-                            990    // 16:30
-                        ) ||
-                        existaPontajPazaExistentInInterval(
-                            nume,
-                            dataText,
-                            600,
-                            990
-                        );
-
-                    return arePontajSeara && !arePontajZiInainte;
-
-                }
-
-                function areRevenireZiDupaNoaptePaza(nume, dataText) {
-
-                    return existaPontajPazaInInterval(
-                        nume,
-                        dataText,
-                        480,   // 08:00
-                        900    // 15:00
+                    const primaOra = primaOraZi(
+                        pontariPeAngajatZi,
+                        pontare.nume,
+                        pontare.data
                     );
 
+                    const ieri = dataZiAnterioara(pontare.data);
+
+                    const ieriAreSeara =
+                        arePontajDupaOra(
+                            pontariPeAngajatZi,
+                            pontare.nume,
+                            ieri,
+                            1140 // 19:00
+                        ) ||
+                        arePontajDupaOra(
+                            pontariPeAngajatZiExistente,
+                            pontare.nume,
+                            ieri,
+                            1140
+                        );
+
+                    const aziArePlecare = existaInInterval(
+                        pontariPeAngajatZi,
+                        pontare.nume,
+                        pontare.data,
+                        660,  // 11:00
+                        1020  // 17:00
+                    );
+
+                    return (
+                        primaOra !== null &&
+                        primaOra >= 210 &&   // 03:30
+                        primaOra < 540 &&    // 09:00
+                        aziArePlecare &&
+                        !ieriAreSeara
+                    );
+
+                }
+
+                function pontajApartineNoptiiAnterioare(pontare) {
+
+                    const ieri = dataZiAnterioara(pontare.data);
+
+                    const minuteIeri = listaMinute(
+                        pontariPeAngajatZi,
+                        pontare.nume,
+                        ieri
+                    );
+
+                    const minuteIeriExistente = listaMinute(
+                        pontariPeAngajatZiExistente,
+                        pontare.nume,
+                        ieri
+                    );
+
+                    const toateMinuteleIeri = minuteIeri.concat(minuteIeriExistente);
+
+                    const ieriAreSearaPaza = toateMinuteleIeri.some(function(minut) {
+                        return minut >= 960; // 16:00
+                    });
+
+                    const ieriArePontajInainteDeSeara = toateMinuteleIeri.some(function(minut) {
+                        return minut < 960;
+                    });
+
+                    const ieriEsteStartNoaptePaza =
+                        ieriAreSearaPaza &&
+                        !ieriArePontajInainteDeSeara;
+
+                    const ieriAreSearaAngajat = toateMinuteleIeri.some(function(minut) {
+                        return minut >= 1140; // 19:00
+                    });
+
+                    const aziArePontajNoapte = existaInInterval(
+                        pontariPeAngajatZi,
+                        pontare.nume,
+                        pontare.data,
+                        1,
+                        240 // 00:01 - 04:00
+                    );
+
+                    const aziEsteDimineataNormala =
+                        !aziArePontajNoapte &&
+                        existaInInterval(
+                            pontariPeAngajatZi,
+                            pontare.nume,
+                            pontare.data,
+                            240, // 04:00
+                            480  // 08:00
+                        );
+
+                    if (pontare.minute > 540) {
+                        return false;
+                    }
+
+                    if (estePontajDimineataBalan(pontare)) {
+                        return false;
+                    }
+
+                    if (pontare.estePaza) {
+                        return (
+                            pontare.minute > 0 &&
+                            pontare.minute <= 480 &&
+                            ieriEsteStartNoaptePaza
+                        );
+                    }
+
+                    if (aziEsteDimineataNormala) {
+                        return false;
+                    }
+
+                    return ieriAreSearaAngajat && aziArePontajNoapte;
+
+                }
+
+                function creeazaDataIesire(dataIntrare, minutIesire) {
+
+                    if (minutIesire < 1440) {
+                        return dataIntrare;
+                    }
+
+                    return dataZiUrmatoare(dataIntrare);
+
+                }
+
+                function oraDinMinuteAbsolute(minut) {
+
+                    let minuteZi = minut % 1440;
+
+                    if (minuteZi < 0) {
+                        minuteZi += 1440;
+                    }
+
+                    const ora = Math.floor(minuteZi / 60);
+                    const minutOra = minuteZi % 60;
+
+                    return String(ora).padStart(2, "0") + ":" + String(minutOra).padStart(2, "0");
+
+                }
+
+                function durataMinute(intrare, iesire) {
+                    return Number(iesire || 0) - Number(intrare || 0);
                 }
 
                 for (let i = 1; i < randuri.length; i++) {
@@ -5750,12 +5887,14 @@ function deschideZonaAngajatNou() {
                     const dataOraRaw = rand[5];
                     const eveniment = String(rand[7] || "").trim().toUpperCase();
 
-                    // ===== EXCLUDERE DOOR OPEN =====
                     if (eveniment.includes("DOOR OPEN")) {
                         continue;
                     }
 
-                    // ===== EXCLUDERE ANGAJATI DIN SUPABASE =====
+                    if (!nume || !dataOraRaw) {
+                        continue;
+                    }
+
                     const angajatGasit = listaAngajatiSupabase.find(function(angajat) {
                         return String(angajat.nume || "").trim() === nume;
                     });
@@ -5767,132 +5906,81 @@ function deschideZonaAngajatNou() {
                         continue;
                     }
 
-                    if (!nume || !dataOraRaw) {
-                        continue;
-                    }
-
                     const dateInfo = convertesteDataOraExcel(dataOraRaw);
 
                     if (!dateInfo) {
                         continue;
                     }
 
-                    const estePaza = esteAngajatPaza(nume, departament);
-
-                    const pontareNoua = {
+                    const pontare = {
                         nume: nume,
                         departament: departament,
                         data: dateInfo.data,
                         ora: dateInfo.ora,
                         minute: dateInfo.minute,
-                        estePaza: estePaza
+                        estePaza: esteAngajatPaza(nume, departament)
                     };
 
-                    pontariCitite.push(pontareNoua);
+                    pontariCitite.push(pontare);
+                    adaugaPontajInIndex(pontariPeAngajatZi, pontare);
 
-                    if (estePaza) {
-
-                        const cheie = cheiePaza(nume, dateInfo.data);
-
-                        if (!pontajePazaPeZi[cheie]) {
-                            pontajePazaPeZi[cheie] = [];
-                        }
-
-                        pontajePazaPeZi[cheie].push(dateInfo.minute);
-
+                    if (!pontariPeAngajat[nume]) {
+                        pontariPeAngajat[nume] = [];
                     }
 
-                    // ===== MARCAJ TURA DE NOAPTE PENTRU ANGAJATI NON-PAZA =====
-                    if (dateInfo.minute >= 1260) {
-                        pontajDupaOra21[nume + "|" + dateInfo.data] = true;
-                    }
-
-                    if (
-                        dateInfo.minute >= 1 &&
-                        dateInfo.minute <= 240
-                    ) {
-                        pontajIntreOra00Si04[nume + "|" + dateInfo.data] = true;
-                    }
+                    pontariPeAngajat[nume].push(pontare);
 
                 }
 
-                // ===== PAZA - VERIFICARE ZI ANTERIOARA EXISTENTA IN SUPABASE =====
-                // Regula turei de noapte nu se opreste la schimbarea lunii.
-                // Daca importul incepe cu 01 ale lunii si exista pontaj dimineata,
-                // aplicatia verifica ziua anterioara deja salvata in Supabase.
-                const zileAnterioarePazaDeVerificat = {};
-                const numePazaDeVerificat = {};
+                // ===== VERIFICARE ZI ANTERIOARA IN SUPABASE =====
+                // Ajuta la turele de noapte care trec peste schimbarea lunii.
+                const zileAnterioareDeVerificat = {};
+                const numeDeVerificat = {};
 
                 pontariCitite.forEach(function(pontare) {
 
-                    if (
-                        pontare.estePaza &&
-                        pontare.minute > 0 &&
-                        pontare.minute <= 480
-                    ) {
-
-                        const dataAnterioara = dataZiAnterioara(pontare.data);
-
-                        zileAnterioarePazaDeVerificat[dataAnterioara] = true;
-                        numePazaDeVerificat[pontare.nume] = true;
-
+                    if (pontare.minute > 0 && pontare.minute <= 540) {
+                        zileAnterioareDeVerificat[dataZiAnterioara(pontare.data)] = true;
+                        numeDeVerificat[pontare.nume] = true;
                     }
 
                 });
 
-                const listaZileAnterioarePaza = Object.keys(zileAnterioarePazaDeVerificat);
-                const listaNumePaza = Object.keys(numePazaDeVerificat);
+                const listaZileAnterioare = Object.keys(zileAnterioareDeVerificat);
+                const listaNume = Object.keys(numeDeVerificat);
 
-                if (
-                    listaZileAnterioarePaza.length &&
-                    listaNumePaza.length
-                ) {
+                if (listaZileAnterioare.length && listaNume.length) {
 
-                    const { data: pontajeExistentePaza, error: eroarePontajeExistentePaza } = await supabaseClient
+                    const { data: pontajeExistente, error: eroarePontajeExistente } = await supabaseClient
                         .from("pontaj_zilnic")
-                        .select("nume,departament,data,ora_intrare,ora_iesire,data_iesire")
-                        .in("nume", listaNumePaza)
-                        .in("data", listaZileAnterioarePaza);
+                        .select("nume,data,ora_intrare,ora_iesire,data_iesire")
+                        .in("nume", listaNume)
+                        .in("data", listaZileAnterioare);
 
-                    if (eroarePontajeExistentePaza) {
-
-                        showMessage(
-                            "Eroare verificare pază luna anterioară",
-                            "error"
-                        );
-
+                    if (eroarePontajeExistente) {
+                        showMessage("Eroare verificare tura noapte", "error");
                         return;
-
                     }
 
-                    (pontajeExistentePaza || []).forEach(function(pontajExistent) {
-
-                        if (!esteAngajatPaza(pontajExistent.nume, pontajExistent.departament)) {
-                            return;
-                        }
-
-                        const cheie = cheiePaza(
-                            pontajExistent.nume,
-                            pontajExistent.data
-                        );
-
-                        if (!pontajePazaExistentePeZi[cheie]) {
-                            pontajePazaExistentePeZi[cheie] = [];
-                        }
+                    (pontajeExistente || []).forEach(function(pontajExistent) {
 
                         if (pontajExistent.ora_intrare) {
-                            pontajePazaExistentePeZi[cheie].push(
-                                transformaOraMinute(pontajExistent.ora_intrare)
-                            );
+                            adaugaPontajInIndex(pontariPeAngajatZiExistente, {
+                                nume: pontajExistent.nume,
+                                data: pontajExistent.data,
+                                minute: transformaOraMinute(pontajExistent.ora_intrare)
+                            });
                         }
 
                         if (
                             pontajExistent.ora_iesire &&
                             (!pontajExistent.data_iesire || pontajExistent.data_iesire === pontajExistent.data)
                         ) {
-                            pontajePazaExistentePeZi[cheie].push(
-                                transformaOraMinute(pontajExistent.ora_iesire)
-                            );
+                            adaugaPontajInIndex(pontariPeAngajatZiExistente, {
+                                nume: pontajExistent.nume,
+                                data: pontajExistent.data,
+                                minute: transformaOraMinute(pontajExistent.ora_iesire)
+                            });
                         }
 
                     });
@@ -5904,74 +5992,75 @@ function deschideZonaAngajatNou() {
                 pontariCitite.forEach(function(pontare) {
 
                     let dataRaport = pontare.data;
-                    let minuteSortare = pontare.minute;
+                    let minutRaport = pontare.minute;
+                    let interpretare = "Schimb zi - aceeasi zi";
 
-                    const dataAnterioara = dataZiAnterioara(pontare.data);
-
-                    if (pontare.estePaza) {
-
-                        // ===== REGULA PAZA - IDENTIFICARE TURA DE NOAPTE =====
-                        // 1. Daca ieri exista pontaj seara 16:30 - 21:00
-                        //    si ieri NU exista pontaj intre 10:00 - 16:30,
-                        //    atunci ieri este considerata zi de intrare pentru tura de noapte.
-                        // 2. Pontajele de azi dimineata pana la 08:00 se lipesc de ieri
-                        //    doar daca azi nu exista revenire intre 08:00 - 15:00.
-                        // 3. Astfel, pontajele de tip 03:48 / 04:16 / 05:12
-                        //    nu mai pot deveni intrari false.
-                        const ieriEsteStartNoapte = esteZiStartTuraNoaptePaza(
+                    if (
+                        pontare.minute > 0 &&
+                        pontare.minute <= 540 &&
+                        pontajApartineNoptiiAnterioare(pontare)
+                    ) {
+                        dataRaport = dataZiAnterioara(pontare.data);
+                        minutRaport = pontare.minute + 1440;
+                        interpretare = pontare.estePaza
+                            ? "Paza - schimb noapte"
+                            : "Schimb noapte ca la Paza";
+                    } else if (estePontajDimineataBalan(pontare)) {
+                        interpretare = "Balan Ionel - dimineata devreme";
+                    } else if (
+                        pontare.minute >= 240 &&
+                        pontare.minute <= 480 &&
+                        !existaInInterval(
+                            pontariPeAngajatZi,
                             pontare.nume,
-                            dataAnterioara
-                        );
-
-                        const aziAreRevenireZi = areRevenireZiDupaNoaptePaza(
+                            pontare.data,
+                            1,
+                            240
+                        )
+                    ) {
+                        interpretare = "Schimb dimineata - regula 04:00-08:00";
+                    } else if (
+                        !existaInInterval(
+                            pontariPeAngajatZi,
                             pontare.nume,
-                            pontare.data
-                        );
-
-                        if (
-                            pontare.minute > 0 &&
-                            pontare.minute <= 480 &&
-                            ieriEsteStartNoapte &&
-                            !aziAreRevenireZi
-                        ) {
-                            dataRaport = dataAnterioara;
-                            minuteSortare = pontare.minute + 1440;
-                        }
-
-                    } else {
-
-                        // ===== REGULA EXISTENTA TURA DE NOAPTE PENTRU RESTUL ANGAJATILOR =====
-                        // Pontajele înainte de 09:00 aparțin zilei anterioare doar dacă:
-                        // 1. angajatul a avut pontaj după 21:00 în ziua anterioară;
-                        // 2. în ziua următoare există pontaj între 00:01 și 04:00.
-                        if (
-                            pontare.minute < 540 &&
-                            pontajDupaOra21[pontare.nume + "|" + dataAnterioara] &&
-                            pontajIntreOra00Si04[pontare.nume + "|" + pontare.data]
-                        ) {
-                            dataRaport = dataAnterioara;
-                            minuteSortare = pontare.minute + 1440;
-                        }
-
+                            pontare.data,
+                            1,
+                            540
+                        ) &&
+                        existaInInterval(
+                            pontariPeAngajatZi,
+                            pontare.nume,
+                            pontare.data,
+                            540,
+                            1380
+                        )
+                    ) {
+                        interpretare = "Schimb 2 - aceeasi zi";
                     }
 
-                    const cheie = pontare.nume + "|" + dataRaport;
+                    const cheie = cheieZi(pontare.nume, dataRaport);
 
                     if (!grupare[cheie]) {
-
                         grupare[cheie] = {
                             nume: pontare.nume,
                             departament: pontare.departament,
                             data: dataRaport,
                             estePaza: pontare.estePaza,
+                            interpretare: interpretare,
                             pontari: []
                         };
+                    }
 
+                    if (
+                        grupare[cheie].interpretare === "Schimb zi - aceeasi zi" &&
+                        interpretare !== "Schimb zi - aceeasi zi"
+                    ) {
+                        grupare[cheie].interpretare = interpretare;
                     }
 
                     grupare[cheie].pontari.push({
                         ora: pontare.ora,
-                        minute: minuteSortare
+                        minute: minutRaport
                     });
 
                 });
@@ -5980,60 +6069,43 @@ function deschideZonaAngajatNou() {
 
                 Object.values(grupare).forEach(function(grup) {
 
+                    if (!grup.pontari.length) {
+                        return;
+                    }
+
                     grup.pontari.sort(function(a, b) {
                         return a.minute - b.minute;
                     });
 
                     const primaPontare = grup.pontari[0];
                     const ultimaPontare = grup.pontari[grup.pontari.length - 1];
-
-                    // ===== PROTECTIE PAZA - MINIM 1 ORA =====
-                    // Un paznic nu poate avea tura reala sub 1 ora.
-                    // Daca apare sub 1 ora, inseamna pontaj izolat / interpretare gresita
-                    // si nu se salveaza ca zi de lucru reala.
-                    const durataTuraMinute = ultimaPontare.minute - primaPontare.minute;
+                    const durata = durataMinute(primaPontare.minute, ultimaPontare.minute);
 
                     if (
                         grup.estePaza &&
-                        durataTuraMinute < 60
+                        durata > 0 &&
+                        durata < 60
                     ) {
                         return;
                     }
 
-                    // ===== DATA INTRARE / DATA IESIRE =====
-                    // data = ziua in care incepe tura
-                    // data_iesire = ziua in care se termina tura
-                    // Pentru turele de noapte, iesirea este in ziua urmatoare.
-                    let dataIesire = grup.data;
-
-                    if (ultimaPontare.minute >= 1440) {
-
-                        const dataIesireObj = creeazaDataDinText(grup.data);
-
-                        dataIesireObj.setDate(dataIesireObj.getDate() + 1);
-
-                        dataIesire = formatDataPentruCheie(dataIesireObj);
-
-                    }
+                    const interpretareFinala = durata > 840
+                        ? grup.interpretare + " - Suspect peste 14h"
+                        : grup.interpretare;
 
                     rezultate.push({
                         nume: grup.nume,
                         departament: grup.departament,
                         data: grup.data,
-                        data_iesire: dataIesire,
-                        ora_intrare: primaPontare.ora,
-                        ora_iesire: ultimaPontare.ora,
-                        nr_pontari: grup.pontari.length
+                        data_iesire: creeazaDataIesire(grup.data, ultimaPontare.minute),
+                        ora_intrare: oraDinMinuteAbsolute(primaPontare.minute),
+                        ora_iesire: oraDinMinuteAbsolute(ultimaPontare.minute),
+                        nr_pontari: grup.pontari.length,
+                        observatii_logica: interpretareFinala
                     });
 
                 });
 
-                console.log("REZULTATE:", rezultate);
-
-                // ===== REIMPORT FARA DUBLURI =====
-                // Cheia ramane angajat + ziua de intrare.
-                // Daca aceeasi zi este importata din nou, randul existent se actualizeaza,
-                // dar nu este inlocuit cu o varianta mai scurta / incompleta.
                 function minuteAbsolutePontaj(dataIntrare, dataIesire, oraText) {
 
                     if (!oraText) {
@@ -6041,7 +6113,6 @@ function deschideZonaAngajatNou() {
                     }
 
                     const minuteOra = transformaOraMinute(oraText);
-
                     const dataStart = creeazaDataDinText(dataIntrare);
                     const dataStop = creeazaDataDinText(dataIesire || dataIntrare);
 
@@ -6087,7 +6158,6 @@ function deschideZonaAngajatNou() {
                 const randuriImport = rezultate.map(function(pontaj) {
 
                     return {
-
                         nume: pontaj.nume,
                         departament: pontaj.departament,
                         data: pontaj.data,
@@ -6096,9 +6166,7 @@ function deschideZonaAngajatNou() {
                         ora_iesire: pontaj.ora_iesire,
                         nr_pontari: pontaj.nr_pontari,
                         importat_de: utilizatorLogat?.nume || "",
-                        cheie_unica:
-                            pontaj.nume + "|" + pontaj.data
-
+                        cheie_unica: pontaj.nume + "|" + pontaj.data
                     };
 
                 });
@@ -6126,8 +6194,6 @@ function deschideZonaAngajatNou() {
                             .in("cheie_unica", lotChei);
 
                         if (raspunsExistente.error) {
-
-                            console.log("SUPABASE ERROR VERIFICARE EXISTENTE:", raspunsExistente.error);
 
                             showMessage(
                                 "Eroare verificare pontaje existente",
@@ -6179,7 +6245,6 @@ function deschideZonaAngajatNou() {
                     }
 
                     return {
-
                         nume: pontajVechi.nume,
                         departament: pontajVechi.departament,
                         data: pontajVechi.data,
@@ -6189,50 +6254,38 @@ function deschideZonaAngajatNou() {
                         nr_pontari: pontajVechi.nr_pontari,
                         importat_de: pontajVechi.importat_de || "",
                         cheie_unica: pontajVechi.cheie_unica
-
                     };
 
                 });
 
+                if (!randuriFinale.length) {
+                    showMessage("Nu exista pontaje de importat", "error");
+                    return;
+                }
+
                 const { data, error } = await supabaseClient
                     .from("pontaj_zilnic")
                     .upsert(
-
                         randuriFinale,
-
                         {
                             onConflict: "cheie_unica"
                         }
-
                     );
 
                 console.log("SUPABASE DATA:", data);
                 console.log("SUPABASE ERROR:", error);
 
                 if (error) {
-
-                    showMessage(
-                        "Eroare salvare Supabase",
-                        "error"
-                    );
-
+                    showMessage("Eroare salvare Supabase", "error");
                     return;
-
                 }
 
-                showMessage(
-                    "Import salvat in Supabase",
-                    "success"
-                );
+                showMessage("Import salvat in Supabase", "success");
 
             } catch(err) {
 
                 console.log(err);
-
-                showMessage(
-                    "Eroare import",
-                    "error"
-                );
+                showMessage("Eroare import", "error");
 
             }
 
