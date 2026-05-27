@@ -11506,10 +11506,9 @@ function deschideZonaAngajatNou() {
                 afiseazaRaportZileFaraPontaj();
             }
 
-            showMessage(
-                motiv === "Introdu ore" ? "Ore introduse" : "Motiv salvat",
-                "success"
-            );
+            if (motiv === "Introdu ore") {
+                showMessage("Ore introduse", "success");
+            }
 
             const dataObjActualizareRaport = creeazaDataDinText(dataText);
 
