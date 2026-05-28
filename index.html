@@ -9824,7 +9824,7 @@ function deschideZonaAngajatNou() {
                                     ? 18
                                     : esteSubtitlu
                                         ? 14
-                                        : 10,
+                                        : 9,
                             color: {
                                 rgb:
                                     tip === "difPlus"
@@ -10263,12 +10263,12 @@ function deschideZonaAngajatNou() {
             }
 
             worksheet["!cols"] = [
-                { wch: 21 }
+                { wch: 17.2 }
             ];
 
             for (let indexColoana = 1; indexColoana < randHeader.length; indexColoana++) {
                 worksheet["!cols"].push({
-                    wch: indexColoana <= 31 ? 5.67 : 10
+                    wch: 4.8
                 });
             }
 
