@@ -7880,6 +7880,20 @@ function deschideZonaAngajatNou() {
                     return;
                 }
 
+                if (
+                    modFiltruZileFaraPontaj === "angajat" &&
+                    nume !== selectieFiltruZileFaraPontaj
+                ) {
+                    return;
+                }
+
+                if (
+                    modFiltruZileFaraPontaj === "sectie" &&
+                    sectie !== selectieFiltruZileFaraPontaj
+                ) {
+                    return;
+                }
+
                 const dataCurenta = new Date(dataStartRaportZileFaraPontaj);
 
                 while (dataCurenta <= dataStopRaportZileFaraPontaj) {
