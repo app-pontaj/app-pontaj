@@ -7572,6 +7572,17 @@ function deschideZonaAngajatNou() {
         let dataStartRaportZileFaraPontaj = null;
         let dataStopRaportZileFaraPontaj = null;
 
+        // ===== NORMALIZARE CHEIE RAPORT ZILE FARA PONTAJ =====
+        function normalizeazaCheieRaportZileFaraPontaj(text) {
+
+            return String(text || "")
+                .trim()
+                .toUpperCase()
+                .normalize("NFD")
+                .replace(/[̀-ͯ]/g, "");
+
+        }
+
         // ===== SETARE FILTRU RAPORT ZILE FARA PONTAJ =====
         function seteazaFiltruZileFaraPontaj(mod) {
 
@@ -7720,8 +7731,14 @@ function deschideZonaAngajatNou() {
 
                 const { data: lotPontaje, error } = await supabaseClient
                     .from("pontaj_zilnic")
-                    .select("nume,data,status_corectie,ora_intrare_manual,ora_iesire_manual,modificat_de,modificat_la")
+                    .select("nume,data,status_corectie,ora_intrare_manual,ora_iesire_manual,modificat_de,modificat_la,cheie_unica")
                     .order("data", {
+                        ascending: true
+                    })
+                    .order("nume", {
+                        ascending: true
+                    })
+                    .order("cheie_unica", {
                         ascending: true
                     })
                     .range(startLotPontaje, startLotPontaje + marimeLotPontaje - 1);
@@ -7803,7 +7820,7 @@ function deschideZonaAngajatNou() {
             pontajeRaportZileFaraPontaj.forEach(function(pontaj) {
 
                 const cheiePontaj =
-                    String(pontaj.nume || "").trim().toUpperCase() +
+                    normalizeazaCheieRaportZileFaraPontaj(pontaj.nume) +
                     "|" +
                     String(pontaj.data || "").trim();
 
@@ -7869,7 +7886,7 @@ function deschideZonaAngajatNou() {
                         if (!angajatInactivLaData) {
 
                             const cheieCautare =
-                                nume.trim().toUpperCase() +
+                                normalizeazaCheieRaportZileFaraPontaj(nume) +
                                 "|" +
                                 dataText;
 
@@ -8056,7 +8073,7 @@ function deschideZonaAngajatNou() {
 
             pontajeRaportZileFaraPontaj.forEach(function(pontaj) {
                 const cheiePontaj =
-                    String(pontaj.nume || "").trim().toUpperCase() +
+                    normalizeazaCheieRaportZileFaraPontaj(pontaj.nume) +
                     "|" +
                     String(pontaj.data || "").trim();
 
@@ -8134,7 +8151,7 @@ function deschideZonaAngajatNou() {
                         if (!angajatInactivLaData) {
 
                             const cheieCautare =
-                                nume.trim().toUpperCase() +
+                                normalizeazaCheieRaportZileFaraPontaj(nume) +
                                 "|" +
                                 dataText;
 
