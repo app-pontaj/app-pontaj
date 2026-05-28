@@ -8061,6 +8061,9 @@ function deschideZonaAngajatNou() {
 
             const lista = document.getElementById("missing-days-list");
 
+            const selectLunaRaport = document.getElementById("missing-days-export-month");
+            const lunaSelectataRaport = selectLunaRaport ? String(selectLunaRaport.value || "toate") : "toate";
+
             if (!dataStartRaportZileFaraPontaj || !dataStopRaportZileFaraPontaj) {
 
                 lista.innerHTML = "<div class='missing-days-empty'>Nu există date pentru raport.</div>";
