@@ -7437,6 +7437,51 @@ function deschideZonaAngajatNou() {
 
             }
 
+            // ===== SIGURANTA: AFISAM DIFERENTA DOAR DACA EXISTA PONTAJ REAL IN LUNA =====
+            const { data: pontajeExistenteRaportDiferente, error: eroarePontajeDiferente } = await supabaseClient
+                .from("pontaj_zilnic")
+                .select("nume,data")
+                .gte("data", "2026-01-01")
+                .lte("data", "2026-12-31");
+
+            if (eroarePontajeDiferente) {
+
+                container.innerHTML = "";
+
+                showMessage(
+                    "Eroare verificare pontaje raport diferențe",
+                    "error"
+                );
+
+                return;
+
+            }
+
+            const luniCuPontajReal = {};
+
+            (pontajeExistenteRaportDiferente || []).forEach(function(pontaj) {
+
+                const dataText = String(pontaj.data || "").trim();
+
+                if (!dataText || dataText.length < 7) {
+                    return;
+                }
+
+                const lunaPontaj = Number(dataText.substring(5, 7));
+
+                if (!lunaPontaj) {
+                    return;
+                }
+
+                const cheiePontaj =
+                    String(pontaj.nume || "").trim().toUpperCase() +
+                    "|" +
+                    String(lunaPontaj);
+
+                luniCuPontajReal[cheiePontaj] = true;
+
+            });
+
             const diferenteDupaAngajatLuna = {};
 
             (diferenteSalvate || []).forEach(function(rand) {
@@ -7445,6 +7490,10 @@ function deschideZonaAngajatNou() {
                     String(rand.nume_angajat || "").trim().toUpperCase() +
                     "|" +
                     String(rand.luna || "");
+
+                if (!luniCuPontajReal[cheie]) {
+                    return;
+                }
 
                 if (!diferenteDupaAngajatLuna[cheie]) {
                     diferenteDupaAngajatLuna[cheie] = rand;
