@@ -25,6 +25,9 @@
     <!-- ===== CITIRE FISIERE EXCEL ===== -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
 
+    <!-- ===== REPARARE FREEZE PANE EXCEL ===== -->
+    <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+
     <!-- ===== GRAFICA MESAJE ===== -->
     <style>
 
@@ -10329,14 +10332,76 @@ function deschideZonaAngajatNou() {
                     ? "pontaj_toti_angajatii_" + an + "_" + String(luna).padStart(2, "0") + ".xlsx"
                     : "pontaj_" + angajatAles.replace(/[^a-zA-Z0-9]/g, "_") + "_" + an + "_" + String(luna).padStart(2, "0") + ".xlsx";
 
-            XLSX.writeFile(
+            const bufferExcel = XLSX.write(
                 workbook,
-                numeFisier,
                 {
                     bookType: "xlsx",
+                    type: "array",
                     cellStyles: true
                 }
             );
+
+            if (window.JSZip) {
+
+                const zipExcel = await JSZip.loadAsync(bufferExcel);
+                const caleFoaie = "xl/worksheets/sheet1.xml";
+
+                let xmlFoaie = await zipExcel
+                    .file(caleFoaie)
+                    .async("string");
+
+                const sheetViewsFreeze =
+                    '<sheetViews>' +
+                    '<sheetView workbookViewId="0">' +
+                    '<pane xSplit="1" topLeftCell="B1" activePane="topRight" state="frozen"/>' +
+                    '<selection pane="topRight" activeCell="B1" sqref="B1"/>' +
+                    '</sheetView>' +
+                    '</sheetViews>';
+
+                if (xmlFoaie.includes("<sheetViews>")) {
+
+                    xmlFoaie = xmlFoaie.replace(
+                        /<sheetViews>[\s\S]*?<\/sheetViews>/,
+                        sheetViewsFreeze
+                    );
+
+                } else {
+
+                    xmlFoaie = xmlFoaie.replace(
+                        "<sheetFormatPr",
+                        sheetViewsFreeze + "<sheetFormatPr"
+                    );
+
+                }
+
+                zipExcel.file(caleFoaie, xmlFoaie);
+
+                const fisierFinal = await zipExcel.generateAsync({
+                    type: "blob"
+                });
+
+                const linkDescarcare = document.createElement("a");
+
+                linkDescarcare.href = URL.createObjectURL(fisierFinal);
+                linkDescarcare.download = numeFisier;
+                linkDescarcare.click();
+
+                setTimeout(function() {
+                    URL.revokeObjectURL(linkDescarcare.href);
+                }, 1000);
+
+            } else {
+
+                XLSX.writeFile(
+                    workbook,
+                    numeFisier,
+                    {
+                        bookType: "xlsx",
+                        cellStyles: true
+                    }
+                );
+
+            }
 
         }
 
