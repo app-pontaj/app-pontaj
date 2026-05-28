@@ -7815,6 +7815,9 @@ function deschideZonaAngajatNou() {
 
             const anCurent = new Date().getFullYear();
 
+            const selectLunaRaport = document.getElementById("missing-days-export-month");
+            const lunaSelectataRaport = selectLunaRaport ? String(selectLunaRaport.value || "toate") : "toate";
+
             const pontajeDupaAngajatZi = {};
 
             pontajeRaportZileFaraPontaj.forEach(function(pontaj) {
@@ -7927,6 +7930,8 @@ function deschideZonaAngajatNou() {
                 return;
             }
 
+            const lunaSelectataAnterior = select.value || "toate";
+
             select.onchange = afiseazaRaportZileFaraPontaj;
 
             const luniCuLipsaPontaj = {};
@@ -7962,6 +7967,12 @@ function deschideZonaAngajatNou() {
                 });
 
             select.innerHTML = html;
+
+            const optiuneAnterioaraExista = Array.from(select.options).some(function(optiune) {
+                return optiune.value === lunaSelectataAnterior;
+            });
+
+            select.value = optiuneAnterioaraExista ? lunaSelectataAnterior : "toate";
 
         }
 
@@ -8123,13 +8134,10 @@ function deschideZonaAngajatNou() {
                 while (dataCurenta <= dataStopRaportZileFaraPontaj) {
 
                     const dataText = formatDataPentruCheie(dataCurenta);
-                    const lunaSelectataExport = document.getElementById("missing-days-export-month")
-                        ? document.getElementById("missing-days-export-month").value
-                        : "toate";
 
                     if (
-                        lunaSelectataExport !== "toate" &&
-                        String(dataText).slice(0, 7) !== lunaSelectataExport
+                        lunaSelectataRaport !== "toate" &&
+                        String(dataText).slice(0, 7) !== lunaSelectataRaport
                     ) {
                         dataCurenta.setDate(dataCurenta.getDate() + 1);
                         continue;
