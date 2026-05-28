@@ -7437,17 +7437,40 @@ function deschideZonaAngajatNou() {
 
             }
 
-            // ===== AFISARE DIRECTA DIN TABELA RAPORT_DIFERENTE_LUNAR =====
-            // Tabela raport_diferente_lunar este sursa finala pentru acest raport.
-            // Nu mai blocam afisarea in functie de pontaj_zilnic.
+            // ===== AFISARE DIFERENTE SALVATE CORECT =====
+            // Folosim tabela raport_diferente_lunar ca sursa finala.
+            // Ascundem doar randurile vechi generate artificial pentru luni fara pontaj:
+            // total lucrat 0 si diferenta egala cu minus totalul orelor lucratoare.
+            function esteRandDiferentaReal(rand) {
+
+                const totalLucrate = Number(rand.total_lucrate_minute || 0);
+                const totalLucratoare = Number(rand.total_lucratoare_minute || 0);
+                const diferenta = Number(rand.diferenta_minute || 0);
+
+                if (
+                    totalLucrate === 0 &&
+                    totalLucratoare > 0 &&
+                    diferenta === -totalLucratoare
+                ) {
+                    return false;
+                }
+
+                return true;
+
+            }
+
             const diferenteDupaAngajatLuna = {};
 
             (diferenteSalvate || []).forEach(function(rand) {
 
+                if (!esteRandDiferentaReal(rand)) {
+                    return;
+                }
+
                 const cheie =
                     String(rand.nume_angajat || "").trim().toUpperCase() +
                     "|" +
-                    String(rand.luna || "");
+                    String(Number(rand.luna || 0));
 
                 if (!diferenteDupaAngajatLuna[cheie]) {
                     diferenteDupaAngajatLuna[cheie] = rand;
