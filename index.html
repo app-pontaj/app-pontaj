@@ -10210,13 +10210,13 @@ function deschideZonaAngajatNou() {
 
                     worksheet[adresaCelula].s = {
                         alignment: {
-                            horizontal: tip === "titluPontajLunar" ? "center" : (c === 0 ? "left" : "center"),
+                            horizontal: r === 3 ? "center" : (tip === "titluPontajLunar" ? "center" : (c === 0 ? "left" : "center")),
                             vertical: "center",
                             wrapText: true
                         },
                         font: {
                             bold: tip === "titluPontajLunar" || tip === "header" || c === 0 || tip === "difPlus" || tip === "difMinus",
-                            sz: tip === "titluPontajLunar" ? 11 : undefined,
+                            sz: tip === "titluPontajLunar" ? 18 : undefined,
                             color: {
                                 rgb:
                                     tip === "difPlus"
@@ -10260,18 +10260,37 @@ function deschideZonaAngajatNou() {
             }
 
             worksheet["!cols"] = [
-                { wch: 28 }
+                { wch: 21 }
             ];
 
-            for (let zi = 1; zi <= zileLuna; zi++) {
+            for (let indexColoana = 1; indexColoana < randHeader.length; indexColoana++) {
                 worksheet["!cols"].push({
-                    wch: 9
+                    wch: indexColoana <= 31 ? 5.67 : 10
                 });
             }
 
-            worksheet["!cols"].push({
-                wch: 10
-            });
+            worksheet["!rows"] = [];
+            worksheet["!rows"][3] = {
+                hpt: 29
+            };
+
+            worksheet["!freeze"] = {
+                xSplit: 1,
+                ySplit: 0,
+                topLeftCell: "B1",
+                activePane: "topRight",
+                state: "frozen"
+            };
+
+            worksheet["!views"] = [
+                {
+                    state: "frozen",
+                    xSplit: 1,
+                    ySplit: 0,
+                    topLeftCell: "B1",
+                    activePane: "topRight"
+                }
+            ];
 
             worksheet["!margins"] = {
                 left: 0.15,
