@@ -10454,6 +10454,21 @@ function deschideZonaAngajatNou() {
 
                         seteazaMeta(indexRandExcel, indexColoanaExcel, "ore");
 
+                    } else if (
+                        !pontaj &&
+                        !weekend &&
+                        !sarbatoare &&
+                        angajat?.afiseaza_lipsa_pontaj !== false &&
+                        !String(angajat?.sectie || "")
+                            .trim()
+                            .toUpperCase()
+                            .normalize("NFD")
+                            .replace(/[\u0300-\u036f]/g, "")
+                            .includes("PAZA")
+                    ) {
+
+                        seteazaMeta(indexRandExcel, indexColoanaExcel, "lipsaNeagra");
+
                     }
 
                     randExcel.push(String(valoareCelula || ""));
@@ -10544,13 +10559,15 @@ function deschideZonaAngajatNou() {
                                 rgb:
                                     tip === "header"
                                         ? "111111"
-                                        : tip === "co" || tip === "difPlus"
-                                            ? "CCCCCC"
-                                            : tip === "nume"
-                                                ? "FFFFFF"
-                                                : tip === "sl"
-                                                    ? "E6E6E6"
-                                                    : "FFFFFF"
+                                        : tip === "lipsaNeagra"
+                                            ? "000000"
+                                            : tip === "co" || tip === "difPlus"
+                                                ? "CCCCCC"
+                                                : tip === "nume"
+                                                    ? "FFFFFF"
+                                                    : tip === "sl"
+                                                        ? "E6E6E6"
+                                                        : "FFFFFF"
                             }
                         },
                         border: tip === "spatiuTitluPontajLunar" || tip === "titluPontajLunar"
