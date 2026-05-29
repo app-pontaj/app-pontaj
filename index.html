@@ -296,11 +296,8 @@
 
         .report-year-inactive {
             background: #050505;
-            color: #d4af37;
-            border: 1.5px solid #d4af37;
-            box-shadow:
-                inset 0 1px 0 rgba(255,255,255,0.05),
-                0 4px 10px rgba(0,0,0,0.45);
+            color: #111111;
+            border: 1px solid rgba(212,175,55,0.25);
         }
 
         .months-grid {
@@ -9418,8 +9415,19 @@ function deschideZonaAngajatNou() {
             let start = transformaOraMinute(oraIntrare);
             let stop = transformaOraMinute(oraIesire);
 
-            if (regula0700 && start < 420) {
+            const startInitial = start;
+
+            if (regula0700 && start <= 420) {
                 start = 420;
+            }
+
+            if (
+                regula0700 &&
+                startInitial <= 420 &&
+                stop >= 925 &&
+                stop <= 950
+            ) {
+                stop = 930;
             }
 
             if (stop < start) {
