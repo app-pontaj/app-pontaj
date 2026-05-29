@@ -2629,7 +2629,7 @@
                         onclick="deschidePaginaRaportDiferente2026()"
                     >
                         <span class="menu-icon">∑</span>
-                        <span class="menu-text" style="color:#d4af37;">Raport diferențe 2026</span>
+                        <span class="menu-text" style="color:#d4af37;">Raport diferențe</span>
                         <span class="menu-arrow">›</span>
                     </div>
 
@@ -2751,7 +2751,7 @@
 
                             <div>
                                 <div class="year-diff-title">
-                                    Raport diferențe 2026
+                                    Raport diferențe
                                 </div>
 
                                 <div class="year-diff-subtitle">
@@ -2759,6 +2759,14 @@
                                 </div>
                             </div>
                         </div>
+
+                        <select
+                            class="year-diff-select"
+                            id="year-diff-year-select"
+                            onchange="schimbaAnRaportDiferente2026()"
+                            style="margin-top:10px;"
+                        >
+                        </select>
 
                         <div class="year-diff-filter-row">
                             <button
@@ -6516,10 +6524,30 @@ function deschideZonaAngajatNou() {
 
         }
 
-        // ===== ZILE LIBERE LEGALE 2026 =====
+        // ===== ZILE LIBERE LEGALE 2025 - 2026 =====
         function esteZiLiberaLegala(dataText) {
 
             const zileLibere = [
+                // 2025
+                "2025-01-01",
+                "2025-01-02",
+                "2025-01-06",
+                "2025-01-07",
+                "2025-01-24",
+                "2025-04-18",
+                "2025-04-20",
+                "2025-04-21",
+                "2025-05-01",
+                "2025-06-01",
+                "2025-06-08",
+                "2025-06-09",
+                "2025-08-15",
+                "2025-11-30",
+                "2025-12-01",
+                "2025-12-25",
+                "2025-12-26",
+
+                // 2026
                 "2026-01-01",
                 "2026-01-02",
                 "2026-01-06",
@@ -6738,6 +6766,7 @@ function deschideZonaAngajatNou() {
         // ===== RAPORT DIFERENTE 2026 =====
         let modRaportDiferente2026 = "toti";
         let angajatRaportDiferente2026 = "";
+        let anRaportDiferente2026Selectat = 2026;
 
         const LUNI_RAPORT_DIFERENTE = [
             { numar: 1, text: "Ian" },
@@ -7012,20 +7041,24 @@ function deschideZonaAngajatNou() {
         }
 
 
-        // ===== CITIRE COMPLETA PONTAJE 2026 PENTRU RAPORT DIFERENTE =====
+        // ===== CITIRE COMPLETA PONTAJE PENTRU RAPORT DIFERENTE =====
         async function citestePontajeRaportDiferente2026() {
 
             let toatePontajele = [];
             let startLot = 0;
             const marimeLot = 1000;
 
+            const anRaport = Number(anRaportDiferente2026Selectat || 2026);
+            const primaZiAn = anRaport + "-01-01";
+            const ultimaZiAn = anRaport + "-12-31";
+
             while (true) {
 
                 const { data, error } = await supabaseClient
                     .from("pontaj_zilnic")
                     .select("*")
-                    .gte("data", "2026-01-01")
-                    .lte("data", "2026-12-31")
+                    .gte("data", primaZiAn)
+                    .lte("data", ultimaZiAn)
                     .range(startLot, startLot + marimeLot - 1);
 
                 if (error) {
@@ -7052,19 +7085,21 @@ function deschideZonaAngajatNou() {
 
         }
 
-        // ===== CITIRE COMPLETA DIFERENTE 2026 =====
+        // ===== CITIRE COMPLETA DIFERENTE PENTRU ANUL SELECTAT =====
         async function citesteDiferenteRaportDiferente2026() {
 
             let toateDiferentele = [];
             let startLot = 0;
             const marimeLot = 1000;
 
+            const anRaport = Number(anRaportDiferente2026Selectat || 2026);
+
             while (true) {
 
                 const { data, error } = await supabaseClient
                     .from("raport_diferente_lunar")
                     .select("*")
-                    .eq("an", 2026)
+                    .eq("an", anRaport)
                     .order("actualizat_la", {
                         ascending: false
                     })
@@ -7144,7 +7179,7 @@ function deschideZonaAngajatNou() {
                 container.innerHTML = "<div class='year-diff-loading'>Se actualizează raportul...</div>";
             }
 
-            const anRaport = 2026;
+            const anRaport = Number(anRaportDiferente2026Selectat || 2026);
 
             let angajatiDeActualizat = listaAngajatiSupabase
                 .filter(function(angajat) {
@@ -7212,6 +7247,42 @@ function deschideZonaAngajatNou() {
 
         }
 
+        function pregatesteSelectAnRaportDiferente2026() {
+
+            const select = document.getElementById("year-diff-year-select");
+
+            if (!select) {
+                return;
+            }
+
+            const ani = [2025, 2026, 2027, 2028, 2029];
+            let html = "";
+
+            ani.forEach(function(an) {
+                html +=
+                    "<option value='" +
+                    an +
+                    "'>" +
+                    an +
+                    "</option>";
+            });
+
+            select.innerHTML = html;
+            select.value = String(anRaportDiferente2026Selectat || 2026);
+
+        }
+
+        async function schimbaAnRaportDiferente2026() {
+
+            const select = document.getElementById("year-diff-year-select");
+
+            anRaportDiferente2026Selectat = Number(select ? select.value : 2026) || 2026;
+
+            await actualizeazaTabelaRaportDiferente2026();
+            await afiseazaRaportDiferente2026();
+
+        }
+
         async function deschidePaginaRaportDiferente2026() {
 
             document.querySelector(".premium-header").style.display = "none";
@@ -7241,6 +7312,7 @@ function deschideZonaAngajatNou() {
                 angajatRaportDiferente2026 = "";
             }
 
+            pregatesteSelectAnRaportDiferente2026();
             pregatesteSelectAngajatRaportDiferente2026();
             marcheazaButoaneRaportDiferente2026();
 
@@ -7383,7 +7455,7 @@ function deschideZonaAngajatNou() {
             let totalMinuteLucrate = 0;
             let totalZileLucratoare = 0;
 
-            const an = 2026;
+            const an = Number(anRaportDiferente2026Selectat || 2026);
             const zileLuna = new Date(an, luna, 0).getDate();
 
             for (let zi = 1; zi <= zileLuna; zi++) {
@@ -7606,10 +7678,10 @@ function deschideZonaAngajatNou() {
             html += "<th class='year-diff-name-head'>Angajat</th>";
 
             LUNI_RAPORT_DIFERENTE.forEach(function(luna) {
-                html += "<th>" + luna.text + "<br>2026</th>";
+                html += "<th>" + luna.text + "<br>" + anRaportDiferente2026Selectat + "</th>";
             });
 
-            html += "<th class='year-diff-total-head'>Total<br>2026</th>";
+            html += "<th class='year-diff-total-head'>Total<br>" + anRaportDiferente2026Selectat + "</th>";
             html += "</tr></thead>";
             html += "<tbody>";
 
@@ -7761,15 +7833,15 @@ function deschideZonaAngajatNou() {
             }
 
             const randuri = [];
-            randuri.push(["Raport diferențe 2026"]);
+            randuri.push(["Raport diferențe " + anRaportDiferente2026Selectat]);
 
             const antet = ["Angajat"];
 
             luniExport.forEach(function(luna) {
-                antet.push(luna.text + " 2026");
+                antet.push(luna.text + " " + anRaportDiferente2026Selectat);
             });
 
-            antet.push("Total 2026");
+            antet.push("Total " + anRaportDiferente2026Selectat);
             randuri.push(antet);
 
             angajatiRaport.forEach(function(angajat) {
@@ -7865,11 +7937,11 @@ function deschideZonaAngajatNou() {
 
             }
 
-            XLSX.utils.book_append_sheet(workbook, worksheet, "Diferente 2026");
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Diferente " + anRaportDiferente2026Selectat);
 
             XLSX.writeFile(
                 workbook,
-                "Raport_diferente_2026.xlsx",
+                "Raport_diferente_" + anRaportDiferente2026Selectat + ".xlsx",
                 {
                     bookType: "xlsx",
                     cellStyles: true
@@ -8151,8 +8223,6 @@ function deschideZonaAngajatNou() {
         // ===== EXPORT EXCEL - RAPORT ZILE FARA PONTAJ =====
         function construiesteRanduriLipsaPontajExport(lunaAleasa) {
 
-            const anCurent = new Date().getFullYear();
-
             const selectLunaRaport = document.getElementById("missing-days-export-month");
             const lunaSelectataRaport = selectLunaRaport ? String(selectLunaRaport.value || "toate") : "toate";
 
@@ -8213,11 +8283,6 @@ function deschideZonaAngajatNou() {
                     const dataText = formatDataPentruCheie(dataCurenta);
                     const lunaText = dataText.slice(0, 7);
                     const ziSaptamana = dataCurenta.getDay();
-
-                    if (dataCurenta.getFullYear() !== anCurent) {
-                        dataCurenta.setDate(dataCurenta.getDate() + 1);
-                        continue;
-                    }
 
                     if (
                         lunaAleasa !== "toate" &&
@@ -9129,6 +9194,7 @@ function deschideZonaAngajatNou() {
         let modRaportSelectat = "";
         let angajatSelectatRaport = "";
         let raportLunaCurentaDinMeniu = false;
+        let anRaportPontajSelectat = new Date().getFullYear();
 
         // ===== MOD CAUTARE ANGAJAT =====
         function activeazaCautareAngajat() {
@@ -9429,26 +9495,38 @@ function deschideZonaAngajatNou() {
                 return;
             }
 
-            const anCurent = new Date().getFullYear();
+            const ani = [2025, 2026, 2027, 2028, 2029];
 
-            const ani = [2026, 2027, 2028, 2029];
+            if (!ani.includes(Number(anRaportPontajSelectat))) {
+                anRaportPontajSelectat = 2026;
+            }
 
             let html = "";
 
             ani.forEach(function(an) {
 
-                const activ = an <= anCurent;
+                const activ = Number(an) === Number(anRaportPontajSelectat);
 
                 html +=
                     "<button class='report-year-card " +
                     (activ ? "report-year-active" : "report-year-inactive") +
-                    "'>" +
+                    "' onclick='seteazaAnRaportPontaj(" +
+                    an +
+                    ")'>" +
                     an +
                     "</button>";
 
             });
 
             container.innerHTML = html;
+
+        }
+
+        function seteazaAnRaportPontaj(an) {
+
+            anRaportPontajSelectat = Number(an) || 2026;
+
+            afiseazaAniRaport();
 
         }
 
@@ -9596,7 +9674,7 @@ function deschideZonaAngajatNou() {
             if (!selectAn.innerHTML) {
 
                 let htmlAni = "";
-                const ani = [2026, 2027, 2028, 2029];
+                const ani = [2025, 2026, 2027, 2028, 2029];
 
                 ani.forEach(function(an) {
                     htmlAni +=
@@ -10821,7 +10899,7 @@ function deschideZonaAngajatNou() {
             document.getElementById("report-page").style.display = "none";
             document.getElementById("monthly-report-page").style.display = "block";
 
-            const anCurent = new Date().getFullYear();
+            const anCurent = Number(anRaportPontajSelectat || new Date().getFullYear());
 
             document.getElementById("monthly-report-name").innerHTML =
                 angajatSelectatRaport;
@@ -11369,7 +11447,7 @@ function deschideZonaAngajatNou() {
             document.getElementById("report-page").style.display = "none";
             document.getElementById("all-employees-report-page").style.display = "block";
 
-            const anCurent = new Date().getFullYear();
+            const anCurent = Number(anRaportPontajSelectat || new Date().getFullYear());
 
             document.getElementById("all-employees-report-title").innerHTML =
                 "Toți angajații";
@@ -12593,32 +12671,39 @@ function deschideZonaAngajatNou() {
             }
 
             const acum = new Date();
-            const an = 2026;
-            const lunaCurenta = acum.getFullYear() === an
-                ? acum.getMonth() + 1
-                : 5;
+            const ani = [2025, 2026, 2027, 2028, 2029];
+            const anCurent = acum.getFullYear();
+            const lunaCurenta = acum.getMonth() + 1;
 
             let html = "";
 
-            for (let luna = 1; luna <= 12; luna++) {
+            ani.forEach(function(an) {
 
-                const valoare =
-                    an +
-                    "-" +
-                    String(luna).padStart(2, "0");
+                for (let luna = 1; luna <= 12; luna++) {
 
-                html +=
-                    "<option value='" +
-                    valoare +
-                    "' " +
-                    (luna === lunaCurenta ? "selected" : "") +
-                    ">" +
-                    numeLunaComplet(luna) +
-                    " " +
-                    an +
-                    "</option>";
+                    const valoare =
+                        an +
+                        "-" +
+                        String(luna).padStart(2, "0");
 
-            }
+                    const selectat =
+                        an === anCurent &&
+                        luna === lunaCurenta;
+
+                    html +=
+                        "<option value='" +
+                        valoare +
+                        "' " +
+                        (selectat ? "selected" : "") +
+                        ">" +
+                        numeLunaComplet(luna) +
+                        " " +
+                        an +
+                        "</option>";
+
+                }
+
+            });
 
             select.innerHTML = html;
 
