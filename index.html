@@ -8881,6 +8881,30 @@ function deschideZonaAngajatNou() {
                         return;
                     }
 
+                    // ===== RAPORT SUB 3H - WEEKEND DOAR PENTRU PAZA =====
+                    const dataObj = creeazaDataDinText(dataText);
+                    const esteWeekend =
+                        dataObj.getDay() === 0 ||
+                        dataObj.getDay() === 6;
+
+                    const estePaza =
+                        String(sectie || "")
+                            .trim()
+                            .toUpperCase()
+                            .normalize("NFD")
+                            .replace(/[\u0300-\u036f]/g, "")
+                            .includes("PAZA") ||
+                        String(pontaj.departament || "")
+                            .trim()
+                            .toUpperCase()
+                            .normalize("NFD")
+                            .replace(/[\u0300-\u036f]/g, "")
+                            .includes("PAZA");
+
+                    if (esteWeekend && !estePaza) {
+                        return;
+                    }
+
                     const minute = obtineMinutePontajSub3H(pontaj, angajat);
 
                     if (minute === null) {
@@ -8888,8 +8912,6 @@ function deschideZonaAngajatNou() {
                     }
 
                     if (minute > 0 && minute < 180) {
-
-                        const dataObj = creeazaDataDinText(dataText);
 
                         const cheieRaport =
                             String(pontaj.id || "") ||
