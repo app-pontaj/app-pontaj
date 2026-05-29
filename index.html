@@ -2136,8 +2136,8 @@
 
 
 
-        /* ===== TEST LOGICA PONTAJ - FARA SALVARE ===== */
-        .test-logic-page {
+        /* ===== CONCEDIU TOTI ANGAJATII ===== */
+        .collective-leave-page {
             width: 100%;
             height: 100%;
             padding: 10px 14px 12px;
@@ -2149,7 +2149,7 @@
             font-family: 'Montserrat', Arial, sans-serif;
         }
 
-        .test-logic-header {
+        .collective-leave-header {
             position: sticky;
             top: 0;
             background: #050505;
@@ -2159,7 +2159,7 @@
             box-shadow: 0 12px 18px #050505;
         }
 
-        .test-logic-title {
+        .collective-leave-title {
             color: #ffffff;
             font-size: 17px;
             font-weight: 900;
@@ -2167,7 +2167,7 @@
             line-height: 1.05;
         }
 
-        .test-logic-subtitle {
+        .collective-leave-subtitle {
             color: #d4af37;
             font-size: 11px;
             font-weight: 800;
@@ -2175,77 +2175,61 @@
             margin-top: 4px;
         }
 
-        .test-logic-controls {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-            margin-top: 10px;
+        .collective-leave-form {
+            border-radius: 18px;
+            border: 1.5px solid rgba(212,175,55,0.80);
+            background: linear-gradient(145deg, rgba(255,255,255,0.08), rgba(0,0,0,0.98));
+            padding: 12px;
+            margin-top: 14px;
+            box-shadow: 0 8px 18px rgba(0,0,0,0.55);
         }
 
-        .test-logic-select,
-        .test-logic-button {
-            min-height: 34px;
-            border-radius: 10px;
-            border: 1.5px solid #d4af37;
+        .collective-leave-label {
+            color: #d4af37;
             font-size: 11px;
+            font-weight: 900;
+            margin: 8px 0 5px;
+        }
+
+        .collective-leave-input,
+        .collective-leave-select {
+            width: 100%;
+            min-height: 38px;
+            border-radius: 12px;
+            border: 1.5px solid #d4af37;
+            background: #111111;
+            color: #ffffff;
+            padding: 0 10px;
+            font-size: 12px;
             font-weight: 900;
             font-family: 'Montserrat', Arial, sans-serif;
             outline: none;
+            box-sizing: border-box;
         }
 
-        .test-logic-select {
-            background: #111111;
-            color: #ffffff;
-            padding: 0 8px;
-        }
-
-        .test-logic-button {
-            background: linear-gradient(145deg, #ffe27a 0%, #d6a72d 56%, #b98208 100%);
+        .collective-leave-button {
+            width: 100%;
+            min-height: 40px;
+            border-radius: 13px;
+            border: 1px solid rgba(255,217,91,0.95);
+            background: linear-gradient(145deg,#ffe071 0%,#d4af37 58%,#b8860b 100%);
             color: #050505;
-            cursor: pointer;
-        }
-
-        .test-logic-list {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            padding-top: 12px;
-            padding-bottom: 18px;
-        }
-
-        .test-logic-card {
-            border-radius: 16px;
-            border: 1.5px solid rgba(212,175,55,0.86);
-            background: linear-gradient(145deg, rgba(255,255,255,0.08), rgba(0,0,0,0.98));
-            padding: 10px 11px;
-            box-shadow: 0 6px 16px rgba(0,0,0,0.50);
-        }
-
-        .test-logic-name {
-            color: #ff3333;
             font-size: 12px;
             font-weight: 900;
-            line-height: 1.15;
-            margin-bottom: 5px;
+            cursor: pointer;
+            font-family: 'Montserrat', Arial, sans-serif;
+            margin-top: 12px;
+            box-shadow:
+                inset 0 1px 0 rgba(255,255,255,0.44),
+                0 6px 14px rgba(0,0,0,0.56);
         }
 
-        .test-logic-line {
+        .collective-leave-info {
             color: #ffffff;
             font-size: 10px;
-            font-weight: 800;
+            font-weight: 700;
             line-height: 1.35;
-        }
-
-        .test-logic-gold {
-            color: #d4af37;
-        }
-
-        .test-logic-empty {
-            color: #d4af37;
-            font-size: 13px;
-            font-weight: 900;
-            text-align: center;
-            padding: 28px 0;
+            margin-top: 12px;
         }
 
 
@@ -2695,12 +2679,12 @@
 
                     <div
                         class="menu-card"
-                        id="test-logic-menu-card"
-                        onclick="deschidePaginaTestLogicaPontaj()"
+                        id="collective-leave-menu-card"
+                        onclick="deschidePaginaConcediuTotiAngajatii()"
                         style="display:none;"
                     >
-                        <span class="menu-icon">🧪</span>
-                        <span class="menu-text" style="color:#d4af37;">Test logica pontaj</span>
+                        <span class="menu-icon">🏖</span>
+                        <span class="menu-text" style="color:#d4af37;">Concediu toți angajații</span>
                         <span class="menu-arrow">›</span>
                     </div>
 
@@ -3016,53 +3000,73 @@
                 </div>
 
 
-                <!-- ===== PAGINA TEST LOGICA PONTAJ - FARA SALVARE ===== -->
+                <!-- ===== PAGINA CONCEDIU TOTI ANGAJATII ===== -->
                 <div
-                    class="test-logic-page"
-                    id="test-logic-page"
+                    class="collective-leave-page"
+                    id="collective-leave-page"
                     style="display:none;"
                 >
 
-                    <div class="test-logic-header">
+                    <div class="collective-leave-header">
                         <div class="report-top-row">
                             <button
                                 class="report-back-modern"
-                                onclick="inchidePaginaTestLogicaPontaj()"
+                                onclick="inchidePaginaConcediuTotiAngajatii()"
                             >
                                 ‹ BACK
                             </button>
 
                             <div>
-                                <div class="test-logic-title">
-                                    Test logica pontaj
+                                <div class="collective-leave-title">
+                                    Concediu toți angajații
                                 </div>
 
-                                <div class="test-logic-subtitle">
-                                    Comparatie fara salvare in Supabase
+                                <div class="collective-leave-subtitle">
+                                    Aplică C.O doar la zile fără pontaj
                                 </div>
                             </div>
                         </div>
-
-                        <div class="test-logic-controls">
-                            <select
-                                class="test-logic-select"
-                                id="test-logic-month"
-                                onchange="afiseazaTestLogicaPontaj()"
-                            ></select>
-
-                            <button
-                                class="test-logic-button"
-                                onclick="afiseazaTestLogicaPontaj()"
-                            >
-                                Recalculeaza
-                            </button>
-                        </div>
                     </div>
 
-                    <div
-                        class="test-logic-list"
-                        id="test-logic-list"
-                    ></div>
+                    <div class="collective-leave-form">
+
+                        <div class="collective-leave-label">
+                            Data liberă acordată
+                        </div>
+
+                        <input
+                            type="date"
+                            class="collective-leave-input"
+                            id="collective-leave-date"
+                        >
+
+                        <div class="collective-leave-label">
+                            Motiv
+                        </div>
+
+                        <select
+                            class="collective-leave-select"
+                            id="collective-leave-reason"
+                        >
+                            <option value="C.O">C.O</option>
+                        </select>
+
+                        <button
+                            class="collective-leave-button"
+                            onclick="aplicaConcediuTotiAngajatii()"
+                        >
+                            Aplică C.O
+                        </button>
+
+                        <div
+                            class="collective-leave-info"
+                            id="collective-leave-info"
+                        >
+                            Se modifică doar angajații care în data aleasă au Lipsă pontaj.
+                            Angajații cu pontaj sau cu motiv deja introdus nu sunt modificați.
+                        </div>
+
+                    </div>
 
                 </div>
 
@@ -3576,8 +3580,7 @@
 
                 <!-- ===== PAGINA RAPORT LUNAR TOTI ANGAJATII ===== -->
                 <div
-                    class="all-employees-report-page",
-                "test-logic-page"
+                    class="all-employees-report-page"
                     id="all-employees-report-page"
                     style="display:none;"
                 >
@@ -3822,6 +3825,7 @@
                 "short-days-page",
                 "entry-exit-page",
                 "server-corrections-page",
+                "collective-leave-page",
                 "employees-page",
                 "year-diff-page",
                 "monthly-report-page",
@@ -3996,7 +4000,7 @@
             aplicaRestrictiiMeniu(userData);
             actualizeazaVizibilitateMeniuCorectiiPontajServer();
             actualizeazaVizibilitateMeniuRaportIntrareIesire();
-            actualizeazaVizibilitateMeniuTestLogicaPontaj();
+            actualizeazaVizibilitateMeniuConcediuTotiAngajatii();
 
             localStorage.setItem(
                 "utilizatorLogat",
@@ -13159,10 +13163,10 @@ function deschideZonaAngajatNou() {
         }
 
 
-        // ===== TEST LOGICA PONTAJ - FARA SALVARE IN SUPABASE =====
-        function actualizeazaVizibilitateMeniuTestLogicaPontaj() {
+        // ===== CONCEDIU TOTI ANGAJATII - APLICARE CO COLECTIV =====
+        function actualizeazaVizibilitateMeniuConcediuTotiAngajatii() {
 
-            const card = document.getElementById("test-logic-menu-card");
+            const card = document.getElementById("collective-leave-menu-card");
 
             if (!card) {
                 return;
@@ -13175,12 +13179,12 @@ function deschideZonaAngajatNou() {
 
         }
 
-        async function deschidePaginaTestLogicaPontaj() {
+        function deschidePaginaConcediuTotiAngajatii() {
 
             if (!areAccesTotalRapoarte()) {
 
                 showMessage(
-                    "Nu ai acces la test logica pontaj",
+                    "Nu ai acces la concediu toți angajații",
                     "error"
                 );
 
@@ -13192,16 +13196,26 @@ function deschideZonaAngajatNou() {
             document.querySelector(".premium-line").style.display = "none";
 
             document.getElementById("main-menu").style.display = "none";
-            document.getElementById("test-logic-page").style.display = "block";
+            document.getElementById("collective-leave-page").style.display = "block";
 
-            await pregatesteSelectLuniTestLogicaPontaj();
-            await afiseazaTestLogicaPontaj();
+            const campData = document.getElementById("collective-leave-date");
+            const info = document.getElementById("collective-leave-info");
+
+            if (campData) {
+                campData.value = "";
+            }
+
+            if (info) {
+                info.innerHTML =
+                    "Se modifică doar angajații care în data aleasă au Lipsă pontaj. " +
+                    "Angajații cu pontaj sau cu motiv deja introdus nu sunt modificați.";
+            }
 
         }
 
-        function inchidePaginaTestLogicaPontaj() {
+        function inchidePaginaConcediuTotiAngajatii() {
 
-            document.getElementById("test-logic-page").style.display = "none";
+            document.getElementById("collective-leave-page").style.display = "none";
             document.getElementById("main-menu").style.display = "flex";
 
             document.querySelector(".premium-header").style.display = "flex";
@@ -13209,353 +13223,251 @@ function deschideZonaAngajatNou() {
 
         }
 
-        async function pregatesteSelectLuniTestLogicaPontaj() {
+        function esteDataEligibilaPentruLipsaPontaj(dataText) {
 
-            const select = document.getElementById("test-logic-month");
-
-            if (!select) {
-                return;
+            if (!dataText) {
+                return false;
             }
-
-            const { data, error } = await supabaseClient
-                .from("pontaj_zilnic")
-                .select("data")
-                .order("data", {
-                    ascending: false
-                })
-                .limit(2000);
-
-            if (error || !data || !data.length) {
-                select.innerHTML = "<option value=''>Fara date</option>";
-                return;
-            }
-
-            const luniGasite = {};
-
-            data.forEach(function(rand) {
-
-                const luna = String(rand.data || "").slice(0, 7);
-
-                if (luna.length === 7) {
-                    luniGasite[luna] = true;
-                }
-
-            });
-
-            const luni = Object.keys(luniGasite).sort().reverse();
-
-            let html = "";
-
-            luni.forEach(function(luna) {
-                html += "<option value='" + luna + "'>" + luna + "</option>";
-            });
-
-            select.innerHTML = html;
-
-        }
-
-        function minuteTestLogica(oraText) {
-
-            if (!oraText) {
-                return null;
-            }
-
-            const parti = String(oraText).split(":");
-
-            if (parti.length < 2) {
-                return null;
-            }
-
-            return (
-                parseInt(parti[0], 10) * 60 +
-                parseInt(parti[1], 10)
-            );
-
-        }
-
-        function dataPlusZileTestLogica(dataText, zile) {
 
             const dataObj = creeazaDataDinText(dataText);
+            const ziSaptamana = dataObj.getDay();
 
-            dataObj.setDate(dataObj.getDate() + zile);
-
-            return formatDataPentruCheie(dataObj);
-
-        }
-
-        function formatOraTestLogica(minute) {
-
-            const minuteNormale = ((minute % 1440) + 1440) % 1440;
-            const ora = Math.floor(minuteNormale / 60);
-            const minut = minuteNormale % 60;
-
-            return String(ora).padStart(2, "0") + ":" + String(minut).padStart(2, "0");
-
-        }
-
-        function construiesteRezultatNouTestLogica(nume, dataText, evenimenteDupaAngajatZi) {
-
-            const cheieAzi = nume + "|" + dataText;
-            const dataMaine = dataPlusZileTestLogica(dataText, 1);
-            const cheieMaine = nume + "|" + dataMaine;
-
-            const azi = evenimenteDupaAngajatZi[cheieAzi] || [];
-            const maine = evenimenteDupaAngajatZi[cheieMaine] || [];
-
-            const aziSortat = azi.slice().sort(function(a, b) {
-                return a.minute - b.minute;
-            });
-
-            const maineDimineata = maine
-                .filter(function(ev) {
-                    return ev.minute > 0 && ev.minute <= 420;
-                })
-                .sort(function(a, b) {
-                    return a.minute - b.minute;
-                });
-
-            const areSeara =
-                aziSortat.some(function(ev) {
-                    return ev.minute >= 1020;
-                });
-
-            if (
-                areSeara &&
-                maineDimineata.length
-            ) {
-
-                const intrariSeara = aziSortat.filter(function(ev) {
-                    return ev.minute >= 1020;
-                });
-
-                const prima = intrariSeara[0];
-                const ultima = maineDimineata[maineDimineata.length - 1];
-
-                return {
-                    data: dataText,
-                    data_iesire: dataMaine,
-                    ora_intrare: prima.ora,
-                    ora_iesire: ultima.ora,
-                    tip: "tura noapte"
-                };
-
+            if (ziSaptamana === 0 || ziSaptamana === 6) {
+                return false;
             }
 
-            if (!aziSortat.length) {
-
-                return {
-                    data: dataText,
-                    data_iesire: dataText,
-                    ora_intrare: "",
-                    ora_iesire: "",
-                    tip: "fara pontaj"
-                };
-
+            if (esteZiLiberaLegala(dataText)) {
+                return false;
             }
 
-            const primaAzi = aziSortat[0];
-            const ultimaAzi = aziSortat[aziSortat.length - 1];
-
-            return {
-                data: dataText,
-                data_iesire: dataText,
-                ora_intrare: primaAzi.ora,
-                ora_iesire: ultimaAzi.ora,
-                tip: "zi normala"
-            };
+            return true;
 
         }
 
-        async function afiseazaTestLogicaPontaj() {
+        async function aplicaConcediuTotiAngajatii() {
 
-            const lista = document.getElementById("test-logic-list");
-            const select = document.getElementById("test-logic-month");
+            if (!areAccesTotalRapoarte()) {
 
-            if (!lista || !select || !select.value) {
+                showMessage(
+                    "Nu ai acces la această acțiune",
+                    "error"
+                );
+
                 return;
+
             }
 
-            lista.innerHTML = "<div class='test-logic-empty'>Se calculeaza...</div>";
+            const campData = document.getElementById("collective-leave-date");
+            const info = document.getElementById("collective-leave-info");
+            const dataText = campData ? String(campData.value || "").trim() : "";
+            const motiv = "C.O";
 
-            const lunaAleasa = select.value;
-            const an = Number(lunaAleasa.slice(0, 4));
-            const luna = Number(lunaAleasa.slice(5, 7));
-            const zileLuna = new Date(an, luna, 0).getDate();
+            if (!dataText) {
 
-            const primaZi = lunaAleasa + "-01";
-            const ultimaZi = lunaAleasa + "-" + String(zileLuna).padStart(2, "0");
-            const ziDupaLuna = dataPlusZileTestLogica(ultimaZi, 1);
+                showMessage(
+                    "Alege data",
+                    "error"
+                );
 
-            const { data: pontaje, error } = await supabaseClient
-                .from("pontaj_zilnic")
+                return;
+
+            }
+
+            if (!esteDataEligibilaPentruLipsaPontaj(dataText)) {
+
+                showMessage(
+                    "Data aleasă nu este zi cu Lipsă pontaj în raport",
+                    "error"
+                );
+
+                return;
+
+            }
+
+            if (info) {
+                info.innerHTML = "Se aplică C.O...";
+            }
+
+            const { data: angajati, error: eroareAngajati } = await supabaseClient
+                .from("angajati")
                 .select("*")
-                .gte("data", primaZi)
-                .lte("data", ziDupaLuna)
                 .order("nume", {
                     ascending: true
                 });
 
-            if (error) {
-                lista.innerHTML = "";
-                showMessage("Eroare citire pontaje test", "error");
+            if (eroareAngajati) {
+
+                showMessage(
+                    "Eroare citire angajați",
+                    "error"
+                );
+
+                if (info) {
+                    info.innerHTML = "Eroare citire angajați.";
+                }
+
                 return;
+
             }
 
-            if (!pontaje || !pontaje.length) {
-                lista.innerHTML = "<div class='test-logic-empty'>Nu exista pontaje pentru luna aleasa.</div>";
+            const { data: pontajeZi, error: eroarePontaje } = await supabaseClient
+                .from("pontaj_zilnic")
+                .select("nume,data,status_corectie,cheie_unica")
+                .eq("data", dataText);
+
+            if (eroarePontaje) {
+
+                showMessage(
+                    "Eroare citire pontaj",
+                    "error"
+                );
+
+                if (info) {
+                    info.innerHTML = "Eroare citire pontaj.";
+                }
+
                 return;
+
             }
 
-            const evenimenteDupaAngajatZi = {};
-            const pontajActualDupaCheie = {};
-            const numeAngajati = {};
+            const pontajeExistente = {};
 
-            pontaje.forEach(function(pontaj) {
+            (pontajeZi || []).forEach(function(pontaj) {
 
-                const nume = String(pontaj.nume || "").trim();
-                const dataPontaj = String(pontaj.data || "").trim();
+                const cheie =
+                    normalizeazaCheieRaportZileFaraPontaj(pontaj.nume) +
+                    "|" +
+                    String(pontaj.data || "").trim();
 
-                if (!nume || !dataPontaj) {
-                    return;
-                }
-
-                const esteManual =
-                    pontaj.status_corectie ||
-                    pontaj.ora_intrare_manual ||
-                    pontaj.ora_iesire_manual ||
-                    pontaj.modificat_de;
-
-                if (esteManual) {
-                    return;
-                }
-
-                numeAngajati[nume] = true;
-                pontajActualDupaCheie[nume + "|" + dataPontaj] = pontaj;
-
-                const oraIntrareMinute = minuteTestLogica(pontaj.ora_intrare);
-                const oraIesireMinute = minuteTestLogica(pontaj.ora_iesire);
-                const dataIesire = pontaj.data_iesire || dataPontaj;
-
-                if (oraIntrareMinute !== null) {
-
-                    const cheieIntrare = nume + "|" + dataPontaj;
-
-                    if (!evenimenteDupaAngajatZi[cheieIntrare]) {
-                        evenimenteDupaAngajatZi[cheieIntrare] = [];
-                    }
-
-                    evenimenteDupaAngajatZi[cheieIntrare].push({
-                        ora: pontaj.ora_intrare,
-                        minute: oraIntrareMinute
-                    });
-
-                }
-
-                if (oraIesireMinute !== null) {
-
-                    const cheieIesire = nume + "|" + dataIesire;
-
-                    if (!evenimenteDupaAngajatZi[cheieIesire]) {
-                        evenimenteDupaAngajatZi[cheieIesire] = [];
-                    }
-
-                    evenimenteDupaAngajatZi[cheieIesire].push({
-                        ora: pontaj.ora_iesire,
-                        minute: oraIesireMinute
-                    });
-
-                }
+                pontajeExistente[cheie] = true;
 
             });
 
-            let html = "";
-            let diferente = 0;
+            const randuriDeSalvat = [];
 
-            Object.keys(numeAngajati)
-                .sort(function(a, b) {
-                    return a.localeCompare(b, "ro");
-                })
-                .forEach(function(nume) {
+            (angajati || []).forEach(function(angajat) {
 
-                    for (let zi = 1; zi <= zileLuna; zi++) {
+                const nume = String(angajat.nume || "").trim();
 
-                        const dataText =
-                            lunaAleasa +
-                            "-" +
-                            String(zi).padStart(2, "0");
+                if (!nume) {
+                    return;
+                }
 
-                        const actual = pontajActualDupaCheie[nume + "|" + dataText];
+                if (angajat.apare_in_rapoarte === false) {
+                    return;
+                }
 
-                        if (!actual) {
-                            continue;
-                        }
+                if (angajat.afiseaza_lipsa_pontaj === false) {
+                    return;
+                }
 
-                        const nou = construiesteRezultatNouTestLogica(
-                            nume,
-                            dataText,
-                            evenimenteDupaAngajatZi
-                        );
+                if (!angajatInSectiiPermise(angajat)) {
+                    return;
+                }
 
-                        const actualText =
-                            (actual.ora_intrare || "--:--") +
-                            " - " +
-                            (actual.ora_iesire || "--:--") +
-                            (
-                                actual.data_iesire &&
-                                actual.data_iesire !== actual.data
-                                    ? " (" + actual.data_iesire + ")"
-                                    : ""
-                            );
+                const angajatInactivLaData =
+                    angajat.activ === false &&
+                    angajat.data_inactiv &&
+                    dataText >= angajat.data_inactiv;
 
-                        const nouText =
-                            (nou.ora_intrare || "--:--") +
-                            " - " +
-                            (nou.ora_iesire || "--:--") +
-                            (
-                                nou.data_iesire &&
-                                nou.data_iesire !== nou.data
-                                    ? " (" + nou.data_iesire + ")"
-                                    : ""
-                            );
+                if (angajatInactivLaData) {
+                    return;
+                }
 
-                        const diferit =
-                            String(actual.ora_intrare || "") !== String(nou.ora_intrare || "") ||
-                            String(actual.ora_iesire || "") !== String(nou.ora_iesire || "") ||
-                            String(actual.data_iesire || actual.data || "") !== String(nou.data_iesire || nou.data || "");
+                const cheieCautare =
+                    normalizeazaCheieRaportZileFaraPontaj(nume) +
+                    "|" +
+                    dataText;
 
-                        if (!diferit) {
-                            continue;
-                        }
+                if (pontajeExistente[cheieCautare]) {
+                    return;
+                }
 
-                        diferente++;
-
-                        html +=
-                            "<div class='test-logic-card'>" +
-                                "<div class='test-logic-name'>" +
-                                    escapeHtml(nume) +
-                                    " — " +
-                                    escapeHtml(formatZiScurtaData(creeazaDataDinText(dataText))) +
-                                "</div>" +
-                                "<div class='test-logic-line'><span class='test-logic-gold'>Actual:</span> " +
-                                    escapeHtml(actualText) +
-                                "</div>" +
-                                "<div class='test-logic-line'><span class='test-logic-gold'>Nou:</span> " +
-                                    escapeHtml(nouText) +
-                                "</div>" +
-                                "<div class='test-logic-line'><span class='test-logic-gold'>Motiv:</span> " +
-                                    escapeHtml(nou.tip) +
-                                "</div>" +
-                            "</div>";
-
-                    }
-
+                randuriDeSalvat.push({
+                    nume: nume,
+                    departament: angajat.sectie || "",
+                    data: dataText,
+                    data_iesire: dataText,
+                    cheie_unica: nume + "|" + dataText,
+                    status_corectie: motiv,
+                    ora_intrare_manual: null,
+                    ora_iesire_manual: null,
+                    modificat_de: utilizatorLogat?.nume || "",
+                    modificat_la: new Date().toISOString()
                 });
 
-            if (!diferente) {
-                html = "<div class='test-logic-empty'>Nu exista diferente gasite in luna aleasa.</div>";
+            });
+
+            if (!randuriDeSalvat.length) {
+
+                showMessage(
+                    "Nu există angajați cu Lipsă pontaj în data aleasă",
+                    "error"
+                );
+
+                if (info) {
+                    info.innerHTML = "Nu s-a modificat nimic.";
+                }
+
+                return;
+
             }
 
-            lista.innerHTML = html;
+            const { error: eroareSalvare } = await supabaseClient
+                .from("pontaj_zilnic")
+                .upsert(
+                    randuriDeSalvat,
+                    {
+                        onConflict: "cheie_unica"
+                    }
+                );
+
+            if (eroareSalvare) {
+
+                showMessage(
+                    "Eroare salvare C.O",
+                    "error"
+                );
+
+                if (info) {
+                    info.innerHTML = "Eroare salvare C.O.";
+                }
+
+                return;
+
+            }
+
+            for (const rand of randuriDeSalvat) {
+
+                await actualizeazaRaportDiferenteLunarPentruAngajat(
+                    rand.nume,
+                    Number(String(dataText).slice(0, 4)),
+                    Number(String(dataText).slice(5, 7))
+                );
+
+            }
+
+            if (pontajeRaportZileFaraPontaj && Array.isArray(pontajeRaportZileFaraPontaj)) {
+                pontajeRaportZileFaraPontaj = pontajeRaportZileFaraPontaj.concat(randuriDeSalvat);
+            }
+
+            await incarcaContorZileFaraPontaj();
+
+            if (document.getElementById("missing-days-page")?.style.display === "block") {
+                await incarcaRaportZileFaraPontaj();
+            }
+
+            if (info) {
+                info.innerHTML =
+                    "C.O aplicat pentru " +
+                    randuriDeSalvat.length +
+                    " angajați.";
+            }
+
+            showMessage(
+                "C.O aplicat pentru " + randuriDeSalvat.length + " angajați",
+                "success"
+            );
 
         }
 
