@@ -820,7 +820,7 @@
 
         .year-diff-filter-row {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 1fr 1fr 1fr;
             gap: 8px;
             margin-top: 12px;
         }
@@ -2877,6 +2877,30 @@
                             >
                                 Toți angajații
                             </button>
+
+                            <button
+                                class="year-diff-filter-button"
+                                id="year-diff-filter-sectie"
+                                onclick="seteazaModRaportDiferente2026('sectie')"
+                            >
+                                Secție
+                            </button>
+                        </div>
+
+                        <div
+                            class="report-section-area"
+                            id="year-diff-section-area"
+                            style="display:none;margin-top:10px;margin-bottom:0;"
+                        >
+                            <div class="report-section-title">
+                                Selectează una sau mai multe secții
+                            </div>
+
+                            <div
+                                class="report-section-list"
+                                id="year-diff-section-list"
+                            >
+                            </div>
                         </div>
 
                         <div
@@ -6910,6 +6934,7 @@ function deschideZonaAngajatNou() {
         let modRaportDiferente2026 = "toti";
         let angajatRaportDiferente2026 = "";
         let anRaportDiferente2026Selectat = 2026;
+        let sectiiSelectateRaportDiferente2026 = [];
 
         const LUNI_RAPORT_DIFERENTE = [
             { numar: 1, text: "Ian" },
@@ -7315,6 +7340,142 @@ function deschideZonaAngajatNou() {
 
         }
 
+        // ===== LISTA SECTII RAPORT DIFERENTE =====
+        async function pregatesteListaSectiiRaportDiferente2026() {
+
+            const lista = document.getElementById("year-diff-section-list");
+
+            if (!lista) {
+                return;
+            }
+
+            if (!listaAngajatiSupabase.length) {
+
+                const { data } = await supabaseClient
+                    .from("angajati")
+                    .select("*")
+                    .order("nume", {
+                        ascending: true
+                    });
+
+                listaAngajatiSupabase = data || [];
+
+            }
+
+            const sectiiGasite = {};
+
+            listaAngajatiSupabase
+                .filter(function(angajat) {
+                    return (
+                        angajat.apare_in_rapoarte !== false &&
+                        angajatInSectiiPermise(angajat)
+                    );
+                })
+                .forEach(function(angajat) {
+
+                    const sectie = String(angajat.sectie || "").trim();
+
+                    if (sectie) {
+                        sectiiGasite[sectie] = true;
+                    }
+
+                });
+
+            const sectii = Object.keys(sectiiGasite).sort(function(a, b) {
+                return a.localeCompare(b, "ro");
+            });
+
+            if (!sectii.length) {
+                lista.innerHTML = "<div class='report-section-option'>Nu există secții disponibile.</div>";
+                return;
+            }
+
+            let html = "";
+
+            sectii.forEach(function(sectie) {
+
+                const bifat = sectiiSelectateRaportDiferente2026.includes(sectie)
+                    ? "checked"
+                    : "";
+
+                html +=
+                    "<label class='report-section-option'>" +
+                    "<input type='checkbox' class='year-diff-section-check' value='" +
+                    escapeHtml(sectie) +
+                    "' onchange='actualizeazaSectiiSelectateRaportDiferente2026()' " +
+                    bifat +
+                    ">" +
+                    "<span>" +
+                    escapeHtml(sectie) +
+                    "</span>" +
+                    "</label>";
+
+            });
+
+            lista.innerHTML = html;
+
+        }
+
+        // ===== SALVARE SELECTII SECTII RAPORT DIFERENTE =====
+        async function actualizeazaSectiiSelectateRaportDiferente2026() {
+
+            sectiiSelectateRaportDiferente2026 = Array.from(
+                document.querySelectorAll(".year-diff-section-check:checked")
+            ).map(function(input) {
+                return input.value;
+            });
+
+            await actualizeazaTabelaRaportDiferente2026();
+            await afiseazaRaportDiferente2026();
+
+        }
+
+        // ===== FILTRARE ANGAJATI RAPORT DIFERENTE DUPA SECTII =====
+        function aplicaFiltruSectiiRaportDiferente2026(listaAngajati) {
+
+            let rezultat = Array.isArray(listaAngajati)
+                ? listaAngajati.slice()
+                : [];
+
+            if (modRaportDiferente2026 === "sectie") {
+
+                rezultat = rezultat.filter(function(angajat) {
+                    return sectiiSelectateRaportDiferente2026.includes(
+                        String(angajat.sectie || "").trim()
+                    );
+                });
+
+                rezultat.sort(function(a, b) {
+
+                    const sectieA = String(a.sectie || "").trim();
+                    const sectieB = String(b.sectie || "").trim();
+
+                    if (sectieA !== sectieB) {
+                        return sectieA.localeCompare(sectieB, "ro");
+                    }
+
+                    return String(a.nume || "").trim().localeCompare(
+                        String(b.nume || "").trim(),
+                        "ro"
+                    );
+
+                });
+
+                return rezultat;
+
+            }
+
+            rezultat.sort(function(a, b) {
+                return String(a.nume || "").trim().localeCompare(
+                    String(b.nume || "").trim(),
+                    "ro"
+                );
+            });
+
+            return rezultat;
+
+        }
+
         // ===== ACTUALIZARE SIGURA TABELA RAPORT DIFERENTE 2026 =====
         async function actualizeazaTabelaRaportDiferente2026() {
 
@@ -7343,6 +7504,19 @@ function deschideZonaAngajatNou() {
                 angajatiDeActualizat = angajatiDeActualizat.filter(function(angajat) {
                     return String(angajat.nume || "").trim() === String(angajatRaportDiferente2026 || "").trim();
                 });
+
+            }
+
+            if (modRaportDiferente2026 === "sectie") {
+
+                if (!sectiiSelectateRaportDiferente2026.length) {
+                    if (container) {
+                        container.innerHTML = "<div class='year-diff-loading'>Alege secția.</div>";
+                    }
+                    return;
+                }
+
+                angajatiDeActualizat = aplicaFiltruSectiiRaportDiferente2026(angajatiDeActualizat);
 
             }
 
@@ -7457,6 +7631,14 @@ function deschideZonaAngajatNou() {
                 angajatRaportDiferente2026 = "";
             }
 
+            sectiiSelectateRaportDiferente2026 = [];
+
+            const zonaSectiiDiferente = document.getElementById("year-diff-section-area");
+
+            if (zonaSectiiDiferente) {
+                zonaSectiiDiferente.style.display = "none";
+            }
+
             pregatesteSelectAnRaportDiferente2026();
             pregatesteSelectAngajatRaportDiferente2026();
             marcheazaButoaneRaportDiferente2026();
@@ -7479,13 +7661,15 @@ function deschideZonaAngajatNou() {
         async function seteazaModRaportDiferente2026(mod) {
 
             if (
-                mod === "toti" &&
+                (mod === "toti" || mod === "sectie") &&
                 !areAccesTotalRapoarte() &&
                 !esteSefDepartament()
             ) {
 
                 showMessage(
-                    "Nu ai acces la toți angajații",
+                    mod === "sectie"
+                        ? "Nu ai acces la raport pe secții"
+                        : "Nu ai acces la toți angajații",
                     "error"
                 );
 
@@ -7495,7 +7679,7 @@ function deschideZonaAngajatNou() {
 
             modRaportDiferente2026 = mod;
 
-            if (mod === "toti") {
+            if (mod === "toti" || mod === "sectie") {
                 angajatRaportDiferente2026 = "";
             }
 
@@ -7504,6 +7688,10 @@ function deschideZonaAngajatNou() {
                 esteAngajatSimplu()
             ) {
                 angajatRaportDiferente2026 = utilizatorLogat.nume;
+            }
+
+            if (mod === "sectie") {
+                await pregatesteListaSectiiRaportDiferente2026();
             }
 
             pregatesteSelectAngajatRaportDiferente2026();
@@ -7518,7 +7706,9 @@ function deschideZonaAngajatNou() {
 
             const btnAngajat = document.getElementById("year-diff-filter-angajat");
             const btnToti = document.getElementById("year-diff-filter-toti");
+            const btnSectie = document.getElementById("year-diff-filter-sectie");
             const zonaSelect = document.getElementById("year-diff-select-area");
+            const zonaSectii = document.getElementById("year-diff-section-area");
 
             if (btnAngajat) {
                 btnAngajat.classList.toggle("active", modRaportDiferente2026 === "angajat");
@@ -7529,9 +7719,21 @@ function deschideZonaAngajatNou() {
                 btnToti.style.display = esteAngajatSimplu() ? "none" : "";
             }
 
+            if (btnSectie) {
+                btnSectie.classList.toggle("active", modRaportDiferente2026 === "sectie");
+                btnSectie.style.display = esteAngajatSimplu() ? "none" : "";
+            }
+
             if (zonaSelect) {
                 zonaSelect.style.display =
                     modRaportDiferente2026 === "angajat" && !esteAngajatSimplu()
+                        ? "block"
+                        : "none";
+            }
+
+            if (zonaSectii) {
+                zonaSectii.style.display =
+                    modRaportDiferente2026 === "sectie" && !esteAngajatSimplu()
                         ? "block"
                         : "none";
             }
@@ -7771,6 +7973,25 @@ function deschideZonaAngajatNou() {
 
             }
 
+            if (modRaportDiferente2026 === "sectie") {
+
+                if (!sectiiSelectateRaportDiferente2026.length) {
+
+                    container.innerHTML =
+                        "<div class='year-diff-loading'>Alege secția.</div>";
+
+                    return;
+
+                }
+
+                angajatiRaport = aplicaFiltruSectiiRaportDiferente2026(angajatiRaport);
+
+            } else {
+
+                angajatiRaport = aplicaFiltruSectiiRaportDiferente2026(angajatiRaport);
+
+            }
+
             const rezultatPontaje = await citestePontajeRaportDiferente2026();
 
             if (rezultatPontaje.error) {
@@ -7928,6 +8149,21 @@ function deschideZonaAngajatNou() {
                 angajatiRaport = angajatiRaport.filter(function(angajat) {
                     return String(angajat.nume || "").trim() === String(angajatRaportDiferente2026 || "").trim();
                 });
+
+            }
+
+            if (modRaportDiferente2026 === "sectie") {
+
+                if (!sectiiSelectateRaportDiferente2026.length) {
+                    showMessage("Alege secția", "error");
+                    return;
+                }
+
+                angajatiRaport = aplicaFiltruSectiiRaportDiferente2026(angajatiRaport);
+
+            } else {
+
+                angajatiRaport = aplicaFiltruSectiiRaportDiferente2026(angajatiRaport);
 
             }
 
