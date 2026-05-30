@@ -10260,15 +10260,38 @@ function deschideZonaAngajatNou() {
                 "-" +
                 String(zileLuna).padStart(2, "0");
 
+            let sectiiExportSelectate = [];
+
+            if (
+                angajatAles === "__TOTI__" &&
+                modRaportSelectat === "sectie"
+            ) {
+
+                actualizeazaSectiiSelectateRaport();
+
+                sectiiExportSelectate = Array.isArray(sectiiSelectateRaport)
+                    ? sectiiSelectateRaport
+                        .map(function(sectie) {
+                            return String(sectie || "").trim();
+                        })
+                        .filter(function(sectie) {
+                            return !!sectie;
+                        })
+                    : [];
+
+                if (!sectiiExportSelectate.length) {
+                    showMessage("Selectează cel puțin o secție", "error");
+                    return;
+                }
+
+            }
+
             let angajatiExport = listaAngajatiSupabase
                 .filter(function(angajat) {
                     return (
                         angajat.apare_in_rapoarte !== false &&
                         angajatInSectiiPermise(angajat)
                     );
-                })
-                .sort(function(a, b) {
-                    return String(a.nume || "").localeCompare(String(b.nume || ""), "ro");
                 });
 
             if (angajatAles !== "__TOTI__") {
@@ -10276,6 +10299,39 @@ function deschideZonaAngajatNou() {
                     return String(angajat.nume || "").trim() === String(angajatAles || "").trim();
                 });
             }
+
+            if (
+                angajatAles === "__TOTI__" &&
+                sectiiExportSelectate.length
+            ) {
+                angajatiExport = angajatiExport.filter(function(angajat) {
+                    return sectiiExportSelectate.includes(
+                        String(angajat.sectie || "").trim()
+                    );
+                });
+            }
+
+            angajatiExport.sort(function(a, b) {
+
+                if (
+                    angajatAles === "__TOTI__" &&
+                    sectiiExportSelectate.length
+                ) {
+
+                    const sectieA = String(a.sectie || "");
+                    const sectieB = String(b.sectie || "");
+
+                    const comparatieSectie = sectieA.localeCompare(sectieB, "ro");
+
+                    if (comparatieSectie !== 0) {
+                        return comparatieSectie;
+                    }
+
+                }
+
+                return String(a.nume || "").localeCompare(String(b.nume || ""), "ro");
+
+            });
 
             if (!angajatiExport.length) {
                 showMessage("Nu există angajați pentru export", "error");
