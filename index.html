@@ -245,9 +245,54 @@
 
         .report-filter-row {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 1fr 1fr 1fr;
             gap: 10px;
             margin-bottom: 16px;
+        }
+
+        .report-section-area {
+            display: none;
+            margin-bottom: 16px;
+            border-radius: 14px;
+            border: 1.5px solid rgba(212,175,55,0.80);
+            background: linear-gradient(145deg, rgba(255,255,255,0.08), rgba(0,0,0,0.98));
+            padding: 10px;
+            box-shadow: 0 8px 18px rgba(0,0,0,0.55);
+            font-family: 'Montserrat', Arial, sans-serif;
+        }
+
+        .report-section-title {
+            color: #d4af37;
+            font-size: 12px;
+            font-weight: 900;
+            margin-bottom: 8px;
+        }
+
+        .report-section-list {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 6px;
+        }
+
+        .report-section-option {
+            min-height: 30px;
+            border-radius: 9px;
+            border: 1px solid rgba(212,175,55,0.45);
+            background: #0b0b0b;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 0 9px;
+            font-size: 11px;
+            font-weight: 800;
+            box-sizing: border-box;
+        }
+
+        .report-section-option input {
+            width: 15px;
+            height: 15px;
+            accent-color: #d4af37;
         }
 
         .report-filter-card {
@@ -3518,8 +3563,31 @@
                                 👥 Toti angajatii
                             </div>
 
+                            <div
+                                class="report-filter-card"
+                                id="btn-sectie-raport"
+                                onclick="activeazaSectieRaport()"
+                            >
+                                🏢 Secție
+                            </div>
+
                         </div>
 
+                    </div>
+
+                    <div
+                        class="report-section-area"
+                        id="report-section-area"
+                    >
+                        <div class="report-section-title">
+                            Selectează una sau mai multe secții
+                        </div>
+
+                        <div
+                            class="report-section-list"
+                            id="report-section-list"
+                        >
+                        </div>
                     </div>
 
                     <div
@@ -6352,6 +6420,18 @@ function deschideZonaAngajatNou() {
 
                 if (randFiltre) {
                     randFiltre.style.display = "";
+                }
+
+                const zonaSectii = document.getElementById("report-section-area");
+
+                if (zonaSectii) {
+                    zonaSectii.style.display = "none";
+                }
+
+                const btnSectie = document.getElementById("btn-sectie-raport");
+
+                if (btnSectie) {
+                    btnSectie.classList.remove("active");
                 }
 
                 if (zonaCautare) {
@@ -9239,6 +9319,7 @@ function deschideZonaAngajatNou() {
         let raportLunaCurentaDinMeniu = false;
         let anRaportPontajSelectat = new Date().getFullYear();
         let aniCuPontajeRaport = {};
+        let sectiiSelectateRaport = [];
 
         // ===== MOD CAUTARE ANGAJAT =====
         function activeazaCautareAngajat() {
@@ -9253,9 +9334,21 @@ function deschideZonaAngajatNou() {
                 .getElementById("btn-toti-angajatii")
                 .classList.remove("active");
 
+            const btnSectie = document.getElementById("btn-sectie-raport");
+
+            if (btnSectie) {
+                btnSectie.classList.remove("active");
+            }
+
             document
                 .getElementById("employee-search-area")
                 .style.display = "block";
+
+            const zonaSectii = document.getElementById("report-section-area");
+
+            if (zonaSectii) {
+                zonaSectii.style.display = "none";
+            }
 
         }
 
@@ -9286,9 +9379,155 @@ function deschideZonaAngajatNou() {
                 .getElementById("btn-cauta-angajat")
                 .classList.remove("active");
 
+            const btnSectie = document.getElementById("btn-sectie-raport");
+
+            if (btnSectie) {
+                btnSectie.classList.remove("active");
+            }
+
             document
                 .getElementById("employee-search-area")
                 .style.display = "none";
+
+            const zonaSectii = document.getElementById("report-section-area");
+
+            if (zonaSectii) {
+                zonaSectii.style.display = "none";
+            }
+
+        }
+
+        // ===== MOD SECTIE RAPORT =====
+        async function activeazaSectieRaport() {
+
+            if (
+                !areAccesTotalRapoarte() &&
+                !esteSefDepartament()
+            ) {
+
+                showMessage(
+                    "Nu ai acces la raport pe secții",
+                    "error"
+                );
+
+                return;
+
+            }
+
+            modRaportSelectat = "sectie";
+
+            document
+                .getElementById("btn-cauta-angajat")
+                .classList.remove("active");
+
+            document
+                .getElementById("btn-toti-angajatii")
+                .classList.remove("active");
+
+            const btnSectie = document.getElementById("btn-sectie-raport");
+
+            if (btnSectie) {
+                btnSectie.classList.add("active");
+            }
+
+            document
+                .getElementById("employee-search-area")
+                .style.display = "none";
+
+            await pregatesteListaSectiiRaport();
+
+            const zonaSectii = document.getElementById("report-section-area");
+
+            if (zonaSectii) {
+                zonaSectii.style.display = "block";
+            }
+
+        }
+
+        // ===== LISTA SECTII RAPORT =====
+        async function pregatesteListaSectiiRaport() {
+
+            const lista = document.getElementById("report-section-list");
+
+            if (!lista) {
+                return;
+            }
+
+            if (!listaAngajatiSupabase.length) {
+
+                const { data } = await supabaseClient
+                    .from("angajati")
+                    .select("*")
+                    .order("nume", {
+                        ascending: true
+                    });
+
+                listaAngajatiSupabase = data || [];
+
+            }
+
+            const sectiiGasite = {};
+
+            listaAngajatiSupabase
+                .filter(function(angajat) {
+                    return (
+                        angajat.apare_in_rapoarte !== false &&
+                        angajatInSectiiPermise(angajat)
+                    );
+                })
+                .forEach(function(angajat) {
+
+                    const sectie = String(angajat.sectie || "").trim();
+
+                    if (sectie) {
+                        sectiiGasite[sectie] = true;
+                    }
+
+                });
+
+            const sectii = Object.keys(sectiiGasite).sort(function(a, b) {
+                return a.localeCompare(b, "ro");
+            });
+
+            if (!sectii.length) {
+                lista.innerHTML = "<div class='report-section-option'>Nu există secții disponibile.</div>";
+                return;
+            }
+
+            let html = "";
+
+            sectii.forEach(function(sectie) {
+
+                const bifat = sectiiSelectateRaport.includes(sectie)
+                    ? "checked"
+                    : "";
+
+                html +=
+                    "<label class='report-section-option'>" +
+                    "<input type='checkbox' class='report-section-check' value='" +
+                    escapeHtml(sectie) +
+                    "' onchange='actualizeazaSectiiSelectateRaport()' " +
+                    bifat +
+                    ">" +
+                    "<span>" +
+                    escapeHtml(sectie) +
+                    "</span>" +
+                    "</label>";
+
+            });
+
+            lista.innerHTML = html;
+
+        }
+
+        // ===== SALVARE SELECTII SECTII RAPORT =====
+        function actualizeazaSectiiSelectateRaport() {
+
+            sectiiSelectateRaport = Array.from(
+                document.querySelectorAll(".report-section-check:checked")
+            ).map(function(input) {
+                return input.value;
+            });
 
         }
 
