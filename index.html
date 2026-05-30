@@ -7453,6 +7453,22 @@ function deschideZonaAngajatNou() {
             await actualizeazaTabelaRaportDiferente2026();
             await afiseazaRaportDiferente2026();
 
+            // ===== DUPA SELECTIA SECTIILOR, RAPORTUL RAMANE FULL DISPLAY =====
+            if (sectiiSelectateRaportDiferente2026.length > 0) {
+
+                const zonaSectii = document.getElementById("year-diff-section-area");
+                const paginaRaport = document.getElementById("year-diff-page");
+
+                if (zonaSectii) {
+                    zonaSectii.style.display = "none";
+                }
+
+                if (paginaRaport) {
+                    paginaRaport.scrollTop = 0;
+                }
+
+            }
+
         }
 
         // ===== FILTRARE ANGAJATI RAPORT DIFERENTE DUPA SECTII =====
