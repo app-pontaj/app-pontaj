@@ -3345,6 +3345,14 @@
                             </div>
 
                             <div class="employee-row">
+                                <span>Ieșire 15:25-15:50 devine 15:30</span>
+                                <input
+                                    type="checkbox"
+                                    id="angajat-regula-iesire-1530"
+                                >
+                            </div>
+
+                            <div class="employee-row">
                                 <span>Se scade pauza de masă</span>
                                 <input
                                     type="checkbox"
@@ -5335,6 +5343,7 @@ function deschideZonaAngajatNou() {
                 const dataInactiv = angajat.data_inactiv ? " din " + angajat.data_inactiv : "";
                 const apareRapoarte = angajat.apare_in_rapoarte === false ? "Nu" : "Da";
                 const regula0700 = angajat.regula_start_0700 ? "Da" : "Nu";
+                const regulaIesire1530 = angajat.regula_iesire_1530 ? "Da" : "Nu";
                 const pauzaMasa = angajat.pauza_masa ? "Da" : "Nu";
                 const pauzaMinute = angajat.pauza_minute || 0;
 
@@ -5353,6 +5362,7 @@ function deschideZonaAngajatNou() {
                 html += status + dataInactiv + "<br>";
                 html += "Apare în rapoarte: " + apareRapoarte + "<br>";
                 html += "Regulă 07:00: " + regula0700 + "<br>";
+                html += "Regulă ieșire 15:30: " + regulaIesire1530 + "<br>";
                 html += "Pauză masă: " + pauzaMasa + " (" + pauzaMinute + " min)<br>";
                 html += "Secție: " + escapeHtml(angajat.sectie || "-") + "<br>";
                 html += "Rol: " + escapeHtml(detaliiUtilizator.rol || "-") + "<br>";
@@ -5379,6 +5389,7 @@ function deschideZonaAngajatNou() {
             document.getElementById("angajat-data-inactiv").value = angajat.data_inactiv || "";
             document.getElementById("angajat-apare-rapoarte").checked = angajat.apare_in_rapoarte !== false;
             document.getElementById("angajat-regula-0700").checked = !!angajat.regula_start_0700;
+            document.getElementById("angajat-regula-iesire-1530").checked = !!angajat.regula_iesire_1530;
             document.getElementById("angajat-pauza-masa").checked = !!angajat.pauza_masa;
             document.getElementById("angajat-pauza-minute").value = angajat.pauza_minute || 0;
 
@@ -5396,6 +5407,7 @@ function deschideZonaAngajatNou() {
             document.getElementById("angajat-data-inactiv").value = "";
             document.getElementById("angajat-apare-rapoarte").checked = true;
             document.getElementById("angajat-regula-0700").checked = false;
+            document.getElementById("angajat-regula-iesire-1530").checked = false;
             document.getElementById("angajat-pauza-masa").checked = false;
             document.getElementById("angajat-pauza-minute").value = 0;
 
@@ -5423,6 +5435,7 @@ function deschideZonaAngajatNou() {
             const dataInactiv = document.getElementById("angajat-data-inactiv").value || null;
             const apareRapoarte = document.getElementById("angajat-apare-rapoarte").checked;
             const regula0700 = document.getElementById("angajat-regula-0700").checked;
+            const regulaIesire1530 = document.getElementById("angajat-regula-iesire-1530").checked;
             const pauzaMasa = document.getElementById("angajat-pauza-masa").checked;
             const pauzaMinute = parseInt(document.getElementById("angajat-pauza-minute").value || "0", 10);
 
@@ -5513,6 +5526,7 @@ function deschideZonaAngajatNou() {
                 data_inactiv: dataInactiv,
                 apare_in_rapoarte: apareRapoarte,
                 regula_start_0700: regula0700,
+                regula_iesire_1530: regulaIesire1530,
                 pauza_masa: pauzaMasa,
                 pauza_minute: pauzaMinute
             };
@@ -6964,6 +6978,7 @@ function deschideZonaAngajatNou() {
                             pontaj.ora_intrare_manual,
                             pontaj.ora_iesire_manual,
                             angajat?.regula_start_0700,
+                            angajat?.regula_iesire_1530,
                             angajat?.pauza_masa,
                             angajat?.pauza_minute
                         );
@@ -6982,6 +6997,7 @@ function deschideZonaAngajatNou() {
                         pontaj.ora_intrare,
                         pontaj.ora_iesire,
                         angajat?.regula_start_0700,
+                        angajat?.regula_iesire_1530,
                         angajat?.pauza_masa,
                         angajat?.pauza_minute
                     );
@@ -7515,6 +7531,7 @@ function deschideZonaAngajatNou() {
                             pontaj.ora_intrare_manual,
                             pontaj.ora_iesire_manual,
                             angajat?.regula_start_0700,
+                            angajat?.regula_iesire_1530,
                             angajat?.pauza_masa,
                             angajat?.pauza_minute
                         );
@@ -7548,6 +7565,7 @@ function deschideZonaAngajatNou() {
                         pontaj.ora_intrare,
                         pontaj.ora_iesire,
                         angajat?.regula_start_0700,
+                        angajat?.regula_iesire_1530,
                         angajat?.pauza_masa,
                         angajat?.pauza_minute
                     );
@@ -8889,6 +8907,7 @@ function deschideZonaAngajatNou() {
                 pontaj.ora_intrare,
                 pontaj.ora_iesire,
                 angajat?.regula_start_0700,
+                angajat?.regula_iesire_1530,
                 angajat?.pauza_masa,
                 angajat?.pauza_minute
             );
@@ -9406,7 +9425,7 @@ function deschideZonaAngajatNou() {
         const ZILE_SCURTE = ['Du','Lu','Ma','Mi','Jo','Vi','Sa'];
 
         // ===== CALCUL ORE NETE =====
-        function calculeazaOreNete(oraIntrare, oraIesire, regula0700, pauzaMasa, pauzaMinute) {
+        function calculeazaOreNete(oraIntrare, oraIesire, regula0700, regulaIesire1530, pauzaMasa, pauzaMinute) {
 
             if (!oraIntrare || !oraIesire) {
                 return "";
@@ -9423,6 +9442,7 @@ function deschideZonaAngajatNou() {
 
             if (
                 regula0700 &&
+                regulaIesire1530 &&
                 startInitial <= 420 &&
                 stop >= 925 &&
                 stop <= 950
@@ -9480,19 +9500,31 @@ function deschideZonaAngajatNou() {
         }
 
         // ===== INTERVAL PONTAT CU REGULA 07:00 =====
-        function calculeazaIntervalPontat(oraIntrare, oraIesire, regula0700) {
+        function calculeazaIntervalPontat(oraIntrare, oraIesire, regula0700, regulaIesire1530) {
 
             if (!oraIntrare || !oraIesire) {
                 return "";
             }
 
             let start = transformaOraMinute(oraIntrare);
+            let stop = transformaOraMinute(oraIesire);
+            const startInitial = start;
 
-            if (regula0700 && start < 420) {
+            if (regula0700 && start <= 420) {
                 start = 420;
             }
 
-            return formateazaMinuteOra(start) + " - " + oraIesire;
+            if (
+                regula0700 &&
+                regulaIesire1530 &&
+                startInitial <= 420 &&
+                stop >= 925 &&
+                stop <= 950
+            ) {
+                stop = 930;
+            }
+
+            return formateazaMinuteOra(start) + " - " + formateazaMinuteOra(stop);
 
         }
 
@@ -10087,6 +10119,7 @@ function deschideZonaAngajatNou() {
                                 pontaj.ora_intrare_manual,
                                 pontaj.ora_iesire_manual,
                                 angajat?.regula_start_0700,
+                                angajat?.regula_iesire_1530,
                                 angajat?.pauza_masa,
                                 angajat?.pauza_minute
                             );
@@ -10124,13 +10157,15 @@ function deschideZonaAngajatNou() {
                         interval = calculeazaIntervalPontat(
                             pontaj.ora_intrare,
                             pontaj.ora_iesire,
-                            angajat?.regula_start_0700
+                            angajat?.regula_start_0700,
+                            angajat?.regula_iesire_1530
                         );
 
                         totalOre = calculeazaOreNete(
                             pontaj.ora_intrare,
                             pontaj.ora_iesire,
                             angajat?.regula_start_0700,
+                            angajat?.regula_iesire_1530,
                             angajat?.pauza_masa,
                             angajat?.pauza_minute
                         );
@@ -10502,6 +10537,7 @@ function deschideZonaAngajatNou() {
                                 pontaj.ora_intrare_manual,
                                 pontaj.ora_iesire_manual,
                                 angajat?.regula_start_0700,
+                                angajat?.regula_iesire_1530,
                                 angajat?.pauza_masa,
                                 angajat?.pauza_minute
                             );
@@ -10547,6 +10583,7 @@ function deschideZonaAngajatNou() {
                             pontaj.ora_intrare,
                             pontaj.ora_iesire,
                             angajat?.regula_start_0700,
+                            angajat?.regula_iesire_1530,
                             angajat?.pauza_masa,
                             angajat?.pauza_minute
                         );
@@ -11065,6 +11102,7 @@ function deschideZonaAngajatNou() {
                             pontaj.ora_intrare_manual,
                             pontaj.ora_iesire_manual,
                             angajat?.regula_start_0700,
+                            angajat?.regula_iesire_1530,
                             angajat?.pauza_masa,
                             angajat?.pauza_minute
                         );
@@ -11094,13 +11132,15 @@ function deschideZonaAngajatNou() {
                     const intervalPontat = calculeazaIntervalPontat(
                         pontaj.ora_intrare,
                         pontaj.ora_iesire,
-                        angajat?.regula_start_0700
+                        angajat?.regula_start_0700,
+                        angajat?.regula_iesire_1530
                     );
 
                     const oreNete = calculeazaOreNete(
                         pontaj.ora_intrare,
                         pontaj.ora_iesire,
                         angajat?.regula_start_0700,
+                        angajat?.regula_iesire_1530,
                         angajat?.pauza_masa,
                         angajat?.pauza_minute
                     );
@@ -11392,6 +11432,7 @@ function deschideZonaAngajatNou() {
                             pontaj.ora_intrare_manual,
                             pontaj.ora_iesire_manual,
                             angajat?.regula_start_0700,
+                            angajat?.regula_iesire_1530,
                             angajat?.pauza_masa,
                             angajat?.pauza_minute
                         ),
@@ -11408,6 +11449,7 @@ function deschideZonaAngajatNou() {
                         pontaj.ora_intrare,
                         pontaj.ora_iesire,
                         angajat?.regula_start_0700,
+                        angajat?.regula_iesire_1530,
                         angajat?.pauza_masa,
                         angajat?.pauza_minute
                     ),
@@ -11666,6 +11708,7 @@ function deschideZonaAngajatNou() {
                                     pontaj.ora_intrare_manual,
                                     pontaj.ora_iesire_manual,
                                     angajat?.regula_start_0700,
+                                    angajat?.regula_iesire_1530,
                                     angajat?.pauza_masa,
                                     angajat?.pauza_minute
                                 );
@@ -11687,6 +11730,7 @@ function deschideZonaAngajatNou() {
                                 pontaj.ora_intrare,
                                 pontaj.ora_iesire,
                                 angajat?.regula_start_0700,
+                                angajat?.regula_iesire_1530,
                                 angajat?.pauza_masa,
                                 angajat?.pauza_minute
                             );
