@@ -561,6 +561,31 @@
             font-size: 8px;
         }
 
+        .all-employees-table .all-employees-section-head {
+            position: sticky;
+            left: 88px;
+            top: 0;
+            z-index: 6;
+            min-width: 82px;
+            max-width: 82px;
+            background: #050505;
+            color: #d4af37;
+        }
+
+        .all-employees-table .all-employees-section-cell {
+            position: sticky;
+            left: 88px;
+            z-index: 3;
+            min-width: 82px;
+            max-width: 82px;
+            background: #050505;
+            color: #ffffff;
+            text-align: left;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-size: 8px;
+        }
+
         .all-employees-diff-positive {
             background: rgba(255,255,255,0.06);
             color: #00d26a;
@@ -11321,6 +11346,41 @@ function deschideZonaAngajatNou() {
 
             }
 
+            if (modRaportSelectat === "sectie") {
+
+                if (
+                    !areAccesTotalRapoarte() &&
+                    !esteSefDepartament()
+                ) {
+
+                    showMessage(
+                        "Nu ai acces la raport pe secții",
+                        "error"
+                    );
+
+                    return;
+
+                }
+
+                actualizeazaSectiiSelectateRaport();
+
+                if (!sectiiSelectateRaport.length) {
+
+                    showMessage(
+                        "Alege cel puțin o secție",
+                        "error"
+                    );
+
+                    return;
+
+                }
+
+                await deschideRaportLunarToti(luna, numeLuna);
+
+                return;
+
+            }
+
             if (modRaportSelectat !== "angajat") {
 
                 showMessage(
@@ -11901,8 +11961,20 @@ function deschideZonaAngajatNou() {
 
             const anCurent = Number(anRaportPontajSelectat || new Date().getFullYear());
 
+            actualizeazaSectiiSelectateRaport();
+
+            const afiseazaRaportPeSectii = modRaportSelectat === "sectie";
+            const afiseazaColoanaSectie = afiseazaRaportPeSectii;
+            const sectiiFiltruRaport = Array.isArray(sectiiSelectateRaport)
+                ? sectiiSelectateRaport.map(function(sectie) {
+                    return String(sectie || "").trim();
+                }).filter(function(sectie) {
+                    return !!sectie;
+                })
+                : [];
+
             document.getElementById("all-employees-report-title").innerHTML =
-                "Toți angajații";
+                afiseazaRaportPeSectii ? "Raport pe secții" : "Toți angajații";
 
             document.getElementById("all-employees-report-month").innerHTML =
                 numeLunaComplet(luna) + " " + anCurent;
@@ -11996,13 +12068,37 @@ function deschideZonaAngajatNou() {
 
             const angajatiRaport = listaAngajatiSupabase
                 .filter(function(angajat) {
+
+                    const sectieAngajat = String(angajat.sectie || "").trim();
+
+                    if (
+                        afiseazaRaportPeSectii &&
+                        !sectiiFiltruRaport.includes(sectieAngajat)
+                    ) {
+                        return false;
+                    }
+
                     return (
                         angajat.apare_in_rapoarte !== false &&
                         angajatInSectiiPermise(angajat)
                     );
+
                 })
                 .sort(function(a, b) {
+
+                    if (afiseazaRaportPeSectii && sectiiFiltruRaport.length > 1) {
+
+                        const sectieA = String(a.sectie || "").trim();
+                        const sectieB = String(b.sectie || "").trim();
+
+                        if (sectieA !== sectieB) {
+                            return sectieA.localeCompare(sectieB, "ro");
+                        }
+
+                    }
+
                     return String(a.nume || "").localeCompare(String(b.nume || ""), "ro");
+
                 });
 
             let html = "";
@@ -12010,6 +12106,10 @@ function deschideZonaAngajatNou() {
             html += "<table class='all-employees-table'>";
             html += "<thead><tr>";
             html += "<th class='all-employees-name-head'>Angajat</th>";
+
+            if (afiseazaColoanaSectie) {
+                html += "<th class='all-employees-section-head'>Secție</th>";
+            }
 
             for (let zi = 1; zi <= zileLuna; zi++) {
 
@@ -12045,6 +12145,10 @@ function deschideZonaAngajatNou() {
 
                 html += "<tr>";
                 html += "<td class='all-employees-name-cell'>" + escapeHtml(nume) + "</td>";
+
+                if (afiseazaColoanaSectie) {
+                    html += "<td class='all-employees-section-cell'>" + escapeHtml(angajat.sectie || "") + "</td>";
+                }
 
                 for (let zi = 1; zi <= zileLuna; zi++) {
 
