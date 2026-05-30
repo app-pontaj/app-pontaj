@@ -10515,7 +10515,7 @@ function deschideZonaAngajatNou() {
             }
 
             const randuriExcel = [];
-            const randHeader = ["Angajat"];
+            const randHeader = ["Angajat", "Secție"];
 
             for (let zi = 1; zi <= zileLuna; zi++) {
 
@@ -10573,14 +10573,15 @@ function deschideZonaAngajatNou() {
                 let totalZileLucratoare = 0;
                 let arePontajInLuna = false;
 
-                const randExcel = [nume];
+                const randExcel = [nume, String(angajat.sectie || "")];
                 const indexRandExcel = randuriExcel.length;
 
                 seteazaMeta(indexRandExcel, 0, "nume");
+                seteazaMeta(indexRandExcel, 1, "sectie");
 
                 for (let zi = 1; zi <= zileLuna; zi++) {
 
-                    const indexColoanaExcel = zi;
+                    const indexColoanaExcel = zi + 1;
 
                     const dataText =
                         an +
@@ -10728,7 +10729,7 @@ function deschideZonaAngajatNou() {
 
                     seteazaMeta(
                         indexRandExcel,
-                        zileLuna + 1,
+                        zileLuna + 2,
                         diferentaMinute >= 0 ? "difPlus" : "difMinus"
                     );
 
@@ -10777,13 +10778,13 @@ function deschideZonaAngajatNou() {
 
                     worksheet[adresaCelula].s = {
                         alignment: {
-                            horizontal: r === 3 ? "center" : (tip === "titluPontajLunar" ? "center" : (c === 0 ? "left" : "center")),
+                            horizontal: r === 3 ? "center" : (tip === "titluPontajLunar" ? "center" : (c === 0 || c === 1 ? "left" : "center")),
                             vertical: "center",
-                            wrapText: true
+                            wrapText: c === 1 ? false : true
                         },
                         font: {
                             bold: tip === "titluPontajLunar" || tip === "header" || c === 0 || tip === "difPlus" || tip === "difMinus",
-                            sz: tip === "titluPontajLunar" ? 18 : undefined,
+                            sz: tip === "titluPontajLunar" ? 18 : (r >= 1 ? 9 : undefined),
                             color: {
                                 rgb:
                                     tip === "difPlus"
@@ -10828,11 +10829,22 @@ function deschideZonaAngajatNou() {
 
             }
 
+            const latimeSectie = Math.max(
+                10,
+                Math.min(
+                    28,
+                    ...angajatiExport.map(function(angajat) {
+                        return String(angajat.sectie || "").length + 2;
+                    })
+                )
+            );
+
             worksheet["!cols"] = [
-                { wch: 17.2 }
+                { wch: 17.2 },
+                { wch: latimeSectie }
             ];
 
-            for (let indexColoana = 1; indexColoana < randHeader.length; indexColoana++) {
+            for (let indexColoana = 2; indexColoana < randHeader.length; indexColoana++) {
                 worksheet["!cols"].push({
                     wch: 4.8
                 });
