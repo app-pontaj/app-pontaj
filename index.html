@@ -300,6 +300,20 @@
             border: 1px solid rgba(212,175,55,0.25);
         }
 
+        .report-year-available {
+            background: #050505;
+            color: #d4af37;
+            border: 1px solid rgba(212,175,55,0.95);
+            cursor: pointer;
+        }
+
+        .report-year-unavailable {
+            background: #050505;
+            color: #111111;
+            border: 1px solid rgba(212,175,55,0.25);
+            cursor: default;
+        }
+
         .months-grid {
             width: 100%;
             display: grid;
@@ -6346,6 +6360,7 @@ function deschideZonaAngajatNou() {
 
             }
 
+            await incarcaAniCuPontajeRaport();
             afiseazaAniRaport();
             pregatesteExportPontajRapoarte();
 
@@ -9214,6 +9229,7 @@ function deschideZonaAngajatNou() {
         let angajatSelectatRaport = "";
         let raportLunaCurentaDinMeniu = false;
         let anRaportPontajSelectat = new Date().getFullYear();
+        let aniCuPontajeRaport = {};
 
         // ===== MOD CAUTARE ANGAJAT =====
         function activeazaCautareAngajat() {
@@ -9525,6 +9541,50 @@ function deschideZonaAngajatNou() {
         }
 
 
+        // ===== INCARCARE ANI CU PONTAJE IMPORTATE =====
+        async function incarcaAniCuPontajeRaport() {
+
+            aniCuPontajeRaport = {};
+
+            let toatePontajele = [];
+            let startLot = 0;
+            const marimeLot = 1000;
+
+            while (true) {
+
+                const { data, error } = await supabaseClient
+                    .from("pontaj_zilnic")
+                    .select("data")
+                    .gte("data", "2025-01-01")
+                    .lte("data", "2029-12-31")
+                    .range(startLot, startLot + marimeLot - 1);
+
+                if (error) {
+                    return;
+                }
+
+                toatePontajele = toatePontajele.concat(data || []);
+
+                if (!data || data.length < marimeLot) {
+                    break;
+                }
+
+                startLot += marimeLot;
+
+            }
+
+            toatePontajele.forEach(function(pontaj) {
+
+                const an = Number(String(pontaj.data || "").slice(0, 4));
+
+                if (an) {
+                    aniCuPontajeRaport[an] = true;
+                }
+
+            });
+
+        }
+
         // ===== AFISARE ANI RAPORT =====
         function afiseazaAniRaport() {
 
@@ -9540,18 +9600,41 @@ function deschideZonaAngajatNou() {
                 anRaportPontajSelectat = 2026;
             }
 
+            if (!aniCuPontajeRaport[Number(anRaportPontajSelectat)]) {
+
+                const aniDisponibili = ani.filter(function(an) {
+                    return !!aniCuPontajeRaport[an];
+                });
+
+                if (aniDisponibili.includes(2026)) {
+                    anRaportPontajSelectat = 2026;
+                } else if (aniDisponibili.length) {
+                    anRaportPontajSelectat = aniDisponibili[0];
+                }
+
+            }
+
             let html = "";
 
             ani.forEach(function(an) {
 
                 const activ = Number(an) === Number(anRaportPontajSelectat);
+                const existaPontaje = !!aniCuPontajeRaport[an];
+
+                let clasaAn = "report-year-unavailable";
+
+                if (activ) {
+                    clasaAn = "report-year-active";
+                } else if (existaPontaje) {
+                    clasaAn = "report-year-available";
+                }
 
                 html +=
                     "<button class='report-year-card " +
-                    (activ ? "report-year-active" : "report-year-inactive") +
-                    "' onclick='seteazaAnRaportPontaj(" +
-                    an +
-                    ")'>" +
+                    clasaAn +
+                    "' " +
+                    (existaPontaje ? "onclick='seteazaAnRaportPontaj(" + an + ")'" : "disabled") +
+                    ">" +
                     an +
                     "</button>";
 
@@ -9562,6 +9645,10 @@ function deschideZonaAngajatNou() {
         }
 
         function seteazaAnRaportPontaj(an) {
+
+            if (!aniCuPontajeRaport[Number(an)]) {
+                return;
+            }
 
             anRaportPontajSelectat = Number(an) || 2026;
 
