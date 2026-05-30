@@ -874,7 +874,7 @@
         .year-diff-table {
             border-collapse: separate;
             border-spacing: 0;
-            min-width: 720px;
+            min-width: 820px;
             width: 100%;
             font-family: 'Montserrat', Arial, sans-serif;
             font-size: 9px;
@@ -924,6 +924,31 @@
             color: #050505 !important;
             overflow: hidden;
             text-overflow: ellipsis;
+        }
+
+        .year-diff-section-head {
+            position: sticky;
+            left: 115px;
+            z-index: 4 !important;
+            min-width: 92px !important;
+            max-width: 92px !important;
+            text-align: left !important;
+            background: #050505 !important;
+            color: #d4af37 !important;
+        }
+
+        .year-diff-section-cell {
+            position: sticky;
+            left: 115px;
+            z-index: 2;
+            min-width: 92px !important;
+            max-width: 92px !important;
+            text-align: left !important;
+            background: #050505 !important;
+            color: #ffffff !important;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-size: 8px;
         }
 
         .year-diff-total-head,
@@ -8044,6 +8069,7 @@ function deschideZonaAngajatNou() {
             html += "<table class='year-diff-table'>";
             html += "<thead><tr>";
             html += "<th class='year-diff-name-head'>Angajat</th>";
+            html += "<th class='year-diff-section-head'>Secție</th>";
 
             LUNI_RAPORT_DIFERENTE.forEach(function(luna) {
                 html += "<th>" + luna.text + "<br>" + anRaportDiferente2026Selectat + "</th>";
@@ -8065,7 +8091,10 @@ function deschideZonaAngajatNou() {
                 let areCelPutinOLuna = false;
 
                 html += "<tr>";
+                const sectie = String(angajat.sectie || "").trim();
+
                 html += "<td class='year-diff-name-cell'>" + escapeHtml(nume) + "</td>";
+                html += "<td class='year-diff-section-cell'>" + escapeHtml(sectie || "-") + "</td>";
 
                 LUNI_RAPORT_DIFERENTE.forEach(function(luna) {
 
@@ -8218,7 +8247,7 @@ function deschideZonaAngajatNou() {
             const randuri = [];
             randuri.push(["Raport diferențe " + anRaportDiferente2026Selectat]);
 
-            const antet = ["Angajat"];
+            const antet = ["Angajat", "Secție"];
 
             luniExport.forEach(function(luna) {
                 antet.push(luna.text + " " + anRaportDiferente2026Selectat);
@@ -8237,7 +8266,8 @@ function deschideZonaAngajatNou() {
 
                 let totalAn = 0;
                 let areValori = false;
-                const rand = [nume];
+                const sectie = String(angajat.sectie || "").trim();
+                const rand = [nume, sectie || "-"];
 
                 luniExport.forEach(function(luna) {
 
@@ -8272,7 +8302,8 @@ function deschideZonaAngajatNou() {
             const workbook = XLSX.utils.book_new();
 
             worksheet["!cols"] = [
-                { wch: 24 }
+                { wch: 24 },
+                { wch: 18 }
             ].concat(luniExport.map(function() {
                 return { wch: 11 };
             })).concat([
@@ -8282,7 +8313,7 @@ function deschideZonaAngajatNou() {
             worksheet["!merges"] = [
                 {
                     s: { r: 0, c: 0 },
-                    e: { r: 0, c: luniExport.length + 1 }
+                    e: { r: 0, c: luniExport.length + 2 }
                 }
             ];
 
@@ -8304,7 +8335,7 @@ function deschideZonaAngajatNou() {
                             sz: R === 0 ? 16 : 10
                         },
                         alignment: {
-                            horizontal: C === 0 ? "left" : "center",
+                            horizontal: C <= 1 ? "left" : "center",
                             vertical: "center",
                             wrapText: true
                         },
