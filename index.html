@@ -2308,6 +2308,41 @@
         }
 
 
+        /* ===== MENIU PRINCIPAL - CARDURI RAPOARTE PREMIUM ===== */
+        #main-menu > .menu-card {
+            min-height: 58px !important;
+            height: 58px !important;
+            padding: 0 24px !important;
+            box-sizing: border-box !important;
+        }
+
+        #main-menu > .menu-card .main-menu-premium-text {
+            font-size: 16px !important;
+            font-weight: 900 !important;
+            letter-spacing: 0.25px !important;
+            line-height: 1 !important;
+            font-family: 'Montserrat', Arial, sans-serif !important;
+        }
+
+        #main-menu > .menu-card .menu-icon {
+            font-size: 21px !important;
+            font-weight: 900 !important;
+        }
+
+        #main-menu > .menu-card .menu-arrow {
+            font-size: 22px !important;
+            font-weight: 900 !important;
+        }
+
+        #main-menu > .logout-card .logout-premium-text {
+            color: #ff3333 !important;
+            font-size: 16px !important;
+            font-weight: 900 !important;
+            letter-spacing: 0.35px !important;
+            line-height: 1 !important;
+            font-family: 'Montserrat', Arial, sans-serif !important;
+        }
+
 </style>
 
 </head>
@@ -2624,7 +2659,7 @@
                         onclick="deschidePaginaRaportTest()"
                     >
                         <span class="menu-icon">📊</span>
-                        <span class="menu-text" style="color:#d4af37;">Rapoarte</span>
+                        <span class="menu-text main-menu-premium-text" style="color:#d4af37;">RAPOARTE</span>
                         <span class="menu-arrow">›</span>
                     </div>
 
@@ -2633,7 +2668,7 @@
                         onclick="deschidePaginaRaportZileFaraPontaj()"
                     >
                         <span class="menu-icon">⚠</span>
-                        <span class="menu-text" style="color:#d4af37;">Raport zile fără pontaj</span>
+                        <span class="menu-text main-menu-premium-text" style="color:#d4af37;">RAPORT ZILE FARA PONTAJ</span>
                         <span class="menu-arrow">›</span>
                     </div>
 
@@ -2643,7 +2678,7 @@
                         onclick="deschidePaginaRaportDiferente2026()"
                     >
                         <span class="menu-icon">∑</span>
-                        <span class="menu-text" style="color:#d4af37;">Raport diferențe</span>
+                        <span class="menu-text main-menu-premium-text" style="color:#d4af37;">RAPORT DIFERENTE ORE</span>
                         <span class="menu-arrow">›</span>
                     </div>
 
@@ -2689,7 +2724,7 @@
                         onclick="deschidePaginaPontajeSub3H()"
                     >
                         <span class="menu-icon">⏱</span>
-                        <span class="menu-text" style="color:#d4af37;">Pontaje zilnice &lt;3H</span>
+                        <span class="menu-text main-menu-premium-text" style="color:#d4af37;">PONTAJE ZILNICE &lt;3h</span>
                         <span class="menu-arrow">›</span>
                     </div>
 
@@ -2701,41 +2736,15 @@
                         style="display:none;"
                     >
                         <span class="menu-icon">🕘</span>
-                        <span class="menu-text" style="color:#d4af37;">Raport intrare - iesire</span>
+                        <span class="menu-text main-menu-premium-text" style="color:#d4af37;">RAPORT INTRARE - IESIRE</span>
                         <span class="menu-arrow">›</span>
                     </div>
-
-
-
-                    <div
-                        class="menu-card"
-                        id="test-logic-menu-card"
-                        onclick="deschidePaginaTestLogicaPontaj()"
-                        style="display:none;"
-                    >
-                        <span class="menu-icon">🧪</span>
-                        <span class="menu-text" style="color:#d4af37;">Test logica pontaj</span>
-                        <span class="menu-arrow">›</span>
-                    </div>
-
-
-                    <div
-                        class="menu-card"
-                        id="server-corrections-menu-card"
-                        onclick="deschidePaginaCorectiiPontajServer()"
-                        style="display:none;"
-                    >
-                        <span class="menu-icon">🛠</span>
-                        <span class="menu-text" style="color:#d4af37;">Corectii pontaj server</span>
-                        <span class="menu-arrow">›</span>
-                    </div>
-
                     <button
                         class="menu-card logout-card"
                         onclick="logoutUser()"
                     >
                         <span class="menu-icon">↪</span>
-                        <span class="menu-text" style="color:#d4af37;">LOGOUT</span>
+                        <span class="menu-text main-menu-premium-text logout-premium-text">LOGOUT</span>
                         <span class="menu-arrow">›</span>
                     </button>
 
