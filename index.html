@@ -13539,7 +13539,7 @@ function deschideZonaAngajatNou() {
             document.getElementById("main-menu").style.display = "none";
             document.getElementById("entry-exit-page").style.display = "block";
 
-            pregatesteSelectRaportIntrareIesire();
+            await pregatesteSelectRaportIntrareIesire();
 
             await incarcaDateRaportIntrareIesire();
 
@@ -13555,7 +13555,7 @@ function deschideZonaAngajatNou() {
 
         }
 
-        function pregatesteSelectRaportIntrareIesire() {
+        async function pregatesteSelectRaportIntrareIesire() {
 
             const select = document.getElementById("entry-exit-month");
 
@@ -13563,42 +13563,92 @@ function deschideZonaAngajatNou() {
                 return;
             }
 
-            const acum = new Date();
-            const ani = [2025, 2026, 2027, 2028, 2029];
-            const anCurent = acum.getFullYear();
-            const lunaCurenta = acum.getMonth() + 1;
+            const valoareCurenta = select.value;
 
-            let html = "";
+            select.innerHTML = "<option value=''>Se încarcă lunile...</option>";
 
-            ani.forEach(function(an) {
+            let toatePontajele = [];
+            let startLot = 0;
+            const marimeLot = 1000;
+            let eroarePontaje = null;
 
-                for (let luna = 1; luna <= 12; luna++) {
+            while (true) {
 
-                    const valoare =
-                        an +
-                        "-" +
-                        String(luna).padStart(2, "0");
+                const { data, error } = await supabaseClient
+                    .from("pontaj_zilnic")
+                    .select("data")
+                    .order("data", {
+                        ascending: true
+                    })
+                    .range(startLot, startLot + marimeLot - 1);
 
-                    const selectat =
-                        an === anCurent &&
-                        luna === lunaCurenta;
+                if (error) {
+                    eroarePontaje = error;
+                    break;
+                }
 
-                    html +=
-                        "<option value='" +
-                        valoare +
-                        "' " +
-                        (selectat ? "selected" : "") +
-                        ">" +
-                        numeLunaComplet(luna) +
-                        " " +
-                        an +
-                        "</option>";
+                toatePontajele = toatePontajele.concat(data || []);
 
+                if (!data || data.length < marimeLot) {
+                    break;
+                }
+
+                startLot += marimeLot;
+
+            }
+
+            if (eroarePontaje) {
+                select.innerHTML = "<option value=''>Eroare citire luni</option>";
+                return;
+            }
+
+            const luniGasite = {};
+
+            toatePontajele.forEach(function(pontaj) {
+
+                const dataText = String(pontaj.data || "").trim();
+
+                if (dataText.length >= 7) {
+                    luniGasite[dataText.slice(0, 7)] = true;
                 }
 
             });
 
+            const luniDisponibile = Object.keys(luniGasite).sort(function(a, b) {
+                return a.localeCompare(b);
+            });
+
+            if (!luniDisponibile.length) {
+                select.innerHTML = "<option value=''>Nu există pontaje importate</option>";
+                return;
+            }
+
+            let html = "";
+
+            luniDisponibile.forEach(function(valoare) {
+
+                const parti = valoare.split("-");
+                const an = Number(parti[0]);
+                const luna = Number(parti[1]);
+
+                html +=
+                    "<option value='" +
+                    valoare +
+                    "'>" +
+                    numeLunaComplet(luna) +
+                    " " +
+                    an +
+                    "</option>";
+
+            });
+
             select.innerHTML = html;
+
+            if (valoareCurenta && luniDisponibile.includes(valoareCurenta)) {
+                select.value = valoareCurenta;
+            } else {
+                select.value = luniDisponibile[luniDisponibile.length - 1];
+            }
 
         }
 
