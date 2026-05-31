@@ -6897,7 +6897,7 @@ function deschideZonaAngajatNou() {
                 return;
             }
 
-            const dataStart = creeazaDataDinText(toateDatele[0]);
+            const dataStart = calculeazaDataStartRaportZileFaraPontaj(toateDatele);
             const dataStop = creeazaDataDinText(toateDatele[toateDatele.length - 1]);
 
             const pontajeDupaAngajatZi = {};
@@ -8475,6 +8475,47 @@ function deschideZonaAngajatNou() {
 
         }
 
+        // ===== DATA START CORECTA RAPORT ZILE FARA PONTAJ =====
+        function calculeazaDataStartRaportZileFaraPontaj(datePontajeSortate) {
+
+            const dateValide = Array.from(
+                new Set(
+                    (datePontajeSortate || [])
+                        .filter(function(dataText) {
+                            return !!dataText;
+                        })
+                        .sort()
+                )
+            );
+
+            if (!dateValide.length) {
+                return null;
+            }
+
+            const primaDataText = dateValide[0];
+            const primaData = creeazaDataDinText(primaDataText);
+            const ziPrimaData = primaData.getDate();
+
+            const primaZiLunaUrmatoare = new Date(
+                primaData.getFullYear(),
+                primaData.getMonth() + 1,
+                1
+            );
+
+            const primaZiLunaUrmatoareText = formatDataPentruCheie(primaZiLunaUrmatoare);
+
+            const existaPontajeLunaUrmatoare = dateValide.some(function(dataText) {
+                return String(dataText || "") >= primaZiLunaUrmatoareText;
+            });
+
+            if (ziPrimaData >= 25 && existaPontajeLunaUrmatoare) {
+                return primaZiLunaUrmatoare;
+            }
+
+            return primaData;
+
+        }
+
         // ===== SETARE FILTRU RAPORT ZILE FARA PONTAJ =====
         function seteazaFiltruZileFaraPontaj(mod) {
 
@@ -8691,7 +8732,7 @@ function deschideZonaAngajatNou() {
 
             }
 
-            dataStartRaportZileFaraPontaj = creeazaDataDinText(toateDatelePontaj[0]);
+            dataStartRaportZileFaraPontaj = calculeazaDataStartRaportZileFaraPontaj(toateDatelePontaj);
             dataStopRaportZileFaraPontaj = creeazaDataDinText(toateDatelePontaj[toateDatelePontaj.length - 1]);
 
             pregatesteSelectieZileFaraPontaj();
