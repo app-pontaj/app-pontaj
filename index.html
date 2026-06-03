@@ -14169,9 +14169,11 @@ function deschideZonaAngajatNou() {
 
                     if (pontaj) {
 
-                        if (pontaj.status_corectie) {
+                        const statusCorectieFinala = obtineStatusCorectieFinala(pontaj);
 
-                            statusZi = String(pontaj.status_corectie || "").trim();
+                        if (statusCorectieFinala) {
+
+                            statusZi = statusCorectieFinala;
                             intervalPontat = statusZi;
 
                             const minuteCorectie = calculeazaMinuteCorectieFinala(
@@ -14325,10 +14327,20 @@ function deschideZonaAngajatNou() {
 
         }
 
+        function obtineStatusCorectieFinala(pontaj) {
+
+            return String(
+                pontaj?.status_corect ||
+                pontaj?.status_corectie ||
+                pontaj?.status_zi ||
+                ""
+            ).trim();
+
+        }
+
         function calculeazaMinuteCorectieFinala(pontaj, angajat) {
 
-            const status = String(pontaj?.status_corectie || "")
-                .trim()
+            const status = obtineStatusCorectieFinala(pontaj)
                 .toUpperCase()
                 .normalize("NFD")
                 .replace(/[\u0300-\u036f]/g, "");
