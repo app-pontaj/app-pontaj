@@ -14109,6 +14109,11 @@ function deschideZonaAngajatNou() {
                 const nume = String(angajat.nume || "").trim();
                 const departament = String(angajat.sectie || angajat.departament || "").trim();
 
+                const estePaza = String(departament || "")
+                    .trim()
+                    .toUpperCase()
+                    .includes("PAZA");
+
                 if (!nume) {
                     return;
                 }
@@ -14209,8 +14214,10 @@ function deschideZonaAngajatNou() {
 
                     } else if (!esteWeekend) {
 
-                        statusZi = "FARA PONTAJ";
-                        intervalPontat = "FARA PONTAJ";
+                        if (!estePaza) {
+                            statusZi = "FARA PONTAJ";
+                            intervalPontat = "FARA PONTAJ";
+                        }
 
                     }
 
