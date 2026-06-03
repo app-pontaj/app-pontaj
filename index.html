@@ -13325,25 +13325,60 @@ function deschideZonaAngajatNou() {
 
             lista.innerHTML = "Se încarcă...";
 
-            const { data: pontaje, error: eroarePontaje } = await supabaseClient
-                .from("pontaj_zilnic")
-                .select("data")
-                .order("data", {
-                    ascending: true
-                });
+            // ===== CITIRE TOATE PONTAJELE, NU DOAR PRIMELE 1000 =====
+            let pontaje = [];
+            let startLot = 0;
+            const marimeLot = 1000;
 
-            if (eroarePontaje) {
-                lista.innerHTML = "Eroare citire pontaje.";
-                return;
+            while (true) {
+
+                const { data: lotPontaje, error: eroarePontaje } = await supabaseClient
+                    .from("pontaj_zilnic")
+                    .select("data")
+                    .order("data", {
+                        ascending: true
+                    })
+                    .range(startLot, startLot + marimeLot - 1);
+
+                if (eroarePontaje) {
+                    lista.innerHTML = "Eroare citire pontaje.";
+                    return;
+                }
+
+                pontaje = pontaje.concat(lotPontaje || []);
+
+                if (!lotPontaje || lotPontaje.length < marimeLot) {
+                    break;
+                }
+
+                startLot += marimeLot;
+
             }
 
-            const { data: luniInchise, error: eroareLuniInchise } = await supabaseClient
-                .from("luni_inchise")
-                .select("an,luna");
+            // ===== CITIRE TOATE LUNILE INCHISE =====
+            let luniInchise = [];
+            let startLotInchise = 0;
 
-            if (eroareLuniInchise) {
-                lista.innerHTML = "Eroare citire luni închise.";
-                return;
+            while (true) {
+
+                const { data: lotLuniInchise, error: eroareLuniInchise } = await supabaseClient
+                    .from("luni_inchise")
+                    .select("an,luna")
+                    .range(startLotInchise, startLotInchise + marimeLot - 1);
+
+                if (eroareLuniInchise) {
+                    lista.innerHTML = "Eroare citire luni închise.";
+                    return;
+                }
+
+                luniInchise = luniInchise.concat(lotLuniInchise || []);
+
+                if (!lotLuniInchise || lotLuniInchise.length < marimeLot) {
+                    break;
+                }
+
+                startLotInchise += marimeLot;
+
             }
 
             const luniInchiseIndex = {};
