@@ -7394,39 +7394,66 @@ function deschideZonaAngajatNou() {
 
 
         // ===== CITIRE COMPLETA PONTAJE PENTRU RAPORT DIFERENTE =====
-        async function citestePontajeRaportDiferente2026() {
+        // ===== CITIRE PONTAJE DOAR PENTRU LUNI DESCHISE - RAPORT DIFERENTE =====
+        async function citestePontajeRaportDiferente2026(luniPermise) {
 
             let toatePontajele = [];
-            let startLot = 0;
             const marimeLot = 1000;
 
             const anRaport = Number(anRaportDiferente2026Selectat || 2026);
-            const primaZiAn = anRaport + "-01-01";
-            const ultimaZiAn = anRaport + "-12-31";
 
-            while (true) {
+            let luniDeCitit = Array.isArray(luniPermise) && luniPermise.length
+                ? luniPermise
+                : LUNI_RAPORT_DIFERENTE;
 
-                const { data, error } = await supabaseClient
-                    .from("pontaj_zilnic")
-                    .select("*")
-                    .gte("data", primaZiAn)
-                    .lte("data", ultimaZiAn)
-                    .range(startLot, startLot + marimeLot - 1);
+            for (const lunaRaport of luniDeCitit) {
 
-                if (error) {
-                    return {
-                        data: [],
-                        error: error
-                    };
+                const lunaNumar = Number(lunaRaport.numar || lunaRaport || 0);
+
+                if (!lunaNumar) {
+                    continue;
                 }
 
-                toatePontajele = toatePontajele.concat(data || []);
+                const primaZiLuna =
+                    anRaport +
+                    "-" +
+                    String(lunaNumar).padStart(2, "0") +
+                    "-01";
 
-                if (!data || data.length < marimeLot) {
-                    break;
+                const ultimaZiLuna =
+                    anRaport +
+                    "-" +
+                    String(lunaNumar).padStart(2, "0") +
+                    "-" +
+                    String(new Date(anRaport, lunaNumar, 0).getDate()).padStart(2, "0");
+
+                let startLot = 0;
+
+                while (true) {
+
+                    const { data, error } = await supabaseClient
+                        .from("pontaj_zilnic")
+                        .select("*")
+                        .gte("data", primaZiLuna)
+                        .lte("data", ultimaZiLuna)
+                        .range(startLot, startLot + marimeLot - 1);
+
+                    if (error) {
+                        return {
+                            data: [],
+                            error: error
+                        };
+                    }
+
+                    toatePontajele = toatePontajele.concat(data || []);
+
+                    if (!data || data.length < marimeLot) {
+                        break;
+                    }
+
+                    startLot += marimeLot;
+
                 }
-
-                startLot += marimeLot;
 
             }
 
@@ -7438,6 +7465,7 @@ function deschideZonaAngajatNou() {
         }
 
         // ===== CITIRE COMPLETA DIFERENTE PENTRU ANUL SELECTAT =====
+        // ===== CITIRE DIFERENTE PENTRU ANUL SELECTAT - LUNI INCHISE FINAL / LUNI DESCHISE CU PONTAJ =====
         async function citesteDiferenteRaportDiferente2026() {
 
             let toateDiferentele = [];
@@ -7446,33 +7474,16 @@ function deschideZonaAngajatNou() {
 
             const anRaport = Number(anRaportDiferente2026Selectat || 2026);
 
-            while (true) {
+            const rezultatLuniInchise = await citesteLuniInchiseRaportDiferente2026();
 
-                const { data, error } = await supabaseClient
-                    .from("raport_diferente_lunar")
-                    .select("*")
-                    .eq("an", anRaport)
-                    .order("actualizat_la", {
-                        ascending: false
-                    })
-                    .range(startLot, startLot + marimeLot - 1);
-
-                if (error) {
-                    return {
-                        data: [],
-                        error: error
-                    };
-                }
-
-                toateDiferentele = toateDiferentele.concat(data || []);
-
-                if (!data || data.length < marimeLot) {
-                    break;
-                }
-
-                startLot += marimeLot;
-
+            if (rezultatLuniInchise.error) {
+                return {
+                    data: [],
+                    error: rezultatLuniInchise.error
+                };
             }
+
+            const luniInchiseIndex = rezultatLuniInchise.data || {};
 
             let diferenteFinale = [];
             startLot = 0;
@@ -7502,20 +7513,24 @@ function deschideZonaAngajatNou() {
 
             }
 
-            const finaleNormalizate = (diferenteFinale || []).map(function(rand) {
+            const finaleNormalizate = (diferenteFinale || [])
+                .filter(function(rand) {
+                    return !!luniInchiseIndex[String(Number(rand.luna || 0))];
+                })
+                .map(function(rand) {
 
-                const diferentaText = String(rand.diferenta || "").trim();
+                    const diferentaText = String(rand.diferenta || "").trim();
 
-                return {
-                    nume_angajat: rand.nume_angajat,
-                    an: rand.an,
-                    luna: rand.luna,
-                    departament: rand.departament,
-                    diferenta_minute: textDiferentaFinalaInMinute(diferentaText),
-                    diferenta_text: diferentaText
-                };
+                    return {
+                        nume_angajat: rand.nume_angajat,
+                        an: rand.an,
+                        luna: rand.luna,
+                        departament: rand.departament,
+                        diferenta_minute: textDiferentaFinalaInMinute(diferentaText),
+                        diferenta_text: diferentaText
+                    };
 
-            });
+                });
 
             const luniFinale = {};
 
@@ -7525,14 +7540,71 @@ function deschideZonaAngajatNou() {
                 ] = true;
             });
 
+            const luniDeschise = LUNI_RAPORT_DIFERENTE.filter(function(luna) {
+                return !luniInchiseIndex[String(Number(luna.numar))];
+            });
+
+            const rezultatPontajeDeschise = await citestePontajeRaportDiferente2026(luniDeschise);
+
+            if (rezultatPontajeDeschise.error) {
+                return {
+                    data: [],
+                    error: rezultatPontajeDeschise.error
+                };
+            }
+
+            const luniCuPontajeDeschise = construiesteIndexPontajeRaportDiferente2026(
+                rezultatPontajeDeschise.data || []
+            );
+
+            startLot = 0;
+
+            while (true) {
+
+                const { data, error } = await supabaseClient
+                    .from("raport_diferente_lunar")
+                    .select("*")
+                    .eq("an", anRaport)
+                    .order("actualizat_la", {
+                        ascending: false
+                    })
+                    .range(startLot, startLot + marimeLot - 1);
+
+                if (error) {
+                    return {
+                        data: [],
+                        error: error
+                    };
+                }
+
+                toateDiferentele = toateDiferentele.concat(data || []);
+
+                if (!data || data.length < marimeLot) {
+                    break;
+                }
+
+                startLot += marimeLot;
+
+            }
+
             const diferenteDeschise = (toateDiferentele || []).filter(function(rand) {
+
+                const lunaRand = String(Number(rand.luna || 0));
+
+                if (luniInchiseIndex[lunaRand]) {
+                    return false;
+                }
 
                 const cheie = cheieRaportDiferente2026(
                     rand.nume_angajat,
                     rand.luna
                 );
 
-                return !luniFinale[cheie];
+                if (luniFinale[cheie]) {
+                    return false;
+                }
+
+                return !!luniCuPontajeDeschise[cheie];
 
             });
 
@@ -7841,7 +7913,7 @@ function deschideZonaAngajatNou() {
                 return;
             }
 
-            const rezultatPontaje = await citestePontajeRaportDiferente2026();
+            const rezultatPontaje = await citestePontajeRaportDiferente2026(luniDeschise);
 
             if (rezultatPontaje.error) {
                 showMessage(
