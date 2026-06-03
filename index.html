@@ -7133,6 +7133,32 @@ function deschideZonaAngajatNou() {
             { numar: 12, text: "Dec" }
         ];
 
+        // ===== VERIFICARE LUNA INCHISA PENTRU RAPORT DIFERENTE =====
+        async function esteLunaInchisaPentruRaportDiferente(an, luna) {
+
+            const anNumar = Number(an || 0);
+            const lunaNumar = Number(luna || 0);
+
+            if (!anNumar || !lunaNumar) {
+                return false;
+            }
+
+            const { data, error } = await supabaseClient
+                .from("luni_inchise")
+                .select("id")
+                .eq("an", anNumar)
+                .eq("luna", lunaNumar)
+                .limit(1);
+
+            if (error) {
+                return false;
+            }
+
+            return !!(data && data.length);
+
+        }
+
+
         // ===== SALVARE REZULTAT LUNAR IN TABELA RAPORT DIFERENTE =====
         async function salveazaRezultatRaportDiferenteLunar(dateRaport) {
 
@@ -7142,6 +7168,16 @@ function deschideZonaAngajatNou() {
                 !dateRaport.an ||
                 !dateRaport.luna
             ) {
+                return;
+            }
+
+            // ===== BLOCARE SCRIERE PENTRU LUNA INCHISA =====
+            const lunaBlocata = await esteLunaInchisaPentruRaportDiferente(
+                dateRaport.an,
+                dateRaport.luna
+            );
+
+            if (lunaBlocata) {
                 return;
             }
 
@@ -7178,6 +7214,16 @@ function deschideZonaAngajatNou() {
         async function stergeRezultatRaportDiferenteLunar(numeAngajat, an, luna) {
 
             if (!numeAngajat || !an || !luna) {
+                return;
+            }
+
+            // ===== BLOCARE STERGERE PENTRU LUNA INCHISA =====
+            const lunaBlocata = await esteLunaInchisaPentruRaportDiferente(
+                an,
+                luna
+            );
+
+            if (lunaBlocata) {
                 return;
             }
 
@@ -7381,6 +7427,15 @@ function deschideZonaAngajatNou() {
 
         // ===== ACTUALIZARE TABELA RAPORT DIFERENTE PENTRU O LUNA =====
         async function actualizeazaRaportDiferenteLunarPentruAngajat(numeAngajat, an, luna) {
+
+            const lunaBlocata = await esteLunaInchisaPentruRaportDiferente(
+                an,
+                luna
+            );
+
+            if (lunaBlocata) {
+                return;
+            }
 
             const rezultat = await calculeazaRezultatLunarPentruTabela(
                 numeAngajat,
@@ -7741,7 +7796,6 @@ function deschideZonaAngajatNou() {
                 return input.value;
             });
 
-            await actualizeazaTabelaRaportDiferente2026();
             await afiseazaRaportDiferente2026();
 
             // ===== DUPA SELECTIA SECTIILOR, RAPORTUL RAMANE FULL DISPLAY =====
@@ -7990,7 +8044,6 @@ function deschideZonaAngajatNou() {
 
             anRaportDiferente2026Selectat = Number(select ? select.value : 2026) || 2026;
 
-            await actualizeazaTabelaRaportDiferente2026();
             await afiseazaRaportDiferente2026();
 
         }
@@ -8036,7 +8089,6 @@ function deschideZonaAngajatNou() {
             pregatesteSelectAngajatRaportDiferente2026();
             marcheazaButoaneRaportDiferente2026();
 
-            await actualizeazaTabelaRaportDiferente2026();
             await afiseazaRaportDiferente2026();
 
         }
@@ -8090,7 +8142,6 @@ function deschideZonaAngajatNou() {
             pregatesteSelectAngajatRaportDiferente2026();
             marcheazaButoaneRaportDiferente2026();
 
-            await actualizeazaTabelaRaportDiferente2026();
             await afiseazaRaportDiferente2026();
 
         }
@@ -8181,7 +8232,6 @@ function deschideZonaAngajatNou() {
 
             angajatRaportDiferente2026 = select ? select.value : "";
 
-            await actualizeazaTabelaRaportDiferente2026();
             await afiseazaRaportDiferente2026();
 
         }
@@ -8533,8 +8583,6 @@ function deschideZonaAngajatNou() {
 
         // ===== EXPORT EXCEL RAPORT DIFERENTE 2026 =====
         async function exportaRaportDiferente2026Excel() {
-
-            await actualizeazaTabelaRaportDiferente2026();
 
             let angajatiRaport = listaAngajatiSupabase
                 .filter(function(angajat) {
