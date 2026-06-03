@@ -11886,7 +11886,39 @@ function deschideZonaAngajatNou() {
                 return false;
             }
 
+            randuriAngajat.sort(function(a, b) {
+                return Number(a.zi || 0) - Number(b.zi || 0);
+            });
+
+            const primaZiLuna =
+                an +
+                "-" +
+                String(luna).padStart(2, "0") +
+                "-01";
+
+            const ultimaZiLuna =
+                an +
+                "-" +
+                String(luna).padStart(2, "0") +
+                "-" +
+                String(new Date(an, luna, 0).getDate()).padStart(2, "0");
+
+            const { data: pontajeCorectii } = await supabaseClient
+                .from("pontaj_zilnic")
+                .select("data,modificat_de,status_corect,status_corectie,status_zi")
+                .eq("nume", numeAngajat)
+                .gte("data", primaZiLuna)
+                .lte("data", ultimaZiLuna);
+
+            const corectiiDupaData = {};
+
+            (pontajeCorectii || []).forEach(function(pontaj) {
+                corectiiDupaData[String(pontaj.data || "").trim()] = pontaj;
+            });
+
             let html = "";
+            let totalMinuteLucrate = 0;
+            let totalZileLucratoare = 0;
 
             randuriAngajat.forEach(function(rand) {
 
@@ -11894,27 +11926,126 @@ function deschideZonaAngajatNou() {
                 const dataObj = creeazaDataDinText(dataText);
                 const ziSaptamana = dataObj.getDay();
                 const esteWeekend = ziSaptamana === 0 || ziSaptamana === 6;
+                const esteSarbatoare = esteZiLiberaLegala(dataText);
 
-                let clasaData = "monthly-date-cell";
-                let clasaValoare = "monthly-normal";
+                const statusZi = String(rand.status_zi || "").trim();
+                const statusZiNormalizat = statusZi.toUpperCase();
+                const intervalPontat = String(rand.interval_pontat || "").trim();
+                const totalOre = String(rand.total_ore || "").trim();
 
-                if (esteWeekend) {
-                    clasaData += " monthly-date-weekend";
+                if (!esteWeekend && !esteSarbatoare) {
+                    totalZileLucratoare++;
                 }
 
-                if (String(rand.status_zi || "").trim().toUpperCase() === "FARA PONTAJ") {
-                    clasaValoare = "monthly-missing";
+                if (totalOre && !totalOre.startsWith("-")) {
+                    totalMinuteLucrate += transformaOraMinute(totalOre);
                 }
+
+                const clasaData = esteWeekend
+                    ? "monthly-date-cell monthly-date-weekend"
+                    : "monthly-date-cell";
 
                 html += "<div class='monthly-report-row'>";
-                html += "<div class='" + clasaData + "'>" + formatZiScurtaData(dataObj) + "</div>";
-                html += "<div class='monthly-value-cell " + clasaValoare + "'>";
-                html += "<div class='monthly-interval-cell'>" + escapeHtml(rand.interval_pontat || "") + "</div>";
-                html += "<div class='monthly-hours-cell'>" + escapeHtml(rand.total_ore || "") + "</div>";
-                html += "</div>";
+
+                html += "<div class='" + clasaData + "'>" +
+                    formatZiScurtaData(dataObj) +
+                    "</div>";
+
+                if (statusZiNormalizat === "FARA PONTAJ") {
+
+                    html += "<div class='monthly-missing'>FARA PONTAJ</div>";
+
+                } else if (statusZiNormalizat === "S.L" || statusZiNormalizat === "S.L.") {
+
+                    html += "<div class='monthly-red'>S.L.</div>";
+
+                } else {
+
+                    const pontajCorectie = corectiiDupaData[dataText] || null;
+
+                    const areCorectie = !!(
+                        statusZi ||
+                        String(pontajCorectie?.status_corect || "").trim() ||
+                        String(pontajCorectie?.status_corectie || "").trim() ||
+                        String(pontajCorectie?.status_zi || "").trim()
+                    );
+
+                    const modificatDe = pontajCorectie && pontajCorectie.modificat_de
+                        ? "<span class='monthly-manual-user'>- " + escapeHtml(pontajCorectie.modificat_de) + "</span>"
+                        : "";
+
+                    const clasaInterval = areCorectie
+                        ? "monthly-interval-cell monthly-manual-correction"
+                        : "monthly-interval-cell";
+
+                    html += "<div class='monthly-value-cell monthly-normal'>";
+                    html += "<div class='" + clasaInterval + "'>" +
+                        escapeHtml(intervalPontat) +
+                        modificatDe +
+                        "</div>";
+                    html += "<div class='monthly-hours-cell'>" +
+                        escapeHtml(totalOre) +
+                        "</div>";
+                    html += "</div>";
+
+                }
+
                 html += "</div>";
 
             });
+
+            const totalOreLucratoareMinute = totalZileLucratoare * 8 * 60;
+            const diferentaMinute = totalMinuteLucrate - totalOreLucratoareMinute;
+
+            const diferentaText =
+                (diferentaMinute < 0 ? "-" : "") +
+                formateazaMinuteOra(Math.abs(diferentaMinute));
+
+            const culoareDiferenta =
+                diferentaMinute < 0
+                    ? "#ff3b3b"
+                    : "#d4af37";
+
+            html += "<div style='height:12px;'></div>";
+
+            html += "<div style='padding:0 10px 0 10px;font-family:Montserrat,Arial,sans-serif;'>";
+
+            html += "<div style='display:grid;grid-template-columns:210px 70px;align-items:center;color:#ffffff;font-size:11px;font-weight:700;line-height:1.9;'>";
+            html += "<div>Total ore lucrătoare pe lună:</div>";
+            html += "<div style='color:#d4af37;text-align:left;'>" + formateazaMinuteOra(totalOreLucratoareMinute) + "</div>";
+            html += "</div>";
+
+            html += "<div style='display:grid;grid-template-columns:210px 70px;align-items:center;color:#ffffff;font-size:11px;font-weight:700;line-height:1.9;'>";
+            html += "<div>Total ore lucrate pe lună:</div>";
+            html += "<div style='color:#d4af37;text-align:left;'>" + formateazaMinuteOra(totalMinuteLucrate) + "</div>";
+            html += "</div>";
+
+            html += "</div>";
+
+            html += "<div style='width:280px;height:1px;background:rgba(212,175,55,0.9);margin:6px 0 0 10px;'></div>";
+
+            html += "<div style='height:10px;'></div>";
+
+            html += "<div style='padding:0 10px 10px 10px;font-family:Montserrat,Arial,sans-serif;'>";
+            html += "<div style='display:grid;grid-template-columns:210px 70px;align-items:center;color:#ffffff;font-size:12px;font-weight:900;'>";
+            html += "<div>Diferență:</div>";
+            html += "<div style='color:" + culoareDiferenta + ";text-align:left;'>" + diferentaText + "</div>";
+            html += "</div>";
+            html += "</div>";
+
+            const procentRealizat =
+                totalOreLucratoareMinute > 0
+                    ? ((totalMinuteLucrate / totalOreLucratoareMinute) * 100).toFixed(1)
+                    : "0.0";
+
+            html += "<div style='height:10px;'></div>";
+
+            html += "<div style='padding:0 10px 12px 10px;font-family:Montserrat,Arial,sans-serif;'>";
+            html += "<div style='display:grid;grid-template-columns:210px 70px;align-items:center;color:#ffffff;font-size:12px;font-weight:900;'>";
+            html += "<div>Procent:</div>";
+            html += "<div style='color:#2f7dff;text-align:left;font-weight:900;'>" + procentRealizat + "%</div>";
+            html += "</div>";
+            html += "</div>";
 
             grid.innerHTML = html;
 
