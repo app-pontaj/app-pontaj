@@ -2543,6 +2543,49 @@
                 0 4px 10px rgba(0,0,0,0.55);
         }
 
+
+        .month-close-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 14px;
+        }
+
+        .month-close-row {
+            width: 100%;
+            min-height: 46px;
+            border-radius: 14px;
+            border: 1.5px solid rgba(212,175,55,0.80);
+            background: linear-gradient(145deg, rgba(255,255,255,0.08), rgba(0,0,0,0.98));
+            color: #ffffff;
+            display: grid;
+            grid-template-columns: 1fr 112px;
+            gap: 8px;
+            align-items: center;
+            padding: 8px 10px;
+            box-sizing: border-box;
+            box-shadow: 0 6px 14px rgba(0,0,0,0.50);
+        }
+
+        .month-close-row-title {
+            color: #d4af37;
+            font-size: 13px;
+            font-weight: 900;
+            line-height: 1.1;
+        }
+
+        .month-close-row-button {
+            min-height: 32px;
+            border-radius: 10px;
+            border: 1px solid #ffd75a;
+            background: linear-gradient(145deg, #ffe27a 0%, #d6a72d 56%, #b98208 100%);
+            color: #050505;
+            font-size: 10px;
+            font-weight: 900;
+            cursor: pointer;
+            font-family: 'Montserrat', Arial, sans-serif;
+        }
+
         .month-close-info {
             color: #ffffff;
             font-size: 10px;
@@ -3452,7 +3495,7 @@
                                 </div>
 
                                 <div class="month-close-subtitle">
-                                    Pas 3: alegere lună, fără închidere
+                                    Pas 4: luni cu pontaj, neînchise
                                 </div>
                             </div>
                         </div>
@@ -3460,24 +3503,17 @@
 
                     <div class="month-close-card">
 
-                        <div class="month-close-label">Luna disponibilă</div>
+                        <div class="month-close-label">Luni cu pontaj, neînchise</div>
 
-                        <select
-                            class="month-close-select"
-                            id="month-close-select"
+                        <div
+                            class="month-close-list"
+                            id="month-close-list"
                         >
-                            <option value="">Se încarcă...</option>
-                        </select>
-
-                        <button
-                            class="month-close-button"
-                            onclick="verificaLunaSelectataPentruInchidere()"
-                        >
-                            Verifică luna
-                        </button>
+                            Se încarcă...
+                        </div>
 
                         <div class="month-close-info">
-                            Acest pas doar afișează lunile disponibile. Nu se închide luna și nu se modifică pontajele.
+                            Apar doar lunile care au pontaje în Supabase și nu sunt încă închise. Acest pas nu modifică pontajele.
                         </div>
 
                         <div
@@ -13226,7 +13262,7 @@ function deschideZonaAngajatNou() {
 
 
 
-        // ===== INCHIDERE LUNA - PAS 3: MENIU SI PAGINA FARA INCHIDERE =====
+        // ===== INCHIDERE LUNA - PAS 4: LISTA LUNI CU PONTAJ NEINCHISE =====
         function actualizeazaVizibilitateMeniuInchidereLuna() {
 
             const card = document.getElementById("inchidere-luna-menu-card");
@@ -13280,14 +13316,14 @@ function deschideZonaAngajatNou() {
 
         async function incarcaLuniDisponibilePentruInchidere() {
 
-            const select = document.getElementById("month-close-select");
+            const lista = document.getElementById("month-close-list");
             const rezultat = document.getElementById("month-close-result");
 
-            if (!select) {
+            if (!lista) {
                 return;
             }
 
-            select.innerHTML = "<option value=''>Se încarcă...</option>";
+            lista.innerHTML = "Se încarcă...";
 
             const { data: pontaje, error: eroarePontaje } = await supabaseClient
                 .from("pontaj_zilnic")
@@ -13297,18 +13333,23 @@ function deschideZonaAngajatNou() {
                 });
 
             if (eroarePontaje) {
-                select.innerHTML = "<option value=''>Eroare citire pontaje</option>";
+                lista.innerHTML = "Eroare citire pontaje.";
                 return;
             }
 
-            const { data: luniInchise } = await supabaseClient
+            const { data: luniInchise, error: eroareLuniInchise } = await supabaseClient
                 .from("luni_inchise")
                 .select("an,luna");
+
+            if (eroareLuniInchise) {
+                lista.innerHTML = "Eroare citire luni închise.";
+                return;
+            }
 
             const luniInchiseIndex = {};
 
             (luniInchise || []).forEach(function(rand) {
-                luniInchiseIndex[String(rand.an) + "-" + String(rand.luna)] = true;
+                luniInchiseIndex[String(rand.an) + "-" + String(Number(rand.luna))] = true;
             });
 
             const luniGasite = {};
@@ -13350,7 +13391,7 @@ function deschideZonaAngajatNou() {
             });
 
             if (!luni.length) {
-                select.innerHTML = "<option value=''>Nu există luni deschise</option>";
+                lista.innerHTML = "<div class='month-close-row'><div class='month-close-row-title'>Nu există luni deschise.</div><button class='month-close-row-button' type='button' disabled>OK</button></div>";
 
                 if (rezultat) {
                     rezultat.innerHTML = "Toate lunile cu pontaje sunt deja închise sau nu există pontaje.";
@@ -13375,48 +13416,45 @@ function deschideZonaAngajatNou() {
                 "Decembrie"
             ];
 
-            let html = "<option value=''>Alege luna</option>";
+            let html = "";
 
             luni.forEach(function(rand) {
 
                 html +=
-                    "<option value='" +
-                    rand.an +
-                    "-" +
-                    rand.luna +
-                    "'>" +
+                    "<div class='month-close-row'>" +
+                    "<div class='month-close-row-title'>" +
                     numeLuni[rand.luna] +
                     " " +
                     rand.an +
-                    "</option>";
+                    "</div>" +
+                    "<button class='month-close-row-button' onclick='verificaLunaPentruInchidere(" +
+                    rand.an +
+                    "," +
+                    rand.luna +
+                    ")'>Închide luna</button>" +
+                    "</div>";
 
             });
 
-            select.innerHTML = html;
+            lista.innerHTML = html;
+
+            if (rezultat) {
+                rezultat.innerHTML = "";
+            }
 
         }
 
-        function verificaLunaSelectataPentruInchidere() {
+        function verificaLunaPentruInchidere(an, luna) {
 
-            const select = document.getElementById("month-close-select");
             const rezultat = document.getElementById("month-close-result");
 
-            if (!select || !rezultat) {
+            if (!rezultat) {
                 return;
             }
-
-            if (!select.value) {
-                rezultat.innerHTML = "Alege o lună.";
-                return;
-            }
-
-            const parti = select.value.split("-");
-            const an = parti[0];
-            const luna = parti[1];
 
             rezultat.innerHTML =
                 "Luna selectată: " +
-                luna +
+                String(luna).padStart(2, "0") +
                 "/" +
                 an +
                 "\n" +
