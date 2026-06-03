@@ -13389,11 +13389,13 @@ function deschideZonaAngajatNou() {
 
             const luniGasite = {};
 
+            // ===== REGULA SIGURA: LUNA APARE DOAR DACA ARE MINIM 5 ZILE DIFERITE CU PONTAJ =====
+            // Evitam lunile aparute dintr-o singura tura de noapte, de exemplu 31.10 -> 01.11.
             (pontaje || []).forEach(function(pontaj) {
 
                 const dataText = String(pontaj.data || "");
 
-                if (dataText.length < 7) {
+                if (dataText.length < 10) {
                     return;
                 }
 
@@ -13406,16 +13408,27 @@ function deschideZonaAngajatNou() {
 
                 const cheie = String(an) + "-" + String(luna);
 
-                if (!luniInchiseIndex[cheie]) {
+                if (luniInchiseIndex[cheie]) {
+                    return;
+                }
+
+                if (!luniGasite[cheie]) {
                     luniGasite[cheie] = {
                         an: an,
-                        luna: luna
+                        luna: luna,
+                        zile: {}
                     };
                 }
 
+                luniGasite[cheie].zile[dataText] = true;
+
             });
 
-            const luni = Object.values(luniGasite).sort(function(a, b) {
+            const luni = Object.values(luniGasite)
+                .filter(function(rand) {
+                    return Object.keys(rand.zile || {}).length >= 5;
+                })
+                .sort(function(a, b) {
 
                 if (a.an !== b.an) {
                     return a.an - b.an;
