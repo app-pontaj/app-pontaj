@@ -13479,21 +13479,646 @@ function deschideZonaAngajatNou() {
 
         }
 
-        function verificaLunaPentruInchidere(an, luna) {
+        // ===== INCHIDERE LUNA - PAS 6: VERIFICARE SI SALVARE RAPOARTE FINALE =====
+        async function verificaLunaPentruInchidere(an, luna) {
 
             const rezultat = document.getElementById("month-close-result");
 
-            if (!rezultat) {
+            if (rezultat) {
+                rezultat.innerHTML = "Se verifică luna...";
+            }
+
+            const verificare = await verificaZileFaraPontajPentruInchidere(an, luna);
+
+            if (!verificare.ok) {
+
+                if (rezultat) {
+                    rezultat.innerHTML =
+                        "Luna " +
+                        numeLunaInchidere(luna) +
+                        " " +
+                        an +
+                        " nu poate fi închisă.\n" +
+                        "Există " +
+                        verificare.total +
+                        " zile fără pontaj.\n" +
+                        "Verifică raportul înainte de închidere.";
+                }
+
+                showMessage(
+                    "Luna nu poate fi închisă. Există zile fără pontaj.",
+                    "error"
+                );
+
+                return;
+
+            }
+
+            afiseazaConfirmareInchidereLuna(an, luna);
+
+        }
+
+        function afiseazaConfirmareInchidereLuna(an, luna) {
+
+            showMessage(
+                "Toate verificările sunt corecte.<br>Închizi definitiv " +
+                numeLunaInchidere(luna) +
+                " " +
+                an +
+                "?",
+                "success"
+            );
+
+            const box = document.getElementById("custom-message");
+            const okButton = document.getElementById("message-button");
+
+            if (!box || !okButton) {
                 return;
             }
 
-            rezultat.innerHTML =
-                "Luna selectată: " +
-                String(luna).padStart(2, "0") +
-                "/" +
+            okButton.innerHTML = "Confirmă";
+            okButton.onclick = function() {
+                closeMessage();
+                inchideLunaFinal(an, luna);
+            };
+
+            let renuntaButton = document.getElementById("message-confirm-button");
+
+            if (!renuntaButton) {
+
+                renuntaButton = document.createElement("button");
+                renuntaButton.id = "message-confirm-button";
+                renuntaButton.className = "message-button error-button";
+                renuntaButton.innerHTML = "Renunță";
+                renuntaButton.onclick = closeMessage;
+
+                okButton.parentNode.insertBefore(
+                    renuntaButton,
+                    okButton.nextSibling
+                );
+
+            }
+
+            renuntaButton.style.marginLeft = "8px";
+
+        }
+
+        async function verificaZileFaraPontajPentruInchidere(an, luna) {
+
+            const primaZi =
                 an +
-                "\n" +
-                "În acest pas nu se închide nimic. Următorul pas va verifica zilele fără pontaj.";
+                "-" +
+                String(luna).padStart(2, "0") +
+                "-01";
+
+            const zileLuna = new Date(an, luna, 0).getDate();
+
+            const ultimaZi =
+                an +
+                "-" +
+                String(luna).padStart(2, "0") +
+                "-" +
+                String(zileLuna).padStart(2, "0");
+
+            const { data: angajati, error: eroareAngajati } = await supabaseClient
+                .from("angajati")
+                .select("*")
+                .order("nume", {
+                    ascending: true
+                });
+
+            if (eroareAngajati) {
+                return {
+                    ok: false,
+                    total: 999999
+                };
+            }
+
+            const { data: pontaje, error: eroarePontaje } = await supabaseClient
+                .from("pontaj_zilnic")
+                .select("nume,data,status_corectie")
+                .gte("data", primaZi)
+                .lte("data", ultimaZi);
+
+            if (eroarePontaje) {
+                return {
+                    ok: false,
+                    total: 999999
+                };
+            }
+
+            const pontajeIndex = {};
+
+            (pontaje || []).forEach(function(pontaj) {
+
+                const cheie =
+                    String(pontaj.nume || "").trim().toUpperCase() +
+                    "|" +
+                    String(pontaj.data || "").trim();
+
+                pontajeIndex[cheie] = true;
+
+            });
+
+            let totalLipsa = 0;
+
+            (angajati || []).forEach(function(angajat) {
+
+                const nume = String(angajat.nume || "").trim();
+
+                if (!nume) {
+                    return;
+                }
+
+                if (angajat.apare_in_rapoarte === false) {
+                    return;
+                }
+
+                if (angajat.afiseaza_lipsa_pontaj === false) {
+                    return;
+                }
+
+                const dataCurenta = creeazaDataDinText(primaZi);
+                const dataStop = creeazaDataDinText(ultimaZi);
+
+                while (dataCurenta <= dataStop) {
+
+                    const dataText = formatDataPentruCheie(dataCurenta);
+                    const ziSaptamana = dataCurenta.getDay();
+
+                    const esteWeekend =
+                        ziSaptamana === 0 ||
+                        ziSaptamana === 6;
+
+                    const angajatInactivLaData =
+                        angajat.activ === false &&
+                        angajat.data_inactiv &&
+                        dataText >= angajat.data_inactiv;
+
+                    if (
+                        !esteWeekend &&
+                        !esteZiLiberaLegala(dataText) &&
+                        !angajatInactivLaData
+                    ) {
+
+                        const cheie =
+                            nume.toUpperCase() +
+                            "|" +
+                            dataText;
+
+                        if (!pontajeIndex[cheie]) {
+                            totalLipsa++;
+                        }
+
+                    }
+
+                    dataCurenta.setDate(dataCurenta.getDate() + 1);
+
+                }
+
+            });
+
+            return {
+                ok: totalLipsa === 0,
+                total: totalLipsa
+            };
+
+        }
+
+        async function inchideLunaFinal(an, luna) {
+
+            const rezultat = document.getElementById("month-close-result");
+
+            if (rezultat) {
+                rezultat.innerHTML =
+                    "Se salvează rapoartele finale pentru " +
+                    numeLunaInchidere(luna) +
+                    " " +
+                    an +
+                    "...";
+            }
+
+            const salvare = await salveazaRapoarteFinalePentruLuna(an, luna);
+
+            if (!salvare.ok) {
+
+                if (rezultat) {
+                    rezultat.innerHTML = salvare.mesaj;
+                }
+
+                showMessage(
+                    salvare.mesaj,
+                    "error"
+                );
+
+                return;
+
+            }
+
+            const { error: eroareLunaInchisa } = await supabaseClient
+                .from("luni_inchise")
+                .upsert(
+                    {
+                        an: an,
+                        luna: luna,
+                        inchis_de: utilizatorLogat?.nume || ""
+                    },
+                    {
+                        onConflict: "an,luna"
+                    }
+                );
+
+            if (eroareLunaInchisa) {
+
+                if (rezultat) {
+                    rezultat.innerHTML = "Eroare la marcarea lunii ca închisă.";
+                }
+
+                showMessage(
+                    "Eroare la marcarea lunii ca închisă",
+                    "error"
+                );
+
+                return;
+
+            }
+
+            if (rezultat) {
+                rezultat.innerHTML =
+                    "Luna " +
+                    numeLunaInchidere(luna) +
+                    " " +
+                    an +
+                    " a fost închisă.\n" +
+                    "Rapoartele finale au fost salvate.";
+            }
+
+            showMessage(
+                "Luna a fost închisă",
+                "success"
+            );
+
+            await incarcaLuniDisponibilePentruInchidere();
+
+        }
+
+        async function salveazaRapoarteFinalePentruLuna(an, luna) {
+
+            const primaZi =
+                an +
+                "-" +
+                String(luna).padStart(2, "0") +
+                "-01";
+
+            const zileLuna = new Date(an, luna, 0).getDate();
+
+            const ultimaZi =
+                an +
+                "-" +
+                String(luna).padStart(2, "0") +
+                "-" +
+                String(zileLuna).padStart(2, "0");
+
+            const { data: angajati, error: eroareAngajati } = await supabaseClient
+                .from("angajati")
+                .select("*")
+                .order("nume", {
+                    ascending: true
+                });
+
+            if (eroareAngajati) {
+                return {
+                    ok: false,
+                    mesaj: "Eroare citire angajați."
+                };
+            }
+
+            const { data: pontaje, error: eroarePontaje } = await supabaseClient
+                .from("pontaj_zilnic")
+                .select("*")
+                .gte("data", primaZi)
+                .lte("data", ultimaZi);
+
+            if (eroarePontaje) {
+                return {
+                    ok: false,
+                    mesaj: "Eroare citire pontaje."
+                };
+            }
+
+            await supabaseClient
+                .from("raport_lunar_final")
+                .delete()
+                .eq("an", an)
+                .eq("luna", luna);
+
+            await supabaseClient
+                .from("raport_diferente_final")
+                .delete()
+                .eq("an", an)
+                .eq("luna", luna);
+
+            await supabaseClient
+                .from("raport_intrare_iesire_final")
+                .delete()
+                .eq("an", an)
+                .eq("luna", luna);
+
+            const pontajeIndex = {};
+
+            (pontaje || []).forEach(function(pontaj) {
+
+                const cheie =
+                    String(pontaj.nume || "").trim().toUpperCase() +
+                    "|" +
+                    String(pontaj.data || "").trim();
+
+                pontajeIndex[cheie] = pontaj;
+
+            });
+
+            const randuriRaportLunar = [];
+            const randuriIntrareIesire = [];
+            const randuriDiferente = [];
+
+            (angajati || []).forEach(function(angajat) {
+
+                const nume = String(angajat.nume || "").trim();
+                const departament = String(angajat.sectie || angajat.departament || "").trim();
+
+                if (!nume) {
+                    return;
+                }
+
+                if (angajat.apare_in_rapoarte === false) {
+                    return;
+                }
+
+                let totalLucratMinute = 0;
+                let totalNormaMinute = 0;
+
+                for (let zi = 1; zi <= zileLuna; zi++) {
+
+                    const dataText =
+                        an +
+                        "-" +
+                        String(luna).padStart(2, "0") +
+                        "-" +
+                        String(zi).padStart(2, "0");
+
+                    const dataObj = creeazaDataDinText(dataText);
+                    const ziSaptamana = dataObj.getDay();
+
+                    const esteWeekend =
+                        ziSaptamana === 0 ||
+                        ziSaptamana === 6;
+
+                    const esteSarbatoare = esteZiLiberaLegala(dataText);
+
+                    const angajatInactivLaData =
+                        angajat.activ === false &&
+                        angajat.data_inactiv &&
+                        dataText >= angajat.data_inactiv;
+
+                    if (angajatInactivLaData) {
+                        continue;
+                    }
+
+                    const cheie =
+                        nume.toUpperCase() +
+                        "|" +
+                        dataText;
+
+                    const pontaj = pontajeIndex[cheie];
+
+                    let intervalPontat = "";
+                    let totalOre = "";
+                    let statusZi = "";
+
+                    if (!esteWeekend && !esteSarbatoare) {
+                        totalNormaMinute += 480;
+                    }
+
+                    if (pontaj) {
+
+                        if (pontaj.status_corectie) {
+
+                            statusZi = String(pontaj.status_corectie || "").trim();
+                            intervalPontat = statusZi;
+
+                            const minuteCorectie = calculeazaMinuteCorectieFinala(
+                                pontaj,
+                                angajat
+                            );
+
+                            totalLucratMinute += minuteCorectie;
+                            totalOre = formateazaMinuteOra(minuteCorectie);
+
+                        } else {
+
+                            const intrare = String(pontaj.ora_intrare || "").trim();
+                            const iesire = String(pontaj.ora_iesire || "").trim();
+
+                            intervalPontat =
+                                intrare && iesire
+                                    ? intrare + " - " + iesire
+                                    : "";
+
+                            totalOre = calculeazaOreNete(
+                                pontaj.ora_intrare,
+                                pontaj.ora_iesire,
+                                angajat.regula_start_0700,
+                                angajat.regula_iesire_1530,
+                                angajat.pauza_masa,
+                                angajat.pauza_minute
+                            ) || "";
+
+                            if (totalOre && !String(totalOre).startsWith("-")) {
+                                totalLucratMinute += transformaOraMinute(totalOre);
+                            }
+
+                        }
+
+                    } else if (esteSarbatoare) {
+
+                        statusZi = "S.L.";
+                        intervalPontat = "S.L.";
+
+                    } else if (!esteWeekend) {
+
+                        statusZi = "FARA PONTAJ";
+                        intervalPontat = "FARA PONTAJ";
+
+                    }
+
+                    randuriRaportLunar.push({
+                        an: an,
+                        luna: luna,
+                        nume_angajat: nume,
+                        departament: departament,
+                        zi: zi,
+                        data: dataText,
+                        interval_pontat: intervalPontat,
+                        total_ore: totalOre,
+                        status_zi: statusZi
+                    });
+
+                    randuriIntrareIesire.push({
+                        an: an,
+                        luna: luna,
+                        nume_angajat: nume,
+                        departament: departament,
+                        zi: zi,
+                        data: dataText,
+                        ora_intrare: pontaj?.ora_intrare || pontaj?.ora_intrare_manual || "",
+                        ora_iesire: pontaj?.ora_iesire || pontaj?.ora_iesire_manual || "",
+                        total_ore: totalOre
+                    });
+
+                }
+
+                const diferentaMinute = totalLucratMinute - totalNormaMinute;
+
+                randuriDiferente.push({
+                    an: an,
+                    luna: luna,
+                    nume_angajat: nume,
+                    departament: departament,
+                    ore_lucrate: formateazaMinuteOra(totalLucratMinute),
+                    ore_norma: formateazaMinuteOra(totalNormaMinute),
+                    diferenta:
+                        (diferentaMinute < 0 ? "-" : "") +
+                        formateazaMinuteOra(Math.abs(diferentaMinute))
+                });
+
+            });
+
+            const salvareLunar = await insereazaLoturiInchidereLuna(
+                "raport_lunar_final",
+                randuriRaportLunar
+            );
+
+            if (!salvareLunar.ok) {
+                return salvareLunar;
+            }
+
+            const salvareDiferente = await insereazaLoturiInchidereLuna(
+                "raport_diferente_final",
+                randuriDiferente
+            );
+
+            if (!salvareDiferente.ok) {
+                return salvareDiferente;
+            }
+
+            const salvareIntrareIesire = await insereazaLoturiInchidereLuna(
+                "raport_intrare_iesire_final",
+                randuriIntrareIesire
+            );
+
+            if (!salvareIntrareIesire.ok) {
+                return salvareIntrareIesire;
+            }
+
+            return {
+                ok: true,
+                mesaj: "Rapoarte finale salvate."
+            };
+
+        }
+
+        async function insereazaLoturiInchidereLuna(tabela, randuri) {
+
+            const marimeLot = 500;
+
+            for (let index = 0; index < randuri.length; index += marimeLot) {
+
+                const lot = randuri.slice(index, index + marimeLot);
+
+                const { error } = await supabaseClient
+                    .from(tabela)
+                    .insert(lot);
+
+                if (error) {
+                    return {
+                        ok: false,
+                        mesaj: "Eroare salvare în " + tabela + "."
+                    };
+                }
+
+            }
+
+            return {
+                ok: true,
+                mesaj: "OK"
+            };
+
+        }
+
+        function calculeazaMinuteCorectieFinala(pontaj, angajat) {
+
+            const status = String(pontaj?.status_corectie || "")
+                .trim()
+                .toUpperCase()
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "");
+
+            if (
+                status.includes("C.O") ||
+                status === "CO" ||
+                status.includes("LUCRU LA DISTANTA")
+            ) {
+                return 480;
+            }
+
+            if (
+                status.includes("C.M") ||
+                status === "CM" ||
+                status.includes("FARA PLATA")
+            ) {
+                return 0;
+            }
+
+            if (status.includes("LIPSA CARD")) {
+
+                const oreCorectie = calculeazaOreNete(
+                    pontaj.ora_intrare_manual,
+                    pontaj.ora_iesire_manual,
+                    angajat?.regula_start_0700,
+                    angajat?.regula_iesire_1530,
+                    angajat?.pauza_masa,
+                    angajat?.pauza_minute
+                );
+
+                if (oreCorectie && !String(oreCorectie).startsWith("-")) {
+                    return transformaOraMinute(oreCorectie);
+                }
+
+            }
+
+            return 0;
+
+        }
+
+        function numeLunaInchidere(luna) {
+
+            const numeLuni = [
+                "",
+                "Ianuarie",
+                "Februarie",
+                "Martie",
+                "Aprilie",
+                "Mai",
+                "Iunie",
+                "Iulie",
+                "August",
+                "Septembrie",
+                "Octombrie",
+                "Noiembrie",
+                "Decembrie"
+            ];
+
+            return numeLuni[Number(luna)] || String(luna);
 
         }
 
