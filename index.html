@@ -7474,8 +7474,70 @@ function deschideZonaAngajatNou() {
 
             }
 
+            let diferenteFinale = [];
+            startLot = 0;
+
+            while (true) {
+
+                const { data, error } = await supabaseClient
+                    .from("raport_diferente_final")
+                    .select("*")
+                    .eq("an", anRaport)
+                    .range(startLot, startLot + marimeLot - 1);
+
+                if (error) {
+                    return {
+                        data: [],
+                        error: error
+                    };
+                }
+
+                diferenteFinale = diferenteFinale.concat(data || []);
+
+                if (!data || data.length < marimeLot) {
+                    break;
+                }
+
+                startLot += marimeLot;
+
+            }
+
+            const finaleNormalizate = (diferenteFinale || []).map(function(rand) {
+
+                const diferentaText = String(rand.diferenta || "").trim();
+
+                return {
+                    nume_angajat: rand.nume_angajat,
+                    an: rand.an,
+                    luna: rand.luna,
+                    departament: rand.departament,
+                    diferenta_minute: textDiferentaFinalaInMinute(diferentaText),
+                    diferenta_text: diferentaText
+                };
+
+            });
+
+            const luniFinale = {};
+
+            finaleNormalizate.forEach(function(rand) {
+                luniFinale[
+                    cheieRaportDiferente2026(rand.nume_angajat, rand.luna)
+                ] = true;
+            });
+
+            const diferenteDeschise = (toateDiferentele || []).filter(function(rand) {
+
+                const cheie = cheieRaportDiferente2026(
+                    rand.nume_angajat,
+                    rand.luna
+                );
+
+                return !luniFinale[cheie];
+
+            });
+
             return {
-                data: toateDiferentele,
+                data: finaleNormalizate.concat(diferenteDeschise),
                 error: null
             };
 
@@ -11652,6 +11714,503 @@ function deschideZonaAngajatNou() {
 
         }
 
+
+
+        // ===== RAPOARTE FINALE PENTRU LUNI INCHISE =====
+        async function esteLunaInchisaFinal(an, luna) {
+
+            const { data, error } = await supabaseClient
+                .from("luni_inchise")
+                .select("id")
+                .eq("an", Number(an))
+                .eq("luna", Number(luna))
+                .limit(1);
+
+            if (error) {
+                return false;
+            }
+
+            return !!(data && data.length);
+
+        }
+
+        async function citesteRaportLunarFinal(an, luna) {
+
+            let randuri = [];
+            let startLot = 0;
+            const marimeLot = 1000;
+
+            while (true) {
+
+                const { data, error } = await supabaseClient
+                    .from("raport_lunar_final")
+                    .select("*")
+                    .eq("an", Number(an))
+                    .eq("luna", Number(luna))
+                    .order("nume_angajat", {
+                        ascending: true
+                    })
+                    .order("zi", {
+                        ascending: true
+                    })
+                    .range(startLot, startLot + marimeLot - 1);
+
+                if (error) {
+                    return {
+                        data: [],
+                        error: error
+                    };
+                }
+
+                randuri = randuri.concat(data || []);
+
+                if (!data || data.length < marimeLot) {
+                    break;
+                }
+
+                startLot += marimeLot;
+
+            }
+
+            return {
+                data: randuri,
+                error: null
+            };
+
+        }
+
+        async function citesteRaportIntrareIesireFinal(an, luna) {
+
+            let randuri = [];
+            let startLot = 0;
+            const marimeLot = 1000;
+
+            while (true) {
+
+                const { data, error } = await supabaseClient
+                    .from("raport_intrare_iesire_final")
+                    .select("*")
+                    .eq("an", Number(an))
+                    .eq("luna", Number(luna))
+                    .order("nume_angajat", {
+                        ascending: true
+                    })
+                    .order("zi", {
+                        ascending: true
+                    })
+                    .range(startLot, startLot + marimeLot - 1);
+
+                if (error) {
+                    return {
+                        data: [],
+                        error: error
+                    };
+                }
+
+                randuri = randuri.concat(data || []);
+
+                if (!data || data.length < marimeLot) {
+                    break;
+                }
+
+                startLot += marimeLot;
+
+            }
+
+            return {
+                data: randuri,
+                error: null
+            };
+
+        }
+
+        function indexeazaRanduriFinaleDupaAngajatZi(randuri, campNume) {
+
+            const index = {};
+
+            (randuri || []).forEach(function(rand) {
+
+                const cheie =
+                    String(rand[campNume] || "")
+                        .trim()
+                        .toUpperCase() +
+                    "|" +
+                    String(rand.data || "").trim();
+
+                index[cheie] = rand;
+
+            });
+
+            return index;
+
+        }
+
+        function textDiferentaFinalaInMinute(text) {
+
+            const valoare = String(text || "").trim();
+
+            if (!valoare) {
+                return 0;
+            }
+
+            const negativ = valoare.startsWith("-");
+            const curat = valoare.replace("-", "");
+            const parti = curat.split(":");
+
+            if (parti.length !== 2) {
+                return 0;
+            }
+
+            const minute =
+                (Number(parti[0]) || 0) * 60 +
+                (Number(parti[1]) || 0);
+
+            return negativ ? -minute : minute;
+
+        }
+
+        async function afiseazaRaportLunarFinalAngajat(an, luna, numeAngajat, grid) {
+
+            const rezultat = await citesteRaportLunarFinal(an, luna);
+
+            if (rezultat.error) {
+                showMessage("Eroare citire raport final", "error");
+                return false;
+            }
+
+            const randuriAngajat = (rezultat.data || []).filter(function(rand) {
+                return String(rand.nume_angajat || "").trim() === String(numeAngajat || "").trim();
+            });
+
+            if (!randuriAngajat.length) {
+                return false;
+            }
+
+            let html = "";
+
+            randuriAngajat.forEach(function(rand) {
+
+                const dataText = String(rand.data || "");
+                const dataObj = creeazaDataDinText(dataText);
+                const ziSaptamana = dataObj.getDay();
+                const esteWeekend = ziSaptamana === 0 || ziSaptamana === 6;
+
+                let clasaData = "monthly-date-cell";
+                let clasaValoare = "monthly-normal";
+
+                if (esteWeekend) {
+                    clasaData += " monthly-date-weekend";
+                }
+
+                if (String(rand.status_zi || "").trim().toUpperCase() === "FARA PONTAJ") {
+                    clasaValoare = "monthly-missing";
+                }
+
+                html += "<div class='monthly-report-row'>";
+                html += "<div class='" + clasaData + "'>" + formatZiScurtaData(dataObj) + "</div>";
+                html += "<div class='monthly-value-cell " + clasaValoare + "'>";
+                html += "<div class='monthly-interval-cell'>" + escapeHtml(rand.interval_pontat || "") + "</div>";
+                html += "<div class='monthly-hours-cell'>" + escapeHtml(rand.total_ore || "") + "</div>";
+                html += "</div>";
+                html += "</div>";
+
+            });
+
+            grid.innerHTML = html;
+
+            return true;
+
+        }
+
+        async function afiseazaRaportLunarFinalToti(an, luna, container, afiseazaRaportPeSectii, afiseazaColoanaSectie, sectiiFiltruRaport) {
+
+            const rezultat = await citesteRaportLunarFinal(an, luna);
+
+            if (rezultat.error) {
+                container.innerHTML = "";
+                showMessage("Eroare citire raport final", "error");
+                return false;
+            }
+
+            const randuri = rezultat.data || [];
+
+            if (!randuri.length) {
+                return false;
+            }
+
+            const zileLuna = new Date(an, luna, 0).getDate();
+            const indexFinal = indexeazaRanduriFinaleDupaAngajatZi(randuri, "nume_angajat");
+
+            const angajatiDinFinal = {};
+
+            randuri.forEach(function(rand) {
+
+                const nume = String(rand.nume_angajat || "").trim();
+                const departament = String(rand.departament || "").trim();
+
+                if (!nume) {
+                    return;
+                }
+
+                if (
+                    afiseazaRaportPeSectii &&
+                    sectiiFiltruRaport.length &&
+                    !sectiiFiltruRaport.includes(departament)
+                ) {
+                    return;
+                }
+
+                if (!angajatInSectiiPermise({
+                    nume: nume,
+                    sectie: departament
+                })) {
+                    return;
+                }
+
+                angajatiDinFinal[nume] = {
+                    nume: nume,
+                    sectie: departament
+                };
+
+            });
+
+            const angajatiRaport = Object.values(angajatiDinFinal)
+                .sort(function(a, b) {
+
+                    if (afiseazaRaportPeSectii && sectiiFiltruRaport.length > 1) {
+
+                        const sectieA = String(a.sectie || "").trim();
+                        const sectieB = String(b.sectie || "").trim();
+
+                        if (sectieA !== sectieB) {
+                            return sectieA.localeCompare(sectieB, "ro");
+                        }
+
+                    }
+
+                    return String(a.nume || "").localeCompare(String(b.nume || ""), "ro");
+
+                });
+
+            let html = "";
+
+            html += "<table class='all-employees-table'>";
+            html += "<thead><tr>";
+            html += "<th class='all-employees-name-head'>Angajat</th>";
+
+            if (afiseazaColoanaSectie) {
+                html += "<th class='all-employees-section-head'>Secție</th>";
+            }
+
+            for (let zi = 1; zi <= zileLuna; zi++) {
+
+                const dataObj = new Date(an, luna - 1, zi);
+
+                html +=
+                    "<th>" +
+                    "<span class='all-employees-day-small'>" +
+                    ZILE_SCURTE[dataObj.getDay()] +
+                    "</span>" +
+                    "<span class='all-employees-date-small'>" +
+                    String(zi).padStart(2, "0") +
+                    "." +
+                    String(luna).padStart(2, "0") +
+                    "</span>" +
+                    "</th>";
+
+            }
+
+            html += "</tr></thead>";
+            html += "<tbody>";
+
+            angajatiRaport.forEach(function(angajat) {
+
+                const nume = String(angajat.nume || "").trim();
+
+                html += "<tr>";
+                html += "<td class='all-employees-name-cell'>" + escapeHtml(nume) + "</td>";
+
+                if (afiseazaColoanaSectie) {
+                    html += "<td class='all-employees-section-cell'>" + escapeHtml(angajat.sectie || "-") + "</td>";
+                }
+
+                for (let zi = 1; zi <= zileLuna; zi++) {
+
+                    const dataText =
+                        an +
+                        "-" +
+                        String(luna).padStart(2, "0") +
+                        "-" +
+                        String(zi).padStart(2, "0");
+
+                    const cheie =
+                        nume.toUpperCase() +
+                        "|" +
+                        dataText;
+
+                    const rand = indexFinal[cheie];
+
+                    let textCelula = rand ? (rand.total_ore || rand.interval_pontat || "") : "";
+                    let clasaCelula = "all-employees-empty-cell";
+
+                    if (rand && String(rand.status_zi || "").trim().toUpperCase() === "FARA PONTAJ") {
+                        textCelula = "FARA PONTAJ";
+                        clasaCelula = "all-employees-missing-cell";
+                    } else if (rand && String(rand.interval_pontat || "").trim()) {
+                        clasaCelula = "all-employees-value-cell";
+                    }
+
+                    html +=
+                        "<td class='" +
+                        clasaCelula +
+                        "'>" +
+                        escapeHtml(textCelula) +
+                        "</td>";
+
+                }
+
+                html += "</tr>";
+
+            });
+
+            html += "</tbody></table>";
+
+            container.innerHTML = html;
+
+            return true;
+
+        }
+
+        async function afiseazaRaportIntrareIesireFinal(an, luna, container) {
+
+            const rezultat = await citesteRaportIntrareIesireFinal(an, luna);
+
+            if (rezultat.error) {
+                container.innerHTML = "";
+                showMessage("Eroare citire raport final", "error");
+                return false;
+            }
+
+            const randuri = rezultat.data || [];
+
+            if (!randuri.length) {
+                return false;
+            }
+
+            const zileLuna = new Date(an, luna, 0).getDate();
+            const indexFinal = indexeazaRanduriFinaleDupaAngajatZi(randuri, "nume_angajat");
+
+            const angajatiDinFinal = {};
+
+            randuri.forEach(function(rand) {
+
+                const nume = String(rand.nume_angajat || "").trim();
+                const departament = String(rand.departament || "").trim();
+
+                if (!nume) {
+                    return;
+                }
+
+                if (!angajatInSectiiPermise({
+                    nume: nume,
+                    sectie: departament
+                })) {
+                    return;
+                }
+
+                angajatiDinFinal[nume] = {
+                    nume: nume,
+                    sectie: departament
+                };
+
+            });
+
+            const angajatiRaport = Object.values(angajatiDinFinal)
+                .sort(function(a, b) {
+                    return String(a.nume || "").localeCompare(String(b.nume || ""), "ro");
+                });
+
+            let html = "";
+
+            html += "<table class='entry-exit-table'>";
+            html += "<thead><tr>";
+            html += "<th class='entry-exit-name-head'>Angajat</th>";
+
+            for (let zi = 1; zi <= zileLuna; zi++) {
+
+                const dataObj = new Date(an, luna - 1, zi);
+
+                html +=
+                    "<th>" +
+                    "<span class='entry-exit-day-small'>" +
+                    ZILE_SCURTE[dataObj.getDay()] +
+                    "</span>" +
+                    "<span class='entry-exit-date-small'>" +
+                    String(zi).padStart(2, "0") +
+                    "." +
+                    String(luna).padStart(2, "0") +
+                    "</span>" +
+                    "</th>";
+
+            }
+
+            html += "</tr></thead>";
+            html += "<tbody>";
+
+            angajatiRaport.forEach(function(angajat) {
+
+                const nume = String(angajat.nume || "").trim();
+
+                html += "<tr>";
+                html += "<td class='entry-exit-name-cell'>" + escapeHtml(nume) + "</td>";
+
+                for (let zi = 1; zi <= zileLuna; zi++) {
+
+                    const dataText =
+                        an +
+                        "-" +
+                        String(luna).padStart(2, "0") +
+                        "-" +
+                        String(zi).padStart(2, "0");
+
+                    const cheie =
+                        nume.toUpperCase() +
+                        "|" +
+                        dataText;
+
+                    const rand = indexFinal[cheie];
+
+                    const textCelula =
+                        rand && (rand.ora_intrare || rand.ora_iesire)
+                            ? escapeHtml((rand.ora_intrare || "") + " - " + (rand.ora_iesire || ""))
+                            : "";
+
+                    const clasaCelula =
+                        textCelula
+                            ? "entry-exit-normal-cell"
+                            : "entry-exit-empty-cell";
+
+                    html +=
+                        "<td class='" +
+                        clasaCelula +
+                        "'>" +
+                        textCelula +
+                        "</td>";
+
+                }
+
+                html += "</tr>";
+
+            });
+
+            html += "</tbody></table>";
+
+            container.innerHTML = html;
+
+            return true;
+
+        }
+
         // ===== DESCHIDE RAPORT LUNAR =====
         async function deschideRaportLunar(luna, numeLuna) {
 
@@ -11764,6 +12323,21 @@ function deschideZonaAngajatNou() {
                 numeLunaComplet(luna) + " " + anCurent;
 
             const grid = document.getElementById("monthly-report-grid");
+
+            if (await esteLunaInchisaFinal(anCurent, luna)) {
+
+                const afisatDinFinal = await afiseazaRaportLunarFinalAngajat(
+                    anCurent,
+                    luna,
+                    angajatSelectatRaport,
+                    grid
+                );
+
+                if (afisatDinFinal) {
+                    return;
+                }
+
+            }
 
             const zileLuna = new Date(anCurent, luna, 0).getDate();
 
@@ -12343,6 +12917,23 @@ function deschideZonaAngajatNou() {
                     });
 
                 listaAngajatiSupabase = angajati || [];
+
+            }
+
+            if (await esteLunaInchisaFinal(anCurent, luna)) {
+
+                const afisatDinFinal = await afiseazaRaportLunarFinalToti(
+                    anCurent,
+                    luna,
+                    container,
+                    afiseazaRaportPeSectii,
+                    afiseazaColoanaSectie,
+                    sectiiFiltruRaport
+                );
+
+                if (afisatDinFinal) {
+                    return;
+                }
 
             }
 
@@ -14640,6 +15231,20 @@ function deschideZonaAngajatNou() {
             const valoareCurenta = select.value;
 
             select.innerHTML = "<option value=''>Se încarcă lunile...</option>";
+
+            if (await esteLunaInchisaFinal(an, luna)) {
+
+                const afisatDinFinal = await afiseazaRaportIntrareIesireFinal(
+                    an,
+                    luna,
+                    container
+                );
+
+                if (afisatDinFinal) {
+                    return;
+                }
+
+            }
 
             let toatePontajele = [];
             let startLot = 0;
