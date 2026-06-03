@@ -14056,17 +14056,38 @@ function deschideZonaAngajatNou() {
                 };
             }
 
-            const { data: pontaje, error: eroarePontaje } = await supabaseClient
-                .from("pontaj_zilnic")
-                .select("*")
-                .gte("data", primaZi)
-                .lte("data", ultimaZi);
+            // ===== CITIRE COMPLETA PONTAJE LUNA =====
+            // Supabase intoarce implicit maximum 1000 randuri.
+            // Pentru o luna intreaga sunt mai multe randuri, inclusiv corectii C.O.
+            // Citim in loturi ca sa nu ramana angajati/zile in afara arhivei finale.
+            let pontaje = [];
+            let startPontaje = 0;
+            const marimeLotPontaje = 1000;
 
-            if (eroarePontaje) {
-                return {
-                    ok: false,
-                    mesaj: "Eroare citire pontaje."
-                };
+            while (true) {
+
+                const { data: lotPontaje, error: eroarePontaje } = await supabaseClient
+                    .from("pontaj_zilnic")
+                    .select("*")
+                    .gte("data", primaZi)
+                    .lte("data", ultimaZi)
+                    .range(startPontaje, startPontaje + marimeLotPontaje - 1);
+
+                if (eroarePontaje) {
+                    return {
+                        ok: false,
+                        mesaj: "Eroare citire pontaje."
+                    };
+                }
+
+                pontaje = pontaje.concat(lotPontaje || []);
+
+                if (!lotPontaje || lotPontaje.length < marimeLotPontaje) {
+                    break;
+                }
+
+                startPontaje += marimeLotPontaje;
+
             }
 
             await supabaseClient
