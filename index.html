@@ -13578,6 +13578,11 @@ function deschideZonaAngajatNou() {
 
         async function verificaZileFaraPontajPentruInchidere(an, luna) {
 
+            // ===== INCHIDERE LUNA - VERIFICARE IDENTICA CU RAPORT ZILE FARA PONTAJ =====
+            // Folosim aceleasi reguli ca raportul validat:
+            // angajati vizibili in rapoarte, afiseaza_lipsa_pontaj, weekend exclus, sarbatori excluse,
+            // angajati inactivi exclusi si cheie nume normalizata.
+
             const primaZi =
                 an +
                 "-" +
@@ -13609,7 +13614,7 @@ function deschideZonaAngajatNou() {
 
             const { data: pontaje, error: eroarePontaje } = await supabaseClient
                 .from("pontaj_zilnic")
-                .select("nume,data,status_corectie")
+                .select("nume,data,status_corectie,cheie_unica")
                 .gte("data", primaZi)
                 .lte("data", ultimaZi);
 
@@ -13620,16 +13625,16 @@ function deschideZonaAngajatNou() {
                 };
             }
 
-            const pontajeIndex = {};
+            const pontajeDupaAngajatZi = {};
 
             (pontaje || []).forEach(function(pontaj) {
 
-                const cheie =
-                    String(pontaj.nume || "").trim().toUpperCase() +
+                const cheiePontaj =
+                    normalizeazaCheieRaportZileFaraPontaj(pontaj.nume) +
                     "|" +
                     String(pontaj.data || "").trim();
 
-                pontajeIndex[cheie] = true;
+                pontajeDupaAngajatZi[cheiePontaj] = pontaj;
 
             });
 
@@ -13651,6 +13656,10 @@ function deschideZonaAngajatNou() {
                     return;
                 }
 
+                if (!angajatInSectiiPermise(angajat)) {
+                    return;
+                }
+
                 const dataCurenta = creeazaDataDinText(primaZi);
                 const dataStop = creeazaDataDinText(ultimaZi);
 
@@ -13659,28 +13668,30 @@ function deschideZonaAngajatNou() {
                     const dataText = formatDataPentruCheie(dataCurenta);
                     const ziSaptamana = dataCurenta.getDay();
 
-                    const esteWeekend =
-                        ziSaptamana === 0 ||
-                        ziSaptamana === 6;
-
-                    const angajatInactivLaData =
-                        angajat.activ === false &&
-                        angajat.data_inactiv &&
-                        dataText >= angajat.data_inactiv;
-
                     if (
-                        !esteWeekend &&
-                        !esteZiLiberaLegala(dataText) &&
-                        !angajatInactivLaData
+                        ziSaptamana !== 0 &&
+                        ziSaptamana !== 6 &&
+                        !esteZiLiberaLegala(dataText)
                     ) {
 
-                        const cheie =
-                            nume.toUpperCase() +
-                            "|" +
-                            dataText;
+                        const angajatInactivLaData =
+                            angajat.activ === false &&
+                            angajat.data_inactiv &&
+                            dataText >= angajat.data_inactiv;
 
-                        if (!pontajeIndex[cheie]) {
-                            totalLipsa++;
+                        if (!angajatInactivLaData) {
+
+                            const cheieCautare =
+                                normalizeazaCheieRaportZileFaraPontaj(nume) +
+                                "|" +
+                                dataText;
+
+                            const pontajZi = pontajeDupaAngajatZi[cheieCautare];
+
+                            if (!pontajZi) {
+                                totalLipsa++;
+                            }
+
                         }
 
                     }
