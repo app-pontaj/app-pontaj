@@ -4646,7 +4646,13 @@
             verificaFeedbackAplicatie();
 
             // ===== REFRESH / PORNIRE APLICATIE: RESCRIERE DOAR LUNI DESCHISE =====
-            await sincronizeazaRaportDiferenteCurentLaRefresh();
+            // Ruleaza pe fundal, ca sa nu blocheze meniurile si rapoartele.
+            setTimeout(function() {
+                sincronizeazaRaportDiferenteCurentLaRefresh()
+                    .catch(function(error) {
+                        console.log("Eroare sincronizare raport diferente curent:", error);
+                    });
+            }, 1500);
 
         }
 
@@ -16107,20 +16113,6 @@ function deschideZonaAngajatNou() {
             const valoareCurenta = select.value;
 
             select.innerHTML = "<option value=''>Se încarcă lunile...</option>";
-
-            if (await esteLunaInchisaFinal(an, luna)) {
-
-                const afisatDinFinal = await afiseazaRaportIntrareIesireFinal(
-                    an,
-                    luna,
-                    container
-                );
-
-                if (afisatDinFinal) {
-                    return;
-                }
-
-            }
 
             let toatePontajele = [];
             let startLot = 0;
