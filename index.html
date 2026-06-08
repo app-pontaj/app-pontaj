@@ -9142,7 +9142,10 @@ function deschideZonaAngajatNou() {
                 return;
             }
 
-            dataStartRaportZileFaraPontaj = creeazaDataDinText(dateUnice[0]);
+            // ===== PROTECTIE DATA RATACITA LA INCEPUT DE IMPORT =====
+            // Exemplu: 31.10.2025 nu trebuie sa deschida artificial luna octombrie
+            // daca importul real incepe din luna urmatoare.
+            dataStartRaportZileFaraPontaj = calculeazaDataStartRaportZileFaraPontaj(dateUnice);
             dataStopRaportZileFaraPontaj = creeazaDataDinText(dateUnice[dateUnice.length - 1]);
 
             const randuriLipsa = [];
