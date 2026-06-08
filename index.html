@@ -8977,75 +8977,163 @@ function deschideZonaAngajatNou() {
 
             lista.innerHTML = "<div class='missing-days-empty'>Se încarcă raportul...</div>";
 
-            let randuri = [];
-            let startLot = 0;
             const marimeLot = 1000;
 
-            while (true) {
+            async function citesteTotDinTabela(numeTabela, coloane, configureazaQuery) {
 
-                const { data, error } = await supabaseClient
-                    .from("zile_fara_pontaj")
-                    .select("id,an,luna,data,nume_angajat,departament,motiv")
-                    .order("data", {
-                        ascending: true
-                    })
-                    .order("nume_angajat", {
-                        ascending: true
-                    })
-                    .range(startLot, startLot + marimeLot - 1);
+                let randuri = [];
+                let startLot = 0;
 
-                if (error) {
-                    lista.innerHTML = "";
-                    showMessage("Eroare citire zile fără pontaj", "error");
-                    return;
+                while (true) {
+
+                    let query = supabaseClient
+                        .from(numeTabela)
+                        .select(coloane)
+                        .range(startLot, startLot + marimeLot - 1);
+
+                    if (typeof configureazaQuery === "function") {
+                        query = configureazaQuery(query);
+                    }
+
+                    const { data, error } = await query;
+
+                    if (error) {
+                        return {
+                            data: [],
+                            error: error
+                        };
+                    }
+
+                    randuri = randuri.concat(data || []);
+
+                    if (!data || data.length < marimeLot) {
+                        break;
+                    }
+
+                    startLot += marimeLot;
+
                 }
 
-                randuri = randuri.concat(data || []);
-
-                if (!data || data.length < marimeLot) {
-                    break;
-                }
-
-                startLot += marimeLot;
+                return {
+                    data: randuri,
+                    error: null
+                };
 
             }
 
-            pontajeRaportZileFaraPontaj = randuri || [];
+            // ===== 1. CITIRE ANGAJATI =====
+            const rezultatAngajati = await citesteTotDinTabela(
+                "angajati",
+                "*",
+                function(query) {
+                    return query.order("nume", { ascending: true });
+                }
+            );
 
-            const angajatiUnici = {};
+            if (rezultatAngajati.error) {
+                lista.innerHTML = "";
+                showMessage("Eroare citire angajați", "error");
+                return;
+            }
 
-            pontajeRaportZileFaraPontaj.forEach(function(rand) {
+            angajatiRaportZileFaraPontaj = (rezultatAngajati.data || [])
+                .filter(function(angajat) {
 
-                const nume = String(rand.nume_angajat || "").trim();
+                    if (angajat.apare_in_rapoarte === false) {
+                        return false;
+                    }
 
-                if (!nume) {
+                    if (angajat.afiseaza_lipsa_pontaj === false) {
+                        return false;
+                    }
+
+                    return angajatInSectiiPermise(angajat);
+
+                })
+                .sort(function(a, b) {
+                    return String(a.nume || "").localeCompare(String(b.nume || ""), "ro");
+                });
+
+            // ===== 2. CITIRE PONTAJE EXISTENTE =====
+            const rezultatPontaje = await citesteTotDinTabela(
+                "pontaj_zilnic",
+                "data,nume,departament,status_corectie,status_zi"
+            );
+
+            if (rezultatPontaje.error) {
+                lista.innerHTML = "";
+                showMessage("Eroare citire pontaje", "error");
+                return;
+            }
+
+            const pontajeCitite = rezultatPontaje.data || [];
+
+            // ===== 3. CITIRE LUNI INCHISE =====
+            const rezultatLuniInchise = await citesteTotDinTabela(
+                "luni_inchise",
+                "an,luna"
+            );
+
+            if (rezultatLuniInchise.error) {
+                lista.innerHTML = "";
+                showMessage("Eroare citire luni închise", "error");
+                return;
+            }
+
+            const luniInchiseIndex = {};
+
+            (rezultatLuniInchise.data || []).forEach(function(rand) {
+
+                const an = Number(rand.an || 0);
+                const luna = Number(rand.luna || 0);
+
+                if (an && luna) {
+                    luniInchiseIndex[an + "-" + String(luna).padStart(2, "0")] = true;
+                }
+
+            });
+
+            // ===== 4. CITIRE RAPORT FINAL DOAR PENTRU LUNI INCHISE =====
+            const rezultatFinal = await citesteTotDinTabela(
+                "raport_lunar_final",
+                "an,luna,data,nume_angajat,departament,status_zi,interval_pontat,total_ore"
+            );
+
+            const raportFinalCitit = rezultatFinal.error ? [] : (rezultatFinal.data || []);
+
+            const pontajeIndex = {};
+            const datePontaje = [];
+
+            pontajeCitite.forEach(function(pontaj) {
+
+                const nume = String(pontaj.nume || "").trim();
+                const dataText = String(pontaj.data || "").trim();
+
+                if (!nume || !dataText) {
                     return;
                 }
 
-                angajatiUnici[nume] = {
-                    nume: nume,
-                    sectie: String(rand.departament || "").trim(),
-                    apare_in_rapoarte: true,
-                    afiseaza_lipsa_pontaj: true,
-                    activ: true
-                };
+                const cheie = normalizeazaCheieRaportZileFaraPontaj(nume) + "|" + dataText;
+
+                pontajeIndex[cheie] = true;
+                datePontaje.push(dataText);
 
             });
 
-            angajatiRaportZileFaraPontaj = Object.values(angajatiUnici).sort(function(a, b) {
-                return String(a.nume || "").localeCompare(String(b.nume || ""), "ro");
+            raportFinalCitit.forEach(function(rand) {
+
+                const dataText = String(rand.data || "").trim();
+
+                if (dataText) {
+                    datePontaje.push(dataText);
+                }
+
             });
 
-            const toateDatele = pontajeRaportZileFaraPontaj
-                .map(function(rand) {
-                    return rand.data;
-                })
-                .filter(function(dataText) {
-                    return !!dataText;
-                })
-                .sort();
+            const dateUnice = Array.from(new Set(datePontaje)).sort();
 
-            if (!toateDatele.length) {
+            if (!dateUnice.length || !angajatiRaportZileFaraPontaj.length) {
+                pontajeRaportZileFaraPontaj = [];
                 dataStartRaportZileFaraPontaj = null;
                 dataStopRaportZileFaraPontaj = null;
                 pregatesteSelectieZileFaraPontaj();
@@ -9054,8 +9142,121 @@ function deschideZonaAngajatNou() {
                 return;
             }
 
-            dataStartRaportZileFaraPontaj = creeazaDataDinText(toateDatele[0]);
-            dataStopRaportZileFaraPontaj = creeazaDataDinText(toateDatele[toateDatele.length - 1]);
+            dataStartRaportZileFaraPontaj = creeazaDataDinText(dateUnice[0]);
+            dataStopRaportZileFaraPontaj = creeazaDataDinText(dateUnice[dateUnice.length - 1]);
+
+            const randuriLipsa = [];
+            const randuriLipsaIndex = {};
+
+            function adaugaRandLipsa(nume, sectie, dataText) {
+
+                const cheie = normalizeazaCheieRaportZileFaraPontaj(nume) + "|" + dataText;
+
+                if (randuriLipsaIndex[cheie]) {
+                    return;
+                }
+
+                randuriLipsaIndex[cheie] = true;
+
+                const dataObj = creeazaDataDinText(dataText);
+
+                randuriLipsa.push({
+                    id: cheie,
+                    an: dataObj.getFullYear(),
+                    luna: dataObj.getMonth() + 1,
+                    data: dataText,
+                    nume_angajat: nume,
+                    departament: sectie,
+                    motiv: "Lipsă pontaj"
+                });
+
+            }
+
+            // ===== LUNI INCHISE: CITIRE DIN ARHIVA FINALA =====
+            raportFinalCitit.forEach(function(rand) {
+
+                const dataText = String(rand.data || "").trim();
+                const nume = String(rand.nume_angajat || "").trim();
+                const sectie = String(rand.departament || "").trim();
+                const statusZi = String(rand.status_zi || rand.interval_pontat || "")
+                    .trim()
+                    .toUpperCase()
+                    .normalize("NFD")
+                    .replace(/[\u0300-\u036f]/g, "");
+
+                if (!dataText || !nume) {
+                    return;
+                }
+
+                const cheieLuna = String(rand.an || dataText.slice(0, 4)) + "-" + String(rand.luna || dataText.slice(5, 7)).padStart(2, "0");
+
+                if (!luniInchiseIndex[cheieLuna]) {
+                    return;
+                }
+
+                if (statusZi === "FARA PONTAJ") {
+                    adaugaRandLipsa(nume, sectie, dataText);
+                }
+
+            });
+
+            // ===== LUNI DESCHISE: CALCUL IDENTIC CU FISA / EXPORTUL =====
+            const dataCurenta = new Date(dataStartRaportZileFaraPontaj);
+
+            while (dataCurenta <= dataStopRaportZileFaraPontaj) {
+
+                const dataText = formatDataPentruCheie(dataCurenta);
+                const anLuna = dataText.slice(0, 7);
+
+                if (!luniInchiseIndex[anLuna]) {
+
+                    const ziSaptamana = dataCurenta.getDay();
+                    const esteWeekend = ziSaptamana === 0 || ziSaptamana === 6;
+                    const esteSarbatoare = esteZiLiberaLegala(dataText);
+
+                    if (!esteWeekend && !esteSarbatoare) {
+
+                        angajatiRaportZileFaraPontaj.forEach(function(angajat) {
+
+                            const nume = String(angajat.nume || "").trim();
+                            const sectie = String(angajat.sectie || "").trim();
+
+                            if (!nume) {
+                                return;
+                            }
+
+                            if (angajat.activ === false && angajat.data_inactiv && dataText >= angajat.data_inactiv) {
+                                return;
+                            }
+
+                            const cheiePontaj = normalizeazaCheieRaportZileFaraPontaj(nume) + "|" + dataText;
+
+                            if (!pontajeIndex[cheiePontaj]) {
+                                adaugaRandLipsa(nume, sectie, dataText);
+                            }
+
+                        });
+
+                    }
+
+                }
+
+                dataCurenta.setDate(dataCurenta.getDate() + 1);
+
+            }
+
+            pontajeRaportZileFaraPontaj = randuriLipsa.sort(function(a, b) {
+
+                const dataA = String(a.data || "");
+                const dataB = String(b.data || "");
+
+                if (dataA !== dataB) {
+                    return dataA.localeCompare(dataB);
+                }
+
+                return String(a.nume_angajat || "").localeCompare(String(b.nume_angajat || ""), "ro");
+
+            });
 
             pregatesteSelectieZileFaraPontaj();
             pregatesteSelectExportZileFaraPontaj();
