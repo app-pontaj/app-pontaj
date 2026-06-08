@@ -16692,7 +16692,7 @@ function deschideZonaAngajatNou() {
                     }
 
                     const adresaCelula = XLSX.utils.encode_cell({
-                        r: indexAngajat + 1,
+                        r: indexAngajat + 4,
                         c: zi
                     });
 
@@ -16700,16 +16700,158 @@ function deschideZonaAngajatNou() {
                         continue;
                     }
 
-                    worksheet[adresaCelula].s = {
-                        fill: {
-                            patternType: "solid",
-                            fgColor: { rgb: "D9D9D9" }
-                        }
+                    worksheet[adresaCelula].s = worksheet[adresaCelula].s || {};
+                    worksheet[adresaCelula].s.fill = {
+                        patternType: "solid",
+                        fgColor: { rgb: "D9D9D9" }
                     };
 
                 }
 
             });
+
+        }
+
+        // ===== LUNA TEXT PENTRU TITLU EXPORT INTRARE - IESIRE =====
+        function obtineTitluLunaRaportIntrareIesire(lunaAleasa) {
+
+            const luniText = [
+                "",
+                "IANUARIE",
+                "FEBRUARIE",
+                "MARTIE",
+                "APRILIE",
+                "MAI",
+                "IUNIE",
+                "IULIE",
+                "AUGUST",
+                "SEPTEMBRIE",
+                "OCTOMBRIE",
+                "NOIEMBRIE",
+                "DECEMBRIE"
+            ];
+
+            const parti = String(lunaAleasa || "").split("-");
+            const an = Number(parti[0] || 0);
+            const luna = Number(parti[1] || 0);
+
+            if (!an || !luna || !luniText[luna]) {
+                return String(lunaAleasa || "RAPORT").toUpperCase();
+            }
+
+            return luniText[luna] + " " + an;
+
+        }
+
+        // ===== STIL EXPORT EXCEL - RAPORT INTRARE IESIRE =====
+        function aplicaStilExportRaportIntrareIesireExcel(worksheet, randuriExcel, randuriExport) {
+
+            const totalColoane = randuriExcel[0].length;
+            const ultimulRand = randuriExport.length - 1;
+            const ultimulCol = totalColoane - 1;
+            const randHeader = 3;
+
+            worksheet["!merges"] = [
+                {
+                    s: { r: 0, c: 0 },
+                    e: { r: 0, c: ultimulCol }
+                }
+            ];
+
+            const borderSubtire = {
+                top: { style: "thin", color: { rgb: "000000" } },
+                bottom: { style: "thin", color: { rgb: "000000" } },
+                left: { style: "thin", color: { rgb: "000000" } },
+                right: { style: "thin", color: { rgb: "000000" } }
+            };
+
+            if (worksheet["A1"]) {
+                worksheet["A1"].s = {
+                    font: {
+                        bold: true,
+                        sz: 26
+                    },
+                    alignment: {
+                        horizontal: "center",
+                        vertical: "center"
+                    }
+                };
+            }
+
+            worksheet["!rows"] = worksheet["!rows"] || [];
+            worksheet["!rows"][0] = { hpt: 34 };
+
+            for (let r = randHeader; r <= ultimulRand; r++) {
+
+                for (let c = 0; c <= ultimulCol; c++) {
+
+                    const adresa = XLSX.utils.encode_cell({
+                        r: r,
+                        c: c
+                    });
+
+                    if (!worksheet[adresa]) {
+                        worksheet[adresa] = {
+                            t: "s",
+                            v: ""
+                        };
+                    }
+
+                    const stilExistent = worksheet[adresa].s || {};
+
+                    worksheet[adresa].s = {
+                        ...stilExistent,
+                        font: {
+                            ...(stilExistent.font || {}),
+                            sz: 9,
+                            bold: r === randHeader ? true : !!(stilExistent.font && stilExistent.font.bold)
+                        },
+                        alignment: {
+                            horizontal: "center",
+                            vertical: "center",
+                            wrapText: false
+                        },
+                        border: borderSubtire
+                    };
+
+                }
+
+            }
+
+        }
+
+        // ===== LATIME COLOANE EXPORT INTRARE - IESIRE =====
+        function calculeazaLatimiColoaneRaportIntrareIesire(randuriExcel) {
+
+            const totalColoane = randuriExcel[0].length;
+            const latimi = [];
+
+            for (let c = 0; c < totalColoane; c++) {
+
+                let latimeMaxima = 4;
+
+                randuriExcel.forEach(function(rand) {
+
+                    const valoare = String(rand[c] || "");
+                    const bucati = valoare.split("\n");
+
+                    bucati.forEach(function(text) {
+
+                        if (text.length > latimeMaxima) {
+                            latimeMaxima = text.length;
+                        }
+
+                    });
+
+                });
+
+                latimi.push({
+                    wch: Math.min(Math.max(latimeMaxima + 1, 5), 32)
+                });
+
+            }
+
+            return latimi;
 
         }
 
@@ -16730,8 +16872,17 @@ function deschideZonaAngajatNou() {
 
             const select = document.getElementById("entry-exit-month");
             const lunaAleasa = select ? select.value : "raport";
+            const titluLuna = obtineTitluLunaRaportIntrareIesire(lunaAleasa);
 
-            const worksheet = XLSX.utils.aoa_to_sheet(randuriExcel);
+            const totalColoane = randuriExcel[0].length;
+            const randuriExport = [
+                ["RAPORT ORE INTRARE-IESIRE LUNA " + titluLuna],
+                Array(totalColoane).fill(""),
+                Array(totalColoane).fill(""),
+                ...randuriExcel
+            ];
+
+            const worksheet = XLSX.utils.aoa_to_sheet(randuriExport);
             const workbook = XLSX.utils.book_new();
 
             XLSX.utils.book_append_sheet(
@@ -16740,13 +16891,10 @@ function deschideZonaAngajatNou() {
                 "Intrare iesire"
             );
 
-            worksheet["!cols"] = randuriExcel[0].map(function(_, index) {
-                return {
-                    wch: index === 0 ? 28 : 13
-                };
-            });
+            worksheet["!cols"] = calculeazaLatimiColoaneRaportIntrareIesire(randuriExcel);
 
             aplicaStilGriRaportIntrareIesireExcel(worksheet);
+            aplicaStilExportRaportIntrareIesireExcel(worksheet, randuriExcel, randuriExport);
 
             XLSX.writeFile(
                 workbook,
