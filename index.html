@@ -9961,6 +9961,7 @@ function deschideZonaAngajatNou() {
         let angajatiPontajeSub3H = [];
         let pontajeSub3H = [];
         let pontajeSub3HAscunseDinRaport = {};
+        let luniInchisePontajeSub3H = {};
 
         async function deschidePaginaPontajeSub3H() {
 
@@ -10008,11 +10009,45 @@ function deschideZonaAngajatNou() {
 
         }
 
+        async function incarcaLuniInchisePontajeSub3H() {
+
+            luniInchisePontajeSub3H = {};
+
+            const { data, error } = await supabaseClient
+                .from("luni_inchise")
+                .select("an,luna");
+
+            if (error) {
+                return;
+            }
+
+            (data || []).forEach(function(rand) {
+
+                const an = Number(rand.an || 0);
+                const luna = Number(rand.luna || 0);
+
+                if (!an || !luna) {
+                    return;
+                }
+
+                const cheieLuna =
+                    String(an) +
+                    "-" +
+                    String(luna).padStart(2, "0");
+
+                luniInchisePontajeSub3H[cheieLuna] = true;
+
+            });
+
+        }
+
         async function incarcaPontajeSub3H() {
 
             const lista = document.getElementById("short-days-list");
 
             lista.innerHTML = "<div class='missing-days-empty'>Se încarcă raportul...</div>";
+
+            await incarcaLuniInchisePontajeSub3H();
 
             const { data: angajati, error: eroareAngajati } = await supabaseClient
                 .from("angajati")
@@ -10212,7 +10247,16 @@ function deschideZonaAngajatNou() {
                         return;
                     }
 
-                    if (lunaAleasa !== "toate" && dataText.slice(0, 7) !== lunaAleasa) {
+                    const lunaPontaj = dataText.slice(0, 7);
+
+                    // ===== PONTAJE SUB 3H - LUNILE INCHISE NU SE MAI AFISEAZA =====
+                    // Daca luna este inchisa, inseamna ca raportul a fost verificat.
+                    // Nu stergem pontaj_zilnic; doar scoatem aceste randuri din raportul de lucru.
+                    if (luniInchisePontajeSub3H[lunaPontaj]) {
+                        return;
+                    }
+
+                    if (lunaAleasa !== "toate" && lunaPontaj !== lunaAleasa) {
                         return;
                     }
 
