@@ -9057,7 +9057,7 @@ function deschideZonaAngajatNou() {
             // ===== 2. CITIRE PONTAJE EXISTENTE =====
             const rezultatPontaje = await citesteTotDinTabela(
                 "pontaj_zilnic",
-                "data,nume,departament,status_corectie,status_zi"
+                "data,nume,departament,status_corectie"
             );
 
             if (rezultatPontaje.error) {
