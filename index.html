@@ -4645,6 +4645,9 @@
             incarcaUltimaDataImport();
             verificaFeedbackAplicatie();
 
+            // ===== REFRESH / PORNIRE APLICATIE: RESCRIERE DOAR LUNI DESCHISE =====
+            await sincronizeazaRaportDiferenteCurentLaRefresh();
+
         }
 
 
@@ -7159,6 +7162,26 @@ function deschideZonaAngajatNou() {
         }
 
 
+        // ===== PREGATIRE RAND PENTRU RAPORT DIFERENTE CURENT =====
+        function pregatesteRandRaportDiferenteCurent(dateRaport) {
+
+            return {
+                angajat_id: dateRaport.angajat_id || null,
+                nume_angajat: dateRaport.nume_angajat,
+                departament: dateRaport.departament || "",
+                an: Number(dateRaport.an || 0),
+                luna: Number(dateRaport.luna || 0),
+                norma_minute: Number(dateRaport.total_lucratoare_minute || dateRaport.norma_minute || 0),
+                lucrate_minute: Number(dateRaport.total_lucrate_minute || dateRaport.lucrate_minute || 0),
+                diferenta_minute: Number(dateRaport.diferenta_minute || 0),
+                diferenta_text: dateRaport.diferenta_text || "00:00",
+                procent: Number(dateRaport.procent || 0),
+                actualizat_la: new Date().toISOString()
+            };
+
+        }
+
+
         // ===== SALVARE REZULTAT LUNAR IN TABELA RAPORT DIFERENTE =====
         async function salveazaRezultatRaportDiferenteLunar(dateRaport) {
 
@@ -7181,32 +7204,22 @@ function deschideZonaAngajatNou() {
                 return;
             }
 
-            const angajatGasit = listaAngajatiSupabase.find(function(angajat) {
-                return String(angajat.nume || "").trim() === String(dateRaport.nume_angajat || "").trim();
-            });
+            const randRaport = pregatesteRandRaportDiferenteCurent(dateRaport);
 
-            const randRaport = {
-                angajat_id: dateRaport.angajat_id || angajatGasit?.id || null,
-                nume_angajat: dateRaport.nume_angajat,
-                departament: dateRaport.departament || angajatGasit?.sectie || "",
-                an: dateRaport.an,
-                luna: dateRaport.luna,
-                norma_minute: Number(dateRaport.norma_minute ?? dateRaport.total_lucratoare_minute ?? 0),
-                lucrate_minute: Number(dateRaport.lucrate_minute ?? dateRaport.total_lucrate_minute ?? 0),
-                diferenta_minute: Number(dateRaport.diferenta_minute || 0),
-                diferenta_text: dateRaport.diferenta_text || formateazaDiferentaRaport2026(Number(dateRaport.diferenta_minute || 0)),
-                procent: Number(dateRaport.procent || 0),
-                actualizat_la: new Date().toISOString()
-            };
+            const stergereExistente = await supabaseClient
+                .from("raport_diferente_curent")
+                .delete()
+                .eq("nume_angajat", randRaport.nume_angajat)
+                .eq("an", randRaport.an)
+                .eq("luna", randRaport.luna);
+
+            if (stergereExistente.error) {
+                return;
+            }
 
             await supabaseClient
                 .from("raport_diferente_curent")
-                .upsert(
-                    randRaport,
-                    {
-                        onConflict: "nume_angajat,an,luna"
-                    }
-                );
+                .insert(randRaport);
 
         }
 
@@ -7413,7 +7426,9 @@ function deschideZonaAngajatNou() {
                     : 0;
 
             return {
+                angajat_id: angajat?.id || null,
                 nume_angajat: numeAngajat,
+                departament: angajat?.sectie || (pontaje[0]?.departament || ""),
                 an: an,
                 luna: luna,
                 total_lucratoare_minute: totalOreLucratoareMinute,
@@ -7595,6 +7610,23 @@ function deschideZonaAngajatNou() {
                 ] = true;
             });
 
+            const luniDeschise = LUNI_RAPORT_DIFERENTE.filter(function(luna) {
+                return !luniInchiseIndex[String(Number(luna.numar))];
+            });
+
+            const rezultatPontajeDeschise = await citestePontajeRaportDiferente2026(luniDeschise);
+
+            if (rezultatPontajeDeschise.error) {
+                return {
+                    data: [],
+                    error: rezultatPontajeDeschise.error
+                };
+            }
+
+            const luniCuPontajeDeschise = construiesteIndexPontajeRaportDiferente2026(
+                rezultatPontajeDeschise.data || []
+            );
+
             startLot = 0;
 
             while (true) {
@@ -7642,19 +7674,7 @@ function deschideZonaAngajatNou() {
                     return false;
                 }
 
-                return true;
-
-            }).map(function(rand) {
-
-                return {
-                    nume_angajat: rand.nume_angajat,
-                    an: rand.an,
-                    luna: rand.luna,
-                    departament: rand.departament,
-                    diferenta_minute: Number(rand.diferenta_minute || 0),
-                    diferenta_text: rand.diferenta_text || formateazaDiferentaRaport2026(Number(rand.diferenta_minute || 0)),
-                    procent: Number(rand.procent || 0)
-                };
+                return !!luniCuPontajeDeschise[cheie];
 
             });
 
@@ -8007,6 +8027,286 @@ function deschideZonaAngajatNou() {
             }
 
         }
+
+        // ===== SINCRONIZARE AUTOMATA RAPORT DIFERENTE CURENT LA REFRESH =====
+        let sincronizareRaportDiferenteCurentRuleaza = false;
+
+        async function citesteLuniDeschiseCuPontajePentruSincronizare() {
+
+            const luniCuPontaje = {};
+            let startLot = 0;
+            const marimeLot = 1000;
+
+            while (true) {
+
+                const { data, error } = await supabaseClient
+                    .from("pontaj_zilnic")
+                    .select("data")
+                    .range(startLot, startLot + marimeLot - 1);
+
+                if (error) {
+                    return {
+                        data: [],
+                        error: error
+                    };
+                }
+
+                (data || []).forEach(function(rand) {
+
+                    const dataText = String(rand.data || "").trim();
+
+                    if (dataText.length < 7) {
+                        return;
+                    }
+
+                    const an = Number(dataText.slice(0, 4));
+                    const luna = Number(dataText.slice(5, 7));
+
+                    if (!an || !luna) {
+                        return;
+                    }
+
+                    luniCuPontaje[an + "|" + luna] = {
+                        an: an,
+                        luna: luna
+                    };
+
+                });
+
+                if (!data || data.length < marimeLot) {
+                    break;
+                }
+
+                startLot += marimeLot;
+
+            }
+
+            let luniInchise = [];
+            startLot = 0;
+
+            while (true) {
+
+                const { data, error } = await supabaseClient
+                    .from("luni_inchise")
+                    .select("an,luna")
+                    .range(startLot, startLot + marimeLot - 1);
+
+                if (error) {
+                    return {
+                        data: [],
+                        error: error
+                    };
+                }
+
+                luniInchise = luniInchise.concat(data || []);
+
+                if (!data || data.length < marimeLot) {
+                    break;
+                }
+
+                startLot += marimeLot;
+
+            }
+
+            (luniInchise || []).forEach(function(rand) {
+
+                const cheie =
+                    Number(rand.an || 0) +
+                    "|" +
+                    Number(rand.luna || 0);
+
+                delete luniCuPontaje[cheie];
+
+            });
+
+            return {
+                data: Object.values(luniCuPontaje),
+                error: null
+            };
+
+        }
+
+        async function citestePontajeLunaPentruSincronizare(an, luna) {
+
+            const primaZiLuna =
+                an +
+                "-" +
+                String(luna).padStart(2, "0") +
+                "-01";
+
+            const ultimaZiLuna =
+                an +
+                "-" +
+                String(luna).padStart(2, "0") +
+                "-" +
+                String(new Date(an, luna, 0).getDate()).padStart(2, "0");
+
+            let pontaje = [];
+            let startLot = 0;
+            const marimeLot = 1000;
+
+            while (true) {
+
+                const { data, error } = await supabaseClient
+                    .from("pontaj_zilnic")
+                    .select("*")
+                    .gte("data", primaZiLuna)
+                    .lte("data", ultimaZiLuna)
+                    .range(startLot, startLot + marimeLot - 1);
+
+                if (error) {
+                    return {
+                        data: [],
+                        error: error
+                    };
+                }
+
+                pontaje = pontaje.concat(data || []);
+
+                if (!data || data.length < marimeLot) {
+                    break;
+                }
+
+                startLot += marimeLot;
+
+            }
+
+            return {
+                data: pontaje,
+                error: null
+            };
+
+        }
+
+        async function sincronizeazaRaportDiferenteCurentPentruLuna(an, luna) {
+
+            const lunaBlocata = await esteLunaInchisaPentruRaportDiferente(an, luna);
+
+            if (lunaBlocata) {
+                return;
+            }
+
+            if (!listaAngajatiSupabase.length) {
+
+                const { data: angajati } = await supabaseClient
+                    .from("angajati")
+                    .select("*")
+                    .order("nume", {
+                        ascending: true
+                    });
+
+                listaAngajatiSupabase = angajati || [];
+
+            }
+
+            const rezultatPontaje = await citestePontajeLunaPentruSincronizare(an, luna);
+
+            if (rezultatPontaje.error) {
+                return;
+            }
+
+            const pontajeLuna = rezultatPontaje.data || [];
+            const angajatiCuPontaje = {};
+
+            pontajeLuna.forEach(function(pontaj) {
+
+                const nume = String(pontaj.nume || "").trim();
+
+                if (nume) {
+                    angajatiCuPontaje[nume] = true;
+                }
+
+            });
+
+            const randuriRaport = [];
+
+            const angajatiDeCalculat = listaAngajatiSupabase.filter(function(angajat) {
+                return (
+                    angajat.apare_in_rapoarte !== false &&
+                    angajatiCuPontaje[String(angajat.nume || "").trim()]
+                );
+            });
+
+            for (const angajat of angajatiDeCalculat) {
+
+                const rezultat = await calculeazaRezultatLunarPentruTabela(
+                    angajat.nume,
+                    an,
+                    luna,
+                    pontajeLuna
+                );
+
+                if (rezultat) {
+                    randuriRaport.push(
+                        pregatesteRandRaportDiferenteCurent(rezultat)
+                    );
+                }
+
+            }
+
+            const stergere = await supabaseClient
+                .from("raport_diferente_curent")
+                .delete()
+                .eq("an", an)
+                .eq("luna", luna);
+
+            if (stergere.error) {
+                return;
+            }
+
+            const marimeLot = 500;
+
+            for (let index = 0; index < randuriRaport.length; index += marimeLot) {
+
+                const lot = randuriRaport.slice(index, index + marimeLot);
+
+                const { error } = await supabaseClient
+                    .from("raport_diferente_curent")
+                    .insert(lot);
+
+                if (error) {
+                    return;
+                }
+
+            }
+
+        }
+
+        async function sincronizeazaRaportDiferenteCurentLaRefresh() {
+
+            if (sincronizareRaportDiferenteCurentRuleaza) {
+                return;
+            }
+
+            sincronizareRaportDiferenteCurentRuleaza = true;
+
+            try {
+
+                const rezultatLuni = await citesteLuniDeschiseCuPontajePentruSincronizare();
+
+                if (rezultatLuni.error) {
+                    return;
+                }
+
+                const luniDeschise = rezultatLuni.data || [];
+
+                for (const lunaDeschisa of luniDeschise) {
+
+                    await sincronizeazaRaportDiferenteCurentPentruLuna(
+                        lunaDeschisa.an,
+                        lunaDeschisa.luna
+                    );
+
+                }
+
+            } finally {
+
+                sincronizareRaportDiferenteCurentRuleaza = false;
+
+            }
+
+        }
+
 
         function pregatesteSelectAnRaportDiferente2026() {
 
