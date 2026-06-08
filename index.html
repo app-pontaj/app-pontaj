@@ -7166,7 +7166,9 @@ function deschideZonaAngajatNou() {
         function pregatesteRandRaportDiferenteCurent(dateRaport) {
 
             return {
-                angajat_id: dateRaport.angajat_id || null,
+                // angajat_id rămâne gol intenționat.
+                // Unele baze au id numeric, altele text/uuid; numele + an + lună este cheia sigură pentru acest raport.
+                angajat_id: null,
                 nume_angajat: dateRaport.nume_angajat,
                 departament: dateRaport.departament || "",
                 an: Number(dateRaport.an || 0),
@@ -7214,12 +7216,17 @@ function deschideZonaAngajatNou() {
                 .eq("luna", randRaport.luna);
 
             if (stergereExistente.error) {
+                console.log("EROARE STERGERE raport_diferente_curent:", stergereExistente.error);
                 return;
             }
 
-            await supabaseClient
+            const inserareRaportCurent = await supabaseClient
                 .from("raport_diferente_curent")
                 .insert(randRaport);
+
+            if (inserareRaportCurent.error) {
+                console.log("EROARE INSERARE raport_diferente_curent:", inserareRaportCurent.error);
+            }
 
         }
 
@@ -8251,6 +8258,11 @@ function deschideZonaAngajatNou() {
                 .eq("luna", luna);
 
             if (stergere.error) {
+                console.log("EROARE STERGERE LUNA raport_diferente_curent:", stergere.error);
+                return;
+            }
+
+            if (!randuriRaport.length) {
                 return;
             }
 
@@ -8265,6 +8277,7 @@ function deschideZonaAngajatNou() {
                     .insert(lot);
 
                 if (error) {
+                    console.log("EROARE INSERARE LOT raport_diferente_curent:", error);
                     return;
                 }
 
