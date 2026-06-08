@@ -16832,21 +16832,32 @@ function deschideZonaAngajatNou() {
 
                 randuriExcel.forEach(function(rand) {
 
-                    const valoare = String(rand[c] || "");
+                    const valoare = String(rand[c] || "").trim();
                     const bucati = valoare.split("\n");
 
                     bucati.forEach(function(text) {
 
-                        if (text.length > latimeMaxima) {
-                            latimeMaxima = text.length;
+                        const textCurat = String(text || "").trim();
+
+                        if (textCurat.length > latimeMaxima) {
+                            latimeMaxima = textCurat.length;
                         }
 
                     });
 
                 });
 
+                let latimeCalculata;
+
+                if (c === 0) {
+                    latimeCalculata = latimeMaxima + 1;
+                } else {
+                    // Coloanele cu ore sunt stranse pe text, fara spatiu gol mare stanga-dreapta.
+                    latimeCalculata = latimeMaxima * 0.82;
+                }
+
                 latimi.push({
-                    wch: Math.min(Math.max(latimeMaxima + 1, 5), 32)
+                    wch: Math.min(Math.max(latimeCalculata, 4.8), 32)
                 });
 
             }
