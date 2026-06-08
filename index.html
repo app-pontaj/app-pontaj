@@ -7136,6 +7136,18 @@ function deschideZonaAngajatNou() {
             { numar: 12, text: "Dec" }
         ];
 
+        // ===== NORMALIZARE TEXT PENTRU COMPARATII SIGURE =====
+        function normalizeazaTextGeneric(text) {
+
+            return String(text || "")
+                .trim()
+                .toUpperCase()
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "");
+
+        }
+
+
         // ===== VERIFICARE LUNA INCHISA PENTRU RAPORT DIFERENTE =====
         async function esteLunaInchisaPentruRaportDiferente(an, luna) {
 
@@ -8209,40 +8221,78 @@ function deschideZonaAngajatNou() {
             }
 
             const pontajeLuna = rezultatPontaje.data || [];
-            const angajatiCuPontaje = {};
+
+            // ===== SINCRONIZARE SIGURA =====
+            // Folosim numele reale din pontaj_zilnic, nu doar lista angajati.
+            // Asa tabela se populeaza chiar daca exista diferente mici intre numele din import si numele din angajati.
+            const angajatiDupaNumeNormalizat = {};
+
+            (listaAngajatiSupabase || []).forEach(function(angajat) {
+
+                const cheie = normalizeazaTextGeneric(angajat.nume || "");
+
+                if (cheie) {
+                    angajatiDupaNumeNormalizat[cheie] = angajat;
+                }
+
+            });
+
+            const numePontajeUnice = {};
 
             pontajeLuna.forEach(function(pontaj) {
 
                 const nume = String(pontaj.nume || "").trim();
 
                 if (nume) {
-                    angajatiCuPontaje[nume] = true;
+                    numePontajeUnice[nume] = true;
                 }
 
             });
 
             const randuriRaport = [];
 
-            const angajatiDeCalculat = listaAngajatiSupabase.filter(function(angajat) {
-                return (
-                    angajat.apare_in_rapoarte !== false &&
-                    angajatiCuPontaje[String(angajat.nume || "").trim()]
-                );
-            });
+            for (const numePontaj of Object.keys(numePontajeUnice)) {
 
-            for (const angajat of angajatiDeCalculat) {
+                const cheieNume = normalizeazaTextGeneric(numePontaj);
+                const angajatGasit = angajatiDupaNumeNormalizat[cheieNume] || null;
+
+                if (angajatGasit && angajatGasit.apare_in_rapoarte === false) {
+                    continue;
+                }
+
+                if (angajatGasit && angajatGasit.activ === false && angajatGasit.data_inactiv) {
+
+                    const primaZiLuna =
+                        an +
+                        "-" +
+                        String(luna).padStart(2, "0") +
+                        "-01";
+
+                    if (String(angajatGasit.data_inactiv) <= primaZiLuna) {
+                        continue;
+                    }
+
+                }
 
                 const rezultat = await calculeazaRezultatLunarPentruTabela(
-                    angajat.nume,
+                    numePontaj,
                     an,
                     luna,
                     pontajeLuna
                 );
 
                 if (rezultat) {
+
+                    if (angajatGasit) {
+                        rezultat.angajat_id = null;
+                        rezultat.nume_angajat = angajatGasit.nume || numePontaj;
+                        rezultat.departament = angajatGasit.sectie || rezultat.departament || "";
+                    }
+
                     randuriRaport.push(
                         pregatesteRandRaportDiferenteCurent(rezultat)
                     );
+
                 }
 
             }
