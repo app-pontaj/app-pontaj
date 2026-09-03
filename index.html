@@ -13391,7 +13391,11 @@ function deschideZonaAngajatNou() {
                         : "";
 
                     html += "<div class='monthly-value-cell monthly-normal'>";
-                    html += "<div class='monthly-interval-cell monthly-manual-correction'>" +
+                    html += "<div class='monthly-interval-cell monthly-manual-correction monthly-interval-clickable' onclick=\"deschideEditorMotivRaportLunar('" +
+                        escapeHtml(angajatSelectatRaport).replace(/'/g, "\\'") +
+                        "','" +
+                        dataText +
+                        "')\">" +
                         textCorectie +
                         modificatDe +
                         "</div>";
@@ -13426,7 +13430,7 @@ function deschideZonaAngajatNou() {
                     }
 
                     html += "<div class='monthly-value-cell monthly-normal'>";
-                    html += "<div class='monthly-interval-cell monthly-interval-clickable' onclick=\"cereStergerePontajZi('" +
+                    html += "<div class='monthly-interval-cell monthly-interval-clickable' onclick=\"deschideEditorMotivRaportLunar('" +
                         escapeHtml(angajatSelectatRaport).replace(/'/g, "\\'") +
                         "','" +
                         dataText +
@@ -13460,7 +13464,11 @@ function deschideZonaAngajatNou() {
 
                     } else {
 
-                        html += "<div class='monthly-missing'>FARA PONTAJ</div>";
+                        html += "<div class='monthly-missing monthly-interval-clickable' onclick=\"deschideEditorMotivRaportLunar('" +
+                            escapeHtml(angajatSelectatRaport).replace(/'/g, "\\'") +
+                            "','" +
+                            dataText +
+                            "')\">FARA PONTAJ</div>";
 
                     }
 
@@ -13536,6 +13544,247 @@ function deschideZonaAngajatNou() {
             });
 
             grid.innerHTML = html;
+
+        }
+
+
+
+        // ===== EDITARE MOTIV DIN RAPORTUL LUNAR =====
+        let editareMotivRaportLunar = null;
+
+        async function deschideEditorMotivRaportLunar(numeAngajat, dataText) {
+
+            const an = Number(String(dataText).slice(0, 4));
+            const luna = Number(String(dataText).slice(5, 7));
+
+            const { data: inchisa, error: eroareLuna } = await supabaseClient
+                .from("luni_inchise")
+                .select("id")
+                .eq("an", an)
+                .eq("luna", luna)
+                .limit(1);
+
+            if (eroareLuna) {
+                showMessage("Eroare verificare lună", "error");
+                return;
+            }
+
+            if (inchisa && inchisa.length) {
+                showMessage("Luna este închisă. Nu se poate modifica.", "error");
+                return;
+            }
+
+            const { data: randuri, error: eroarePontaj } = await supabaseClient
+                .from("pontaj_zilnic")
+                .select("status_corectie,ora_intrare_manual,ora_iesire_manual")
+                .eq("nume", numeAngajat)
+                .eq("data", dataText)
+                .limit(1);
+
+            if (eroarePontaj) {
+                showMessage("Eroare citire pontaj", "error");
+                return;
+            }
+
+            const existent = randuri && randuri.length ? randuri[0] : {};
+
+            editareMotivRaportLunar = { nume: numeAngajat, data: dataText };
+
+            const box = document.getElementById("custom-message");
+            const messageText = document.getElementById("message-text");
+            const icon = document.getElementById("message-icon");
+            const button = document.getElementById("message-button");
+            const confirmVechi = document.getElementById("message-confirm-button");
+
+            if (confirmVechi) {
+                confirmVechi.remove();
+            }
+
+            icon.innerHTML = "✎";
+            messageText.className = "custom-message-text";
+            messageText.style.color = "#111111";
+            messageText.innerHTML =
+                "<div style='font-size:18px;margin-bottom:12px;'>Modifică motivul</div>" +
+                "<select id='monthly-edit-motiv' onchange='schimbareMotivRaportLunar()' style='width:100%;height:42px;font-size:15px;'>" +
+                "<option value=''>Selectează motiv</option>" +
+                "<option value='C.O'>C.O</option>" +
+                "<option value='C.M'>C.M</option>" +
+                "<option value='Lipsă card'>Lipsă card</option>" +
+                (esteFlorescuMihaiLogat() ? "<option value='Introdu ore'>Introdu ore</option>" : "") +
+                "<option value='Lucru la distanță'>Lucru la distanță</option>" +
+                "<option value='Fără plată'>Fără plată</option>" +
+                "<option value='Eveniment deosebit'>Eveniment deosebit</option>" +
+                "</select>" +
+                "<div id='monthly-edit-hours' style='display:none;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;'>" +
+                "<input id='monthly-edit-in' placeholder='HH:MM' maxlength='5' oninput='formatOraInput(this,event)' style='width:100%;height:38px;text-align:center;'>" +
+                "<input id='monthly-edit-out' placeholder='HH:MM' maxlength='5' oninput='formatOraInput(this,event)' style='width:100%;height:38px;text-align:center;'>" +
+                "</div>";
+
+            const select = document.getElementById("monthly-edit-motiv");
+            const inputIn = document.getElementById("monthly-edit-in");
+            const inputOut = document.getElementById("monthly-edit-out");
+
+            if (select && existent.status_corectie) {
+                select.value = existent.status_corectie;
+            }
+
+            if (inputIn) {
+                inputIn.value = existent.ora_intrare_manual || "";
+            }
+
+            if (inputOut) {
+                inputOut.value = existent.ora_iesire_manual || "";
+            }
+
+            schimbareMotivRaportLunar();
+
+            const confirm = document.createElement("button");
+            confirm.id = "message-confirm-button";
+            confirm.className = "message-button";
+            confirm.innerHTML = "SALVEAZĂ";
+            confirm.onclick = salveazaMotivRaportLunar;
+            confirm.style.setProperty("background", "#008f39", "important");
+            confirm.style.setProperty("color", "#ffffff", "important");
+
+            button.className = "message-button error-button";
+            button.innerHTML = "RENUNȚ";
+            button.onclick = closeMessage;
+            button.style.setProperty("background", "#c00000", "important");
+            button.style.setProperty("color", "#ffffff", "important");
+            button.style.setProperty("margin-left", "8px", "important");
+
+            box.insertBefore(confirm, button);
+            box.style.display = "block";
+
+        }
+
+        function schimbareMotivRaportLunar() {
+
+            const select = document.getElementById("monthly-edit-motiv");
+            const ore = document.getElementById("monthly-edit-hours");
+
+            if (!select || !ore) {
+                return;
+            }
+
+            ore.style.display =
+                (select.value === "Lipsă card" || select.value === "Introdu ore")
+                    ? "grid"
+                    : "none";
+
+        }
+
+        async function salveazaMotivRaportLunar() {
+
+            if (!editareMotivRaportLunar) {
+                return;
+            }
+
+            const nume = editareMotivRaportLunar.nume;
+            const dataText = editareMotivRaportLunar.data;
+            const an = Number(String(dataText).slice(0, 4));
+            const luna = Number(String(dataText).slice(5, 7));
+
+            const select = document.getElementById("monthly-edit-motiv");
+            const inputIn = document.getElementById("monthly-edit-in");
+            const inputOut = document.getElementById("monthly-edit-out");
+
+            const motiv = select ? select.value : "";
+            const oraIntrare = inputIn ? inputIn.value : "";
+            const oraIesire = inputOut ? inputOut.value : "";
+
+            if (!motiv) {
+                showMessage("Alege motivul", "error");
+                return;
+            }
+
+            if (
+                (motiv === "Lipsă card" || motiv === "Introdu ore") &&
+                (!oraIntrare || !oraIesire || oraIntrare.length !== 5 || oraIesire.length !== 5)
+            ) {
+                showMessage("Completează orele HH:MM", "error");
+                return;
+            }
+
+            const { data: inchisa, error: eroareLuna } = await supabaseClient
+                .from("luni_inchise")
+                .select("id")
+                .eq("an", an)
+                .eq("luna", luna)
+                .limit(1);
+
+            if (eroareLuna || (inchisa && inchisa.length)) {
+                showMessage("Luna este închisă. Nu se poate modifica.", "error");
+                return;
+            }
+
+            let dateCorectie;
+
+            if (motiv === "Introdu ore") {
+
+                const angajatGasit = listaAngajatiSupabase.find(function(angajat) {
+                    return String(angajat.nume || "").trim() === String(nume || "").trim();
+                });
+
+                dateCorectie = {
+                    nume: nume,
+                    departament: angajatGasit?.sectie || "",
+                    data: dataText,
+                    data_iesire: dataText,
+                    ora_intrare: oraIntrare,
+                    ora_iesire: oraIesire,
+                    nr_pontari: 2,
+                    cheie_unica: nume + "|" + dataText,
+                    status_corectie: null,
+                    ora_intrare_manual: null,
+                    ora_iesire_manual: null,
+                    modificat_de: null,
+                    modificat_la: null,
+                    importat_de: ""
+                };
+
+            } else {
+
+                dateCorectie = {
+                    nume: nume,
+                    data: dataText,
+                    cheie_unica: nume + "|" + dataText,
+                    status_corectie: motiv,
+                    ora_intrare_manual: motiv === "Lipsă card" ? oraIntrare : null,
+                    ora_iesire_manual: motiv === "Lipsă card" ? oraIesire : null,
+                    modificat_de: utilizatorLogat?.nume || "",
+                    modificat_la: new Date().toISOString()
+                };
+
+            }
+
+            const { error } = await supabaseClient
+                .from("pontaj_zilnic")
+                .upsert(dateCorectie, { onConflict: "cheie_unica" });
+
+            if (error) {
+                showMessage("Eroare salvare motiv", "error");
+                return;
+            }
+
+            await supabaseClient
+                .from("zile_fara_pontaj")
+                .delete()
+                .eq("nume_angajat", nume)
+                .eq("data", dataText);
+
+            await actualizeazaRaportDiferenteLunarPentruAngajat(nume, an, luna);
+
+            editareMotivRaportLunar = null;
+
+            const confirm = document.getElementById("message-confirm-button");
+            if (confirm) {
+                confirm.remove();
+            }
+
+            closeMessage();
+            await deschideRaportLunar(luna, "");
+            incarcaContorZileFaraPontaj();
 
         }
 
