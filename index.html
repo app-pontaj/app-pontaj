@@ -7383,7 +7383,8 @@ function deschideZonaAngajatNou() {
                     if (
                         statusCorectieNormalizat.includes("C.M") ||
                         statusCorectieNormalizat.includes("CM") ||
-                        statusCorectieNormalizat.includes("FARA PLATA")
+                        statusCorectieNormalizat.includes("FARA PLATA") ||
+                        statusCorectieNormalizat.includes("EVENIMENT DEOSEBIT")
                     ) {
                         minuteCorectie = 0;
                     }
@@ -8650,7 +8651,8 @@ function deschideZonaAngajatNou() {
                     if (
                         statusCorectie === "C.M" ||
                         statusCorectie.startsWith("C.M") ||
-                        statusCorectie === "Fără plată"
+                        statusCorectie === "Fără plată" ||
+                        statusCorectie === "Eveniment deosebit"
                     ) {
                         minuteCorectie = 0;
                     }
@@ -9927,6 +9929,7 @@ function deschideZonaAngajatNou() {
 
                         html += "<option value='Lucru la distanță'>Lucru la distanță</option>";
                         html += "<option value='Fără plată'>Fără plată</option>";
+                        html += "<option value='Eveniment deosebit'>Eveniment deosebit</option>";
                         html += "</select>";
 
                         html += "<div class='missing-days-hours-row' id='ore-box-" + idRand + "'>";
@@ -13353,7 +13356,9 @@ function deschideZonaAngajatNou() {
                         statusCorectie === "C.M" ||
                         statusCorectie.startsWith("C.M") ||
                         statusCorectie === "Fără plată" ||
-                        statusCorectie.startsWith("Fără plată")
+                        statusCorectie.startsWith("Fără plată") ||
+                        statusCorectie === "Eveniment deosebit" ||
+                        statusCorectie.startsWith("Eveniment deosebit")
                     ) {
                         oreCorectie = "00:00";
                         minuteCorectie = 0;
@@ -13683,6 +13688,13 @@ function deschideZonaAngajatNou() {
                 if (pontaj.status_corectie === "Fără plată") {
                     return {
                         text: "LIPSA",
+                        rosu: true
+                    };
+                }
+
+                if (pontaj.status_corectie === "Eveniment deosebit") {
+                    return {
+                        text: "00:00",
                         rosu: true
                     };
                 }
@@ -14026,7 +14038,9 @@ function deschideZonaAngajatNou() {
                                 statusCorectie === "C.M" ||
                                 statusCorectie.startsWith("C.M") ||
                                 statusCorectie === "Fără plată" ||
-                                statusCorectie.startsWith("Fără plată")
+                                statusCorectie.startsWith("Fără plată") ||
+                                statusCorectie === "Eveniment deosebit" ||
+                                statusCorectie.startsWith("Eveniment deosebit")
                             ) {
                                 minuteCorectie = 0;
                             }
@@ -15263,7 +15277,8 @@ function deschideZonaAngajatNou() {
             if (
                 status.includes("C.M") ||
                 status === "CM" ||
-                status.includes("FARA PLATA")
+                status.includes("FARA PLATA") ||
+                status.includes("EVENIMENT DEOSEBIT")
             ) {
                 return 0;
             }
