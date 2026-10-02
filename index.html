@@ -8884,6 +8884,7 @@ function deschideZonaAngajatNou() {
             html += "<th class='year-diff-total-head'>Total<br>" + anRaportDiferente2026Selectat + "</th>";
             html += "<th class='year-diff-total-head'>C.M<br>(zile)</th>";
             html += "<th class='year-diff-total-head'>C.M<br>(ore)</th>";
+            html += "<th class='year-diff-total-head'>TOTAL<br>GENERAL</th>";
             html += "</tr></thead>";
             html += "<tbody>";
 
@@ -8962,6 +8963,17 @@ function deschideZonaAngajatNou() {
                     html += "<td class='year-diff-total-cell'>" + (totalZileCM * 8) + "</td>";
                 } else {
                     html += "<td class='year-diff-total-cell'></td>";
+                    html += "<td class='year-diff-total-cell'></td>";
+                }
+
+                if (areCelPutinOLuna) {
+                    const totalGeneralMinute = totalAn + (totalZileCM * 8 * 60);
+                    const clasaTotalGeneral = totalGeneralMinute < 0
+                        ? "year-diff-total-cell year-diff-negative"
+                        : "year-diff-total-cell year-diff-positive";
+                    html += "<td class='" + clasaTotalGeneral + "'>" +
+                        formateazaDiferentaRaport2026(totalGeneralMinute) + "</td>";
+                } else {
                     html += "<td class='year-diff-total-cell'></td>";
                 }
 
@@ -9148,6 +9160,7 @@ function deschideZonaAngajatNou() {
             antet.push("Total " + anRaportDiferente2026Selectat);
             antet.push("C.M (zile)");
             antet.push("C.M (ore)");
+            antet.push("TOTAL GENERAL");
             randuri.push(antet);
 
             angajatiRaport.forEach(function(angajat) {
@@ -9195,6 +9208,7 @@ function deschideZonaAngajatNou() {
 
                 rand.push(totalZileCM > 0 ? totalZileCM : "");
                 rand.push(totalZileCM > 0 ? totalZileCM * 8 : "");
+                rand.push(formateazaDiferentaRaport2026(totalAn + (totalZileCM * 8 * 60)));
 
                 randuri.push(rand);
 
@@ -9211,13 +9225,14 @@ function deschideZonaAngajatNou() {
             })).concat([
                 { wch: 12 },
                 { wch: 12 },
-                { wch: 12 }
+                { wch: 12 },
+                { wch: 14 }
             ]);
 
             worksheet["!merges"] = [
                 {
                     s: { r: 0, c: 0 },
-                    e: { r: 0, c: luniExport.length + 4 }
+                    e: { r: 0, c: luniExport.length + 5 }
                 }
             ];
 
