@@ -8838,6 +8838,23 @@ function deschideZonaAngajatNou() {
 
             }
 
+            const rezultatCM = await citesteTotalZileCMRaportDiferente2026();
+
+            if (rezultatCM.error) {
+
+                container.innerHTML = "";
+
+                showMessage(
+                    "Eroare citire zile C.M",
+                    "error"
+                );
+
+                return;
+
+            }
+
+            const totalCMDupaAngajat = rezultatCM.data || {};
+
             const diferenteDupaAngajatLuna = {};
 
             (rezultatDiferente.data || []).forEach(function(rand) {
@@ -8865,6 +8882,8 @@ function deschideZonaAngajatNou() {
             });
 
             html += "<th class='year-diff-total-head'>Total<br>" + anRaportDiferente2026Selectat + "</th>";
+            html += "<th class='year-diff-total-head'>C.M<br>(zile)</th>";
+            html += "<th class='year-diff-total-head'>C.M<br>(ore)</th>";
             html += "</tr></thead>";
             html += "<tbody>";
 
@@ -8932,6 +8951,18 @@ function deschideZonaAngajatNou() {
 
                     html += "<td class='year-diff-total-cell'></td>";
 
+                }
+
+                const totalZileCM = Number(
+                    totalCMDupaAngajat[normalizeazaTextGeneric(nume)] || 0
+                );
+
+                if (totalZileCM > 0) {
+                    html += "<td class='year-diff-total-cell'>" + totalZileCM + "</td>";
+                    html += "<td class='year-diff-total-cell'>" + (totalZileCM * 8) + "</td>";
+                } else {
+                    html += "<td class='year-diff-total-cell'></td>";
+                    html += "<td class='year-diff-total-cell'></td>";
                 }
 
                 html += "</tr>";
