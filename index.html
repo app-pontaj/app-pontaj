@@ -8946,6 +8946,83 @@ function deschideZonaAngajatNou() {
         }
 
         // ===== EXPORT EXCEL RAPORT DIFERENTE 2026 =====
+        // ===== TOTAL ZILE C.M. PENTRU RAPORT DIFERENTE ANUAL =====
+        async function citesteTotalZileCMRaportDiferente2026() {
+
+            const anRaport = Number(anRaportDiferente2026Selectat || 2026);
+            const totalCMDupaAngajat = {};
+            const marimeLot = 1000;
+
+            const rezultatLuniInchise = await citesteLuniInchiseRaportDiferente2026();
+
+            if (rezultatLuniInchise.error) {
+                return { data: {}, error: rezultatLuniInchise.error };
+            }
+
+            const luniInchiseIndex = rezultatLuniInchise.data || {};
+
+            function esteCM(textStatus) {
+                const status = normalizeazaTextGeneric(textStatus).replace(/\s+/g, "");
+                return status === "C.M" || status === "CM";
+            }
+
+            function adaugaZiCM(numeAngajat) {
+                const nume = String(numeAngajat || "").trim();
+                if (!nume) return;
+
+                const cheie = normalizeazaTextGeneric(nume);
+                totalCMDupaAngajat[cheie] = Number(totalCMDupaAngajat[cheie] || 0) + 1;
+            }
+
+            // LUNI INCHISE: numai din raport_lunar_final
+            let startLot = 0;
+
+            while (true) {
+
+                const { data, error } = await supabaseClient
+                    .from("raport_lunar_final")
+                    .select("an,luna,nume_angajat,status_zi")
+                    .eq("an", anRaport)
+                    .range(startLot, startLot + marimeLot - 1);
+
+                if (error) {
+                    return { data: {}, error: error };
+                }
+
+                (data || []).forEach(function(rand) {
+                    const luna = String(Number(rand.luna || 0));
+
+                    if (luniInchiseIndex[luna] && esteCM(rand.status_zi)) {
+                        adaugaZiCM(rand.nume_angajat);
+                    }
+                });
+
+                if (!data || data.length < marimeLot) break;
+                startLot += marimeLot;
+            }
+
+            // LUNI DESCHISE: numai din pontaj_zilnic
+            const luniDeschise = LUNI_RAPORT_DIFERENTE.filter(function(luna) {
+                return !luniInchiseIndex[String(Number(luna.numar))];
+            });
+
+            const rezultatPontaje = await citestePontajeRaportDiferente2026(luniDeschise);
+
+            if (rezultatPontaje.error) {
+                return { data: {}, error: rezultatPontaje.error };
+            }
+
+            (rezultatPontaje.data || []).forEach(function(pontaj) {
+                if (esteCM(pontaj.status_corectie)) {
+                    adaugaZiCM(pontaj.nume);
+                }
+            });
+
+            return { data: totalCMDupaAngajat, error: null };
+
+        }
+
+
         async function exportaRaportDiferente2026Excel() {
 
             let angajatiRaport = listaAngajatiSupabase
@@ -8983,6 +9060,15 @@ function deschideZonaAngajatNou() {
                 angajatiRaport = aplicaFiltruSectiiRaportDiferente2026(angajatiRaport);
 
             }
+
+            const rezultatCM = await citesteTotalZileCMRaportDiferente2026();
+
+            if (rezultatCM.error) {
+                showMessage("Eroare citire zile C.M pentru export", "error");
+                return;
+            }
+
+            const totalCMDupaAngajat = rezultatCM.data || {};
 
             const rezultatDiferente = await citesteDiferenteRaportDiferente2026();
 
@@ -9029,6 +9115,8 @@ function deschideZonaAngajatNou() {
             });
 
             antet.push("Total " + anRaportDiferente2026Selectat);
+            antet.push("C.M (zile)");
+            antet.push("C.M (ore)");
             randuri.push(antet);
 
             angajatiRaport.forEach(function(angajat) {
@@ -9069,6 +9157,14 @@ function deschideZonaAngajatNou() {
                 }
 
                 rand.push(formateazaDiferentaRaport2026(totalAn));
+
+                const totalZileCM = Number(
+                    totalCMDupaAngajat[normalizeazaTextGeneric(nume)] || 0
+                );
+
+                rand.push(totalZileCM > 0 ? totalZileCM : "");
+                rand.push(totalZileCM > 0 ? totalZileCM * 8 : "");
+
                 randuri.push(rand);
 
             });
@@ -9082,13 +9178,15 @@ function deschideZonaAngajatNou() {
             ].concat(luniExport.map(function() {
                 return { wch: 11 };
             })).concat([
+                { wch: 12 },
+                { wch: 12 },
                 { wch: 12 }
             ]);
 
             worksheet["!merges"] = [
                 {
                     s: { r: 0, c: 0 },
-                    e: { r: 0, c: luniExport.length + 2 }
+                    e: { r: 0, c: luniExport.length + 4 }
                 }
             ];
 
