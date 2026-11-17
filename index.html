@@ -986,6 +986,50 @@
             color: transparent !important;
         }
 
+        /* Numerotare si randuri alternative doar pentru raportul Diferente */
+        .year-diff-table .year-diff-number-head,
+        .year-diff-table .year-diff-number-cell {
+            min-width: 38px !important;
+            width: 38px;
+            max-width: 38px;
+            font-weight: 900;
+        }
+
+        .year-diff-table .year-diff-number-head:first-child,
+        .year-diff-table .year-diff-number-cell:first-child {
+            position: sticky;
+            left: 0;
+            z-index: 6;
+        }
+
+        .year-diff-table .year-diff-name-head,
+        .year-diff-table .year-diff-name-cell {
+            left: 46px;
+        }
+
+        .year-diff-table .year-diff-section-head,
+        .year-diff-table .year-diff-section-cell {
+            left: 161px;
+        }
+
+        .year-diff-table tbody tr.year-diff-row-blue td {
+            background: #e5f3fa !important;
+            color: #142534;
+        }
+
+        .year-diff-table tbody tr.year-diff-row-white td {
+            background: #ffffff !important;
+            color: #142534;
+        }
+
+        .year-diff-table tbody tr td.year-diff-positive {
+            color: #087a3f !important;
+        }
+
+        .year-diff-table tbody tr td.year-diff-negative {
+            color: #c82121 !important;
+        }
+
         .year-diff-loading {
             color: #d4af37;
             font-size: 13px;
@@ -8874,6 +8918,7 @@ function deschideZonaAngajatNou() {
 
             html += "<table class='year-diff-table'>";
             html += "<thead><tr>";
+            html += "<th class='year-diff-number-head'>Nr.</th>";
             html += "<th class='year-diff-name-head'>Angajat</th>";
             html += "<th class='year-diff-section-head'>Secție</th>";
 
@@ -8885,9 +8930,11 @@ function deschideZonaAngajatNou() {
             html += "<th class='year-diff-total-head'>C.M<br>(zile)</th>";
             html += "<th class='year-diff-total-head'>C.M<br>(ore)</th>";
             html += "<th class='year-diff-total-head'>TOTAL<br>GENERAL</th>";
+            html += "<th class='year-diff-number-head'>Nr.</th>";
             html += "</tr></thead>";
             html += "<tbody>";
 
+            let numarAngajat = 0;
             angajatiRaport.forEach(function(angajat) {
 
                 const nume = String(angajat.nume || "").trim();
@@ -8899,7 +8946,9 @@ function deschideZonaAngajatNou() {
                 let totalAn = 0;
                 let areCelPutinOLuna = false;
 
-                html += "<tr>";
+                numarAngajat += 1;
+                html += "<tr class='" + (numarAngajat % 2 ? "year-diff-row-blue" : "year-diff-row-white") + "'>";
+                html += "<td class='year-diff-number-cell'>" + numarAngajat + "</td>";
                 const sectie = String(angajat.sectie || "").trim();
 
                 html += "<td class='year-diff-name-cell'>" + escapeHtml(nume) + "</td>";
@@ -8977,6 +9026,7 @@ function deschideZonaAngajatNou() {
                     html += "<td class='year-diff-total-cell'></td>";
                 }
 
+                html += "<td class='year-diff-number-cell'>" + numarAngajat + "</td>";
                 html += "</tr>";
 
             });
@@ -9151,7 +9201,7 @@ function deschideZonaAngajatNou() {
             const randuri = [];
             randuri.push(["Raport diferențe " + anRaportDiferente2026Selectat]);
 
-            const antet = ["Angajat", "Secție"];
+            const antet = ["Nr.", "Angajat", "Secție"];
 
             luniExport.forEach(function(luna) {
                 antet.push(luna.text + " " + anRaportDiferente2026Selectat);
@@ -9161,6 +9211,7 @@ function deschideZonaAngajatNou() {
             antet.push("C.M (zile)");
             antet.push("C.M (ore)");
             antet.push("TOTAL GENERAL");
+            antet.push("Nr.");
             randuri.push(antet);
 
             angajatiRaport.forEach(function(angajat) {
@@ -9174,7 +9225,7 @@ function deschideZonaAngajatNou() {
                 let totalAn = 0;
                 let areValori = false;
                 const sectie = String(angajat.sectie || "").trim();
-                const rand = [nume, sectie || "-"];
+                const rand = [randuri.length - 1, nume, sectie || "-"];
 
                 luniExport.forEach(function(luna) {
 
@@ -9209,6 +9260,7 @@ function deschideZonaAngajatNou() {
                 rand.push(totalZileCM > 0 ? totalZileCM : "");
                 rand.push(totalZileCM > 0 ? totalZileCM * 8 : "");
                 rand.push(formateazaDiferentaRaport2026(totalAn + (totalZileCM * 8 * 60)));
+                rand.push(rand[0]);
 
                 randuri.push(rand);
 
@@ -9218,6 +9270,7 @@ function deschideZonaAngajatNou() {
             const workbook = XLSX.utils.book_new();
 
             worksheet["!cols"] = [
+                { wch: 6 },
                 { wch: 24 },
                 { wch: 18 }
             ].concat(luniExport.map(function() {
@@ -9226,13 +9279,14 @@ function deschideZonaAngajatNou() {
                 { wch: 12 },
                 { wch: 12 },
                 { wch: 12 },
-                { wch: 14 }
+                { wch: 14 },
+                { wch: 6 }
             ]);
 
             worksheet["!merges"] = [
                 {
                     s: { r: 0, c: 0 },
-                    e: { r: 0, c: luniExport.length + 5 }
+                    e: { r: 0, c: luniExport.length + 7 }
                 }
             ];
 
@@ -9254,10 +9308,14 @@ function deschideZonaAngajatNou() {
                             sz: R === 0 ? 16 : 10
                         },
                         alignment: {
-                            horizontal: C <= 1 ? "left" : "center",
+                            horizontal: (C === 1 || C === 2) ? "left" : "center",
                             vertical: "center",
                             wrapText: true
                         },
+                        fill: R >= 2 ? {
+                            patternType: "solid",
+                            fgColor: { rgb: R % 2 === 0 ? "E5F3FA" : "FFFFFF" }
+                        } : { patternType: "solid", fgColor: { rgb: "FFFFFF" } },
                         border: {
                             top: { style: "thin" },
                             bottom: { style: "thin" },
