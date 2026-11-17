@@ -12154,7 +12154,7 @@ function deschideZonaAngajatNou() {
             }
 
             const randuriExcel = [];
-            const randHeader = ["Angajat", "Secție"];
+            const randHeader = ["Angajat", "Secție", "Dif."];
 
             for (let zi = 1; zi <= zileLuna; zi++) {
 
@@ -12170,7 +12170,6 @@ function deschideZonaAngajatNou() {
 
             }
 
-            randHeader.push("Dif.");
 
             const randTitluPontajLunar = [
                 "PONTAJ LUNAR " + numeLunaComplet(luna).toUpperCase() + " " + an
@@ -12212,7 +12211,7 @@ function deschideZonaAngajatNou() {
                 let totalZileLucratoare = 0;
                 let arePontajInLuna = false;
 
-                const randExcel = [nume, String(angajat.sectie || "")];
+                const randExcel = [nume, String(angajat.sectie || ""), ""];
                 const indexRandExcel = randuriExcel.length;
 
                 seteazaMeta(indexRandExcel, 0, "nume");
@@ -12220,7 +12219,7 @@ function deschideZonaAngajatNou() {
 
                 for (let zi = 1; zi <= zileLuna; zi++) {
 
-                    const indexColoanaExcel = zi + 1;
+                    const indexColoanaExcel = zi + 2;
 
                     const dataText =
                         an +
@@ -12364,17 +12363,17 @@ function deschideZonaAngajatNou() {
 
                 if (arePontajInLuna) {
 
-                    randExcel.push(String(diferentaText));
+                    randExcel[2] = String(diferentaText);
 
                     seteazaMeta(
                         indexRandExcel,
-                        zileLuna + 2,
+                        2,
                         diferentaMinute >= 0 ? "difPlus" : "difMinus"
                     );
 
                 } else {
 
-                    randExcel.push("");
+                    randExcel[2] = "";
 
                 }
 
@@ -12480,10 +12479,11 @@ function deschideZonaAngajatNou() {
 
             worksheet["!cols"] = [
                 { wch: 17.2 },
-                { wch: latimeSectie }
+                { wch: latimeSectie },
+                { wch: 7.5 }
             ];
 
-            for (let indexColoana = 2; indexColoana < randHeader.length; indexColoana++) {
+            for (let indexColoana = 3; indexColoana < randHeader.length; indexColoana++) {
                 worksheet["!cols"].push({
                     wch: 4.8
                 });
@@ -12977,6 +12977,24 @@ function deschideZonaAngajatNou() {
                 return false;
             }
 
+            const { data: diferenteFinale, error: eroareDiferenteFinale } = await supabaseClient
+                .from("raport_diferente_final")
+                .select("nume_angajat,diferenta")
+                .eq("an", an)
+                .eq("luna", luna);
+
+            if (eroareDiferenteFinale) {
+                container.innerHTML = "";
+                showMessage("Eroare citire diferențe finale", "error");
+                return false;
+            }
+
+            const diferenteDupaNume = {};
+            (diferenteFinale || []).forEach(function(rand) {
+                diferenteDupaNume[String(rand.nume_angajat || "").trim().toUpperCase()] =
+                    String(rand.diferenta || "");
+            });
+
             const zileLuna = new Date(an, luna, 0).getDate();
             const indexFinal = indexeazaRanduriFinaleDupaAngajatZi(randuri, "nume_angajat");
 
@@ -13041,6 +13059,8 @@ function deschideZonaAngajatNou() {
                 html += "<th class='all-employees-section-head'>Secție</th>";
             }
 
+            html += "<th>Dif.</th>";
+
             for (let zi = 1; zi <= zileLuna; zi++) {
 
                 const dataObj = new Date(an, luna - 1, zi);
@@ -13072,6 +13092,13 @@ function deschideZonaAngajatNou() {
                 if (afiseazaColoanaSectie) {
                     html += "<td class='all-employees-section-cell'>" + escapeHtml(angajat.sectie || "-") + "</td>";
                 }
+
+                const diferentaFinala = diferenteDupaNume[nume.toUpperCase()] || "";
+                const clasaDiferentaFinala = diferentaFinala.startsWith("-")
+                    ? "all-employees-diff-negative"
+                    : (diferentaFinala ? "all-employees-diff-positive" : "all-employees-empty-cell");
+                html += "<td class='" + clasaDiferentaFinala + "'>" +
+                    escapeHtml(diferentaFinala) + "</td>";
 
                 for (let zi = 1; zi <= zileLuna; zi++) {
 
@@ -14352,6 +14379,8 @@ function deschideZonaAngajatNou() {
                 html += "<th class='all-employees-section-head'>Secție</th>";
             }
 
+            html += "<th>Dif.</th>";
+
             for (let zi = 1; zi <= zileLuna; zi++) {
 
                 const dataObj = new Date(anCurent, luna - 1, zi);
@@ -14390,6 +14419,8 @@ function deschideZonaAngajatNou() {
                 if (afiseazaColoanaSectie) {
                     html += "<td class='all-employees-section-cell'>" + escapeHtml(angajat.sectie || "") + "</td>";
                 }
+
+                const pozitieColoanaDif = html.length;
 
                 for (let zi = 1; zi <= zileLuna; zi++) {
 
@@ -14543,14 +14574,16 @@ function deschideZonaAngajatNou() {
                             ? "all-employees-diff-positive"
                             : "all-employees-diff-negative";
 
-                    html +=
+                    html = html.slice(0, pozitieColoanaDif) +
                         "<td class='" + clasaDiferenta + "'>" +
                         escapeHtml(diferentaText) +
-                        "</td>";
+                        "</td>" + html.slice(pozitieColoanaDif);
 
                 } else {
 
-                    html += "<td class='all-employees-empty-cell'></td>";
+                    html = html.slice(0, pozitieColoanaDif) +
+                        "<td class='all-employees-empty-cell'></td>" +
+                        html.slice(pozitieColoanaDif);
 
                 }
 
