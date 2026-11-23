@@ -3969,6 +3969,22 @@
                                 >
                             </div>
 
+                            <!-- SETARI INDIVIDUALE PROGRAM -->
+                            <label style="color:#d4af37;font-weight:700;margin-top:12px;display:block;">Program normal zilnic</label>
+                            <select id="angajat-program-normal-ore" class="employee-input">
+                                <option value="4">4 ore</option>
+                                <option value="6">6 ore</option>
+                                <option value="8" selected>8 ore</option>
+                            </select>
+                            <div class="employee-row">
+                                <span>Regula 12 ore pontaj</span>
+                                <input type="checkbox" id="angajat-program-12-ore" onchange="toggleProgram12OreAngajat()">
+                            </div>
+                            <div id="angajat-ora-start-12-box" style="display:none;">
+                                <label style="color:#d4af37;font-weight:700;display:block;margin-bottom:6px;">Ora început program 12 ore</label>
+                                <input type="time" id="angajat-ora-start-12" class="employee-input" step="60">
+                            </div>
+
                             <div class="employee-row">
                                 <span>Se scade pauza de masă</span>
                                 <input
@@ -5999,6 +6015,9 @@ function deschideZonaAngajatNou() {
                 const regulaIesire1530 = angajat.regula_iesire_1530 ? "Da" : "Nu";
                 const pauzaMasa = angajat.pauza_masa ? "Da" : "Nu";
                 const pauzaMinute = angajat.pauza_minute || 0;
+                const programNormalOre = [4, 6, 8].includes(Number(angajat.program_normal_ore)) ? Number(angajat.program_normal_ore) : 8;
+                const regula12Ore = !!angajat.program_12_ore;
+                const oraStart12 = angajat.ora_start_12_ore ? String(angajat.ora_start_12_ore).slice(0, 5) : "-";
 
                 const detaliiUtilizator = await obtineDetaliiUtilizatorCard(
                     angajat.nume || ""
@@ -6017,6 +6036,8 @@ function deschideZonaAngajatNou() {
                 html += "Regulă 07:00: " + regula0700 + "<br>";
                 html += "Regulă ieșire 15:30: " + regulaIesire1530 + "<br>";
                 html += "Pauză masă: " + pauzaMasa + " (" + pauzaMinute + " min)<br>";
+                html += "Program normal: " + programNormalOre + " ore<br>";
+                html += "Regula 12 ore pontaj: " + (regula12Ore ? "Da, de la " + escapeHtml(oraStart12) : "Nu") + "<br>";
                 html += "Secție: " + escapeHtml(angajat.sectie || "-") + "<br>";
                 html += "Rol: " + escapeHtml(detaliiUtilizator.rol || "-") + "<br>";
                 html += "Acces: " + escapeHtml(detaliiUtilizator.acces || "-") + "<br>";
@@ -6045,9 +6066,18 @@ function deschideZonaAngajatNou() {
             document.getElementById("angajat-regula-iesire-1530").checked = !!angajat.regula_iesire_1530;
             document.getElementById("angajat-pauza-masa").checked = !!angajat.pauza_masa;
             document.getElementById("angajat-pauza-minute").value = angajat.pauza_minute || 0;
+            document.getElementById("angajat-program-normal-ore").value = String(angajat.program_normal_ore || 8);
+            document.getElementById("angajat-program-12-ore").checked = !!angajat.program_12_ore;
+            document.getElementById("angajat-ora-start-12").value = angajat.ora_start_12_ore ? String(angajat.ora_start_12_ore).slice(0, 5) : "";
+            toggleProgram12OreAngajat();
 
             await incarcaRolAccesSiSectiiAngajat(angajat.nume || "");
 
+        }
+
+        function toggleProgram12OreAngajat() {
+            const bifat = document.getElementById("angajat-program-12-ore").checked;
+            document.getElementById("angajat-ora-start-12-box").style.display = bifat ? "block" : "none";
         }
 
         // ===== RESETARE FORMULAR ANGAJAT =====
@@ -6063,6 +6093,10 @@ function deschideZonaAngajatNou() {
             document.getElementById("angajat-regula-iesire-1530").checked = false;
             document.getElementById("angajat-pauza-masa").checked = false;
             document.getElementById("angajat-pauza-minute").value = 0;
+            document.getElementById("angajat-program-normal-ore").value = "8";
+            document.getElementById("angajat-program-12-ore").checked = false;
+            document.getElementById("angajat-ora-start-12").value = "";
+            toggleProgram12OreAngajat();
 
             if (document.getElementById("angajat-rol")) {
                 document.getElementById("angajat-rol").value = "";
@@ -6091,6 +6125,19 @@ function deschideZonaAngajatNou() {
             const regulaIesire1530 = document.getElementById("angajat-regula-iesire-1530").checked;
             const pauzaMasa = document.getElementById("angajat-pauza-masa").checked;
             const pauzaMinute = parseInt(document.getElementById("angajat-pauza-minute").value || "0", 10);
+            const programNormalOre = Number(document.getElementById("angajat-program-normal-ore").value);
+            const program12Ore = document.getElementById("angajat-program-12-ore").checked;
+            const oraStart12Ore = document.getElementById("angajat-ora-start-12").value || null;
+
+            if (program12Ore && sectie.toLowerCase().includes("paza")) {
+                showMessage("Regula 12 ore pontaj nu se aplica personalului de paza", "error");
+                return;
+            }
+
+            if (![4, 6, 8].includes(programNormalOre) || (program12Ore && !oraStart12Ore)) {
+                showMessage("Alege programul normal și ora de început pentru regula 12 ore", "error");
+                return;
+            }
 
             if (!nume) {
 
@@ -6181,7 +6228,10 @@ function deschideZonaAngajatNou() {
                 regula_start_0700: regula0700,
                 regula_iesire_1530: regulaIesire1530,
                 pauza_masa: pauzaMasa,
-                pauza_minute: pauzaMinute
+                pauza_minute: pauzaMinute,
+                program_normal_ore: programNormalOre,
+                program_12_ore: program12Ore,
+                ora_start_12_ore: program12Ore ? oraStart12Ore : null
             };
 
             let raspuns;
@@ -7438,14 +7488,7 @@ function deschideZonaAngajatNou() {
 
                     if (statusCorectieNormalizat.includes("LIPSA CARD")) {
 
-                        const oreCorectie = calculeazaOreNete(
-                            pontaj.ora_intrare_manual,
-                            pontaj.ora_iesire_manual,
-                            angajat?.regula_start_0700,
-                            angajat?.regula_iesire_1530,
-                            angajat?.pauza_masa,
-                            angajat?.pauza_minute
-                        );
+                        const oreCorectie = calculeazaOreNeteAngajat(pontaj.ora_intrare_manual, pontaj.ora_iesire_manual, angajat);
 
                         if (oreCorectie) {
                             minuteCorectie = transformaOraMinute(oreCorectie.replace("-", ""));
@@ -7457,14 +7500,7 @@ function deschideZonaAngajatNou() {
 
                 } else if (pontaj) {
 
-                    const oreNete = calculeazaOreNete(
-                        pontaj.ora_intrare,
-                        pontaj.ora_iesire,
-                        angajat?.regula_start_0700,
-                        angajat?.regula_iesire_1530,
-                        angajat?.pauza_masa,
-                        angajat?.pauza_minute
-                    );
+                    const oreNete = calculeazaOreNeteAngajat(pontaj.ora_intrare, pontaj.ora_iesire, angajat);
 
                     if (oreNete) {
 
@@ -7482,7 +7518,7 @@ function deschideZonaAngajatNou() {
 
             }
 
-            const totalOreLucratoareMinute = totalZileLucratoare * 8 * 60;
+            const totalOreLucratoareMinute = totalZileLucratoare * minuteNormaAngajat(angajat);
             const diferentaMinute = totalMinuteLucrate - totalOreLucratoareMinute;
 
             const diferentaText =
@@ -8709,14 +8745,7 @@ function deschideZonaAngajatNou() {
 
                     if (statusCorectie === "Lipsă card") {
 
-                        const oreCorectie = calculeazaOreNete(
-                            pontaj.ora_intrare_manual,
-                            pontaj.ora_iesire_manual,
-                            angajat?.regula_start_0700,
-                            angajat?.regula_iesire_1530,
-                            angajat?.pauza_masa,
-                            angajat?.pauza_minute
-                        );
+                        const oreCorectie = calculeazaOreNeteAngajat(pontaj.ora_intrare_manual, pontaj.ora_iesire_manual, angajat);
 
                         if (oreCorectie) {
 
@@ -8743,14 +8772,7 @@ function deschideZonaAngajatNou() {
                     pontaj.ora_iesire
                 ) {
 
-                    const oreNete = calculeazaOreNete(
-                        pontaj.ora_intrare,
-                        pontaj.ora_iesire,
-                        angajat?.regula_start_0700,
-                        angajat?.regula_iesire_1530,
-                        angajat?.pauza_masa,
-                        angajat?.pauza_minute
-                    );
+                    const oreNete = calculeazaOreNeteAngajat(pontaj.ora_intrare, pontaj.ora_iesire, angajat);
 
                     if (oreNete) {
 
@@ -8768,7 +8790,7 @@ function deschideZonaAngajatNou() {
 
             }
 
-            const totalOreLucratoareMinute = totalZileLucratoare * 8 * 60;
+            const totalOreLucratoareMinute = totalZileLucratoare * minuteNormaAngajat(angajat);
 
             return totalMinuteLucrate - totalOreLucratoareMinute;
 
@@ -10400,14 +10422,7 @@ function deschideZonaAngajatNou() {
                 return null;
             }
 
-            const oreNete = calculeazaOreNete(
-                pontaj.ora_intrare,
-                pontaj.ora_iesire,
-                angajat?.regula_start_0700,
-                angajat?.regula_iesire_1530,
-                angajat?.pauza_masa,
-                angajat?.pauza_minute
-            );
+            const oreNete = calculeazaOreNeteAngajat(pontaj.ora_intrare, pontaj.ora_iesire, angajat);
 
             if (!oreNete || oreNete.startsWith("-")) {
                 return null;
@@ -11089,6 +11104,50 @@ function deschideZonaAngajatNou() {
 
         // ===== ZILE SAPTAMANA =====
         const ZILE_SCURTE = ['Du','Lu','Ma','Mi','Jo','Vi','Sa'];
+
+        // ===== PROGRAM INDIVIDUAL: NU AFECTEAZA ANGAJATII FARA BIFA =====
+        function minuteNormaAngajat(angajat) {
+            const ore = Number(angajat?.program_normal_ore || 8);
+            return [4, 6, 8].includes(ore) ? ore * 60 : 480;
+        }
+
+        function startPontaj12Ore(oraIntrare, oraIesire, angajat) {
+            if (!angajat?.program_12_ore || !angajat?.ora_start_12_ore || !oraIntrare || !oraIesire) return null;
+            // Regula 12 ore nu se aplica personalului de paza.
+            if (String(angajat.sectie || "").toLowerCase().includes("paza")) return null;
+            const inceput = transformaOraMinute(String(angajat.ora_start_12_ore).slice(0, 5));
+            const intrare = transformaOraMinute(oraIntrare);
+            const iesire = transformaOraMinute(oraIesire);
+            const durata = (iesire < intrare ? iesire + 1440 : iesire) - intrare;
+            if (durata < 540) return null;
+            // Toleranta de 30 minute este stabilita numai pentru programul 06:00.
+            if (inceput === 360 && intrare > 390) return null;
+            // Pentru inceputul 07:00, sosirea la 07:10 ramane 07:10.
+            return Math.max(intrare, inceput);
+        }
+
+        function calculeazaOreNeteAngajat(oraIntrare, oraIesire, angajat) {
+            const start12 = startPontaj12Ore(oraIntrare, oraIesire, angajat);
+            if (start12 === null) {
+                return calculeazaOreNete(oraIntrare, oraIesire,
+                    angajat?.regula_start_0700, angajat?.regula_iesire_1530,
+                    angajat?.pauza_masa, angajat?.pauza_minute);
+            }
+            // Pentru schimbul de 12 ore pastram regula de iesire si pauza de masa.
+            return calculeazaOreNete(formateazaMinuteOra(start12), oraIesire,
+                false, false,
+                angajat?.pauza_masa, angajat?.pauza_minute);
+        }
+
+        function calculeazaIntervalPontatAngajat(oraIntrare, oraIesire, angajat) {
+            const start12 = startPontaj12Ore(oraIntrare, oraIesire, angajat);
+            if (start12 === null) {
+                return calculeazaIntervalPontat(oraIntrare, oraIesire,
+                    angajat?.regula_start_0700, angajat?.regula_iesire_1530);
+            }
+            return calculeazaIntervalPontat(formateazaMinuteOra(start12), oraIesire,
+                false, false);
+        }
 
         // ===== CALCUL ORE NETE =====
         function calculeazaOreNete(oraIntrare, oraIesire, regula0700, regulaIesire1530, pauzaMasa, pauzaMinute) {
@@ -11904,14 +11963,7 @@ function deschideZonaAngajatNou() {
                                 " - " +
                                 String(pontaj.ora_iesire_manual || "");
 
-                            totalOre = calculeazaOreNete(
-                                pontaj.ora_intrare_manual,
-                                pontaj.ora_iesire_manual,
-                                angajat?.regula_start_0700,
-                                angajat?.regula_iesire_1530,
-                                angajat?.pauza_masa,
-                                angajat?.pauza_minute
-                            );
+                            totalOre = calculeazaOreNeteAngajat(pontaj.ora_intrare_manual, pontaj.ora_iesire_manual, angajat);
 
                             if (totalOre) {
 
@@ -11943,21 +11995,9 @@ function deschideZonaAngajatNou() {
 
                     } else if (pontaj && pontaj.ora_intrare && pontaj.ora_iesire) {
 
-                        interval = calculeazaIntervalPontat(
-                            pontaj.ora_intrare,
-                            pontaj.ora_iesire,
-                            angajat?.regula_start_0700,
-                            angajat?.regula_iesire_1530
-                        );
+                        interval = calculeazaIntervalPontatAngajat(pontaj.ora_intrare, pontaj.ora_iesire, angajat);
 
-                        totalOre = calculeazaOreNete(
-                            pontaj.ora_intrare,
-                            pontaj.ora_iesire,
-                            angajat?.regula_start_0700,
-                            angajat?.regula_iesire_1530,
-                            angajat?.pauza_masa,
-                            angajat?.pauza_minute
-                        );
+                        totalOre = calculeazaOreNeteAngajat(pontaj.ora_intrare, pontaj.ora_iesire, angajat);
 
                         if (totalOre) {
 
@@ -11999,7 +12039,7 @@ function deschideZonaAngajatNou() {
 
                 }
 
-                const totalOreLucratoareIndividual = totalZileLucratoareIndividual * 8 * 60;
+                const totalOreLucratoareIndividual = totalZileLucratoareIndividual * minuteNormaAngajat(angajat);
                 const diferentaMinuteIndividual = totalMinuteLucrateIndividual - totalOreLucratoareIndividual;
                 const diferentaTextIndividual =
                     (diferentaMinuteIndividual < 0 ? "-" : "") +
@@ -12322,14 +12362,7 @@ function deschideZonaAngajatNou() {
 
                         if (statusExport === "Lipsă card") {
 
-                            valoareCelula = calculeazaOreNete(
-                                pontaj.ora_intrare_manual,
-                                pontaj.ora_iesire_manual,
-                                angajat?.regula_start_0700,
-                                angajat?.regula_iesire_1530,
-                                angajat?.pauza_masa,
-                                angajat?.pauza_minute
-                            );
+                            valoareCelula = calculeazaOreNeteAngajat(pontaj.ora_intrare_manual, pontaj.ora_iesire_manual, angajat);
 
                             if (valoareCelula) {
 
@@ -12368,14 +12401,7 @@ function deschideZonaAngajatNou() {
 
                         arePontajInLuna = true;
 
-                        valoareCelula = calculeazaOreNete(
-                            pontaj.ora_intrare,
-                            pontaj.ora_iesire,
-                            angajat?.regula_start_0700,
-                            angajat?.regula_iesire_1530,
-                            angajat?.pauza_masa,
-                            angajat?.pauza_minute
-                        );
+                        valoareCelula = calculeazaOreNeteAngajat(pontaj.ora_intrare, pontaj.ora_iesire, angajat);
 
                         if (valoareCelula) {
 
@@ -12412,7 +12438,7 @@ function deschideZonaAngajatNou() {
 
                 }
 
-                const totalOreLucratoareMinute = totalZileLucratoare * 8 * 60;
+                const totalOreLucratoareMinute = totalZileLucratoare * minuteNormaAngajat(angajat);
                 const diferentaMinute = totalMinuteLucrate - totalOreLucratoareMinute;
 
                 const diferentaText =
@@ -13610,14 +13636,7 @@ function deschideZonaAngajatNou() {
                             " - " +
                             (pontaj.ora_iesire_manual || "");
 
-                        oreCorectie = calculeazaOreNete(
-                            pontaj.ora_intrare_manual,
-                            pontaj.ora_iesire_manual,
-                            angajat?.regula_start_0700,
-                            angajat?.regula_iesire_1530,
-                            angajat?.pauza_masa,
-                            angajat?.pauza_minute
-                        );
+                        oreCorectie = calculeazaOreNeteAngajat(pontaj.ora_intrare_manual, pontaj.ora_iesire_manual, angajat);
 
                         minuteCorectie = transformaOraMinute(oreCorectie.replace("-", ""));
 
@@ -13645,21 +13664,9 @@ function deschideZonaAngajatNou() {
 
                 } else if (pontaj) {
 
-                    const intervalPontat = calculeazaIntervalPontat(
-                        pontaj.ora_intrare,
-                        pontaj.ora_iesire,
-                        angajat?.regula_start_0700,
-                        angajat?.regula_iesire_1530
-                    );
+                    const intervalPontat = calculeazaIntervalPontatAngajat(pontaj.ora_intrare, pontaj.ora_iesire, angajat);
 
-                    const oreNete = calculeazaOreNete(
-                        pontaj.ora_intrare,
-                        pontaj.ora_iesire,
-                        angajat?.regula_start_0700,
-                        angajat?.regula_iesire_1530,
-                        angajat?.pauza_masa,
-                        angajat?.pauza_minute
-                    );
+                    const oreNete = calculeazaOreNeteAngajat(pontaj.ora_intrare, pontaj.ora_iesire, angajat);
 
                     const minuteOreNete =
                         transformaOraMinute(oreNete.replace("-", ""));
@@ -13717,7 +13724,7 @@ function deschideZonaAngajatNou() {
 
             }
 
-            const totalOreLucratoareMinute = totalZileLucratoare * 8 * 60;
+            const totalOreLucratoareMinute = totalZileLucratoare * minuteNormaAngajat(angajat);
             const diferentaMinute =
                 totalMinuteLucrate - totalOreLucratoareMinute;
 
@@ -14196,14 +14203,7 @@ function deschideZonaAngajatNou() {
 
                 if (pontaj.status_corectie === "Lipsă card") {
                     return {
-                        text: calculeazaOreNete(
-                            pontaj.ora_intrare_manual,
-                            pontaj.ora_iesire_manual,
-                            angajat?.regula_start_0700,
-                            angajat?.regula_iesire_1530,
-                            angajat?.pauza_masa,
-                            angajat?.pauza_minute
-                        ),
+                        text: calculeazaOreNeteAngajat(pontaj.ora_intrare_manual, pontaj.ora_iesire_manual, angajat),
                         rosu: false
                     };
                 }
@@ -14213,14 +14213,7 @@ function deschideZonaAngajatNou() {
             if (pontaj && pontaj.ora_intrare && pontaj.ora_iesire) {
 
                 return {
-                    text: calculeazaOreNete(
-                        pontaj.ora_intrare,
-                        pontaj.ora_iesire,
-                        angajat?.regula_start_0700,
-                        angajat?.regula_iesire_1530,
-                        angajat?.pauza_masa,
-                        angajat?.pauza_minute
-                    ),
+                    text: calculeazaOreNeteAngajat(pontaj.ora_intrare, pontaj.ora_iesire, angajat),
                     rosu: false
                 };
 
@@ -14542,14 +14535,7 @@ function deschideZonaAngajatNou() {
 
                             if (statusCorectie === "Lipsă card" || statusCorectie.startsWith("Lipsă card")) {
 
-                                const oreCorectie = calculeazaOreNete(
-                                    pontaj.ora_intrare_manual,
-                                    pontaj.ora_iesire_manual,
-                                    angajat?.regula_start_0700,
-                                    angajat?.regula_iesire_1530,
-                                    angajat?.pauza_masa,
-                                    angajat?.pauza_minute
-                                );
+                                const oreCorectie = calculeazaOreNeteAngajat(pontaj.ora_intrare_manual, pontaj.ora_iesire_manual, angajat);
 
                                 if (oreCorectie) {
                                     minuteCorectie = transformaOraMinute(oreCorectie.replace("-", ""));
@@ -14564,14 +14550,7 @@ function deschideZonaAngajatNou() {
                             pontaj.ora_iesire
                         ) {
 
-                            const oreNete = calculeazaOreNete(
-                                pontaj.ora_intrare,
-                                pontaj.ora_iesire,
-                                angajat?.regula_start_0700,
-                                angajat?.regula_iesire_1530,
-                                angajat?.pauza_masa,
-                                angajat?.pauza_minute
-                            );
+                            const oreNete = calculeazaOreNeteAngajat(pontaj.ora_intrare, pontaj.ora_iesire, angajat);
 
                             if (oreNete) {
 
@@ -14613,7 +14592,7 @@ function deschideZonaAngajatNou() {
 
                 }
 
-                const totalOreLucratoareMinute = totalZileLucratoare * 8 * 60;
+                const totalOreLucratoareMinute = totalZileLucratoare * minuteNormaAngajat(angajat);
                 const diferentaMinute = totalMinuteLucrate - totalOreLucratoareMinute;
 
                 const diferentaText =
@@ -15582,7 +15561,7 @@ function deschideZonaAngajatNou() {
                     let statusZi = "";
 
                     if (!esteWeekend && !esteSarbatoare) {
-                        totalNormaMinute += 480;
+                        totalNormaMinute += minuteNormaAngajat(angajat);
                     }
 
                     if (pontaj) {
@@ -15612,14 +15591,7 @@ function deschideZonaAngajatNou() {
                                     ? intrare + " - " + iesire
                                     : "";
 
-                            totalOre = calculeazaOreNete(
-                                pontaj.ora_intrare,
-                                pontaj.ora_iesire,
-                                angajat.regula_start_0700,
-                                angajat.regula_iesire_1530,
-                                angajat.pauza_masa,
-                                angajat.pauza_minute
-                            ) || "";
+                            totalOre = calculeazaOreNeteAngajat(pontaj.ora_intrare, pontaj.ora_iesire, angajat) || "";
 
                             if (totalOre && !String(totalOre).startsWith("-")) {
                                 totalLucratMinute += transformaOraMinute(totalOre);
@@ -15787,14 +15759,7 @@ function deschideZonaAngajatNou() {
 
             if (status.includes("LIPSA CARD")) {
 
-                const oreCorectie = calculeazaOreNete(
-                    pontaj.ora_intrare_manual,
-                    pontaj.ora_iesire_manual,
-                    angajat?.regula_start_0700,
-                    angajat?.regula_iesire_1530,
-                    angajat?.pauza_masa,
-                    angajat?.pauza_minute
-                );
+                const oreCorectie = calculeazaOreNeteAngajat(pontaj.ora_intrare_manual, pontaj.ora_iesire_manual, angajat);
 
                 if (oreCorectie && !String(oreCorectie).startsWith("-")) {
                     return transformaOraMinute(oreCorectie);
