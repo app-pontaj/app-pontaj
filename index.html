@@ -3976,6 +3976,9 @@
                                 <option value="6">6 ore</option>
                                 <option value="8" selected>8 ore</option>
                             </select>
+                            <label for="angajat-program-normal-data" style="color:#d4af37;font-weight:700;margin-top:8px;display:block;">Program normal – valabil de la</label>
+                            <input type="date" id="angajat-program-normal-data" class="employee-input" title="Data de început a programului normal">
+                            <div style="font-size:12px;color:#aaa;margin:3px 0 10px;">La schimbarea programului, alege data de început. Programul anterior se păstrează în istoric.</div>
                             <div class="employee-row">
                                 <span>Regula 12 ore pontaj</span>
                                 <input type="checkbox" id="angajat-program-12-ore" onchange="toggleProgram12OreAngajat()">
@@ -3983,6 +3986,8 @@
                             <div id="angajat-ora-start-12-box" style="display:none;">
                                 <label style="color:#d4af37;font-weight:700;display:block;margin-bottom:6px;">Ora început program 12 ore</label>
                                 <input type="time" id="angajat-ora-start-12" class="employee-input" step="60">
+                                <label for="angajat-program-12-data" style="color:#d4af37;font-weight:700;display:block;margin:8px 0 6px;">Regula 12 ore – valabilă de la</label>
+                                <input type="date" id="angajat-program-12-data" class="employee-input" title="Data de început a regulii de 12 ore">
                             </div>
 
                             <div class="employee-row">
@@ -6070,6 +6075,21 @@ function deschideZonaAngajatNou() {
             document.getElementById("angajat-program-12-ore").checked = !!angajat.program_12_ore;
             document.getElementById("angajat-ora-start-12").value = angajat.ora_start_12_ore ? String(angajat.ora_start_12_ore).slice(0, 5) : "";
             toggleProgram12OreAngajat();
+            document.getElementById("angajat-program-12-data").value = angajat.program_12_ore_valabil_de_la || "";
+            const campDataNormala = document.getElementById("angajat-program-normal-data");
+            campDataNormala.value = "";
+            const { data: istoricProgram, error: eroareIstoricProgram } = await supabaseClient
+                .from("angajati_istoric_program")
+                .select("program_ore,valabil_de_la")
+                .eq("angajat_id", angajat.id)
+                .order("valabil_de_la", { ascending: false });
+            if (eroareIstoricProgram) {
+                showMessage("Nu s-a putut citi istoricul programului", "error");
+            } else if (istoricProgram && istoricProgram.length) {
+                const programCurent = Number(angajat.program_normal_ore || 8);
+                // Data ultimei schimbări, nu a unei schimbări mai vechi cu aceleași ore.
+                campDataNormala.value = istoricProgram[0].valabil_de_la || "";
+            }
 
             await incarcaRolAccesSiSectiiAngajat(angajat.nume || "");
 
@@ -6096,6 +6116,8 @@ function deschideZonaAngajatNou() {
             document.getElementById("angajat-program-normal-ore").value = "8";
             document.getElementById("angajat-program-12-ore").checked = false;
             document.getElementById("angajat-ora-start-12").value = "";
+            document.getElementById("angajat-program-normal-data").value = "";
+            document.getElementById("angajat-program-12-data").value = "";
             toggleProgram12OreAngajat();
 
             if (document.getElementById("angajat-rol")) {
@@ -6128,9 +6150,17 @@ function deschideZonaAngajatNou() {
             const programNormalOre = Number(document.getElementById("angajat-program-normal-ore").value);
             const program12Ore = document.getElementById("angajat-program-12-ore").checked;
             const oraStart12Ore = document.getElementById("angajat-ora-start-12").value || null;
+            const dataProgramNormalBruta = document.getElementById("angajat-program-normal-data").value;
+            const dataProgramNormal = dataProgramNormalBruta ? dataProgramNormalBruta.slice(0,7) + "-01" : null;
+            const dataProgram12 = document.getElementById("angajat-program-12-data").value || null;
 
             if (program12Ore && sectie.toLowerCase().includes("paza")) {
                 showMessage("Regula 12 ore pontaj nu se aplica personalului de paza", "error");
+                return;
+            }
+
+            if (program12Ore && !dataProgram12) {
+                showMessage("Alege data de început a regulii de 12 ore.", "error");
                 return;
             }
 
@@ -6219,6 +6249,68 @@ function deschideZonaAngajatNou() {
 
             }
 
+            // PASUL 2: istoricul programului normal. Nu atingem regula de 12 ore.
+            let programAnterior = null;
+            let istoricAnterior = [];
+            if (id) {
+                const { data: vechi, error: eroareVechi } = await supabaseClient
+                    .from("angajati").select("program_normal_ore").eq("id", id).single();
+                if (eroareVechi || !vechi) {
+                    showMessage("Nu pot verifica programul anterior. Salvarea a fost oprită.", "error");
+                    return;
+                }
+                programAnterior = Number(vechi.program_normal_ore || 8);
+                const { data: randuri, error: eroareIstoric } = await supabaseClient
+                    .from("angajati_istoric_program")
+                    .select("program_ore,valabil_de_la")
+                    .eq("angajat_id", id)
+                    .order("valabil_de_la", { ascending: false });
+                if (eroareIstoric) {
+                    showMessage("Nu pot verifica istoricul programului. Salvarea a fost oprită.", "error");
+                    return;
+                }
+                istoricAnterior = randuri || [];
+            }
+            const programSchimbat = id && programAnterior !== programNormalOre;
+            if (programSchimbat && !dataProgramNormal) {
+                showMessage("Alege data de început pentru noul program.", "error");
+                return;
+            }
+            if (!id && !dataProgramNormal) {
+                showMessage("Alege data de început a programului pentru angajatul nou.", "error");
+                return;
+            }
+            if (id && !programSchimbat && istoricAnterior.length && dataProgramNormal &&
+                dataProgramNormal !== istoricAnterior[0].valabil_de_la) {
+                showMessage("Pentru a păstra istoricul, data existentă nu se modifică fără schimbarea programului.", "error");
+                return;
+            }
+            if (dataProgramNormal && istoricAnterior.length) {
+                const ultimaData = istoricAnterior[0].valabil_de_la;
+                const aceeasiData = istoricAnterior.find(r => r.valabil_de_la === dataProgramNormal);
+                if (programSchimbat && dataProgramNormal <= ultimaData) {
+                    showMessage("Noua dată trebuie să fie după ultima schimbare de program.", "error");
+                    return;
+                }
+                if (aceeasiData && Number(aceeasiData.program_ore) !== programNormalOre) {
+                    showMessage("Există deja alt program la această dată. Istoricul nu va fi suprascris.", "error");
+                    return;
+                }
+            }
+            // Pentru angajații existenți, scriem istoricul înaintea fișei.
+            // Dacă actualizarea fișei eșuează, ștergem numai rândul nou creat.
+            let randIstoricNou = false;
+            if (id && (programSchimbat || (!istoricAnterior.length && dataProgramNormal))) {
+                const { error: eroareInserare } = await supabaseClient
+                    .from("angajati_istoric_program")
+                    .insert({ angajat_id: id, program_ore: programNormalOre, valabil_de_la: dataProgramNormal });
+                if (eroareInserare) {
+                    showMessage("Istoricul nu s-a salvat. Fișa angajatului nu a fost modificată.", "error");
+                    return;
+                }
+                randIstoricNou = true;
+            }
+
             const dateAngajat = {
                 nume: nume,
                 sectie: sectie,
@@ -6231,7 +6323,8 @@ function deschideZonaAngajatNou() {
                 pauza_minute: pauzaMinute,
                 program_normal_ore: programNormalOre,
                 program_12_ore: program12Ore,
-                ora_start_12_ore: program12Ore ? oraStart12Ore : null
+                ora_start_12_ore: program12Ore ? oraStart12Ore : null,
+                program_12_ore_valabil_de_la: program12Ore ? dataProgram12 : null
             };
 
             let raspuns;
@@ -6247,10 +6340,19 @@ function deschideZonaAngajatNou() {
 
                 raspuns = await supabaseClient
                     .from("angajati")
-                    .insert(dateAngajat);
+                    .insert(dateAngajat).select("id").single();
 
             }
 
+            if (raspuns.error && randIstoricNou) {
+                const { error: eroareRevenire } = await supabaseClient
+                    .from("angajati_istoric_program")
+                    .delete().eq("angajat_id", id).eq("valabil_de_la", dataProgramNormal);
+                if (eroareRevenire) {
+                    showMessage("ATENȚIE: fișa nu s-a salvat, iar istoricul necesită verificare în Supabase.", "error");
+                    return;
+                }
+            }
             if (raspuns.error) {
 
                 showMessage(
@@ -6260,6 +6362,23 @@ function deschideZonaAngajatNou() {
 
                 return;
 
+            }
+
+            // La un angajat nou, ID-ul există doar după inserarea fișei.
+            // Dacă istoricul eșuează, anunțăm explicit: nu pretindem salvare completă.
+            if (!id) {
+                const idNou = raspuns.data && raspuns.data.id;
+                if (!idNou) {
+                    showMessage("Fișa a fost creată, dar ID-ul nu a fost returnat. Verifică Supabase.", "error");
+                    return;
+                }
+                const { error: eroareIstoricNou } = await supabaseClient
+                    .from("angajati_istoric_program")
+                    .insert({ angajat_id: idNou, program_ore: programNormalOre, valabil_de_la: dataProgramNormal });
+                if (eroareIstoricNou) {
+                    showMessage("Fișa a fost creată, dar istoricul NU s-a salvat. Verifică Supabase înainte de continuare.", "error");
+                    return;
+                }
             }
 
             const rolOk = await salveazaRolAccesSiSectiiAngajat(nume);
@@ -7366,6 +7485,7 @@ function deschideZonaAngajatNou() {
 
         // ===== CALCUL LUNAR IDENTIC CU FISA INDIVIDUALA PENTRU TABELA DIFERENTE =====
         async function calculeazaRezultatLunarPentruTabela(numeAngajat, an, luna, pontajePreincarcate) {
+            await incarcaIstoricProgramCalcul();
 
             const zileLuna = new Date(an, luna, 0).getDate();
 
@@ -7429,6 +7549,7 @@ function deschideZonaAngajatNou() {
 
             let totalMinuteLucrate = 0;
             let totalZileLucratoare = 0;
+                let normaCalculata = 0;
 
             for (let zi = 1; zi <= zileLuna; zi++) {
 
@@ -7449,6 +7570,7 @@ function deschideZonaAngajatNou() {
 
                 if (!weekend && !sarbatoare) {
                     totalZileLucratoare++;
+                    normaCalculata += minuteNormaAngajat(angajat, dataText);
                 }
 
                 const pontaj = (pontaje || []).find(function(p) {
@@ -7471,7 +7593,7 @@ function deschideZonaAngajatNou() {
                         statusCorectieNormalizat.includes("CO") ||
                         statusCorectieNormalizat.includes("LUCRU LA DISTANTA")
                     ) {
-                        minuteCorectie = 480;
+                        minuteCorectie = minuteNormaAngajat(angajat, pontaj.data);
                     }
 
                     if (
@@ -7483,12 +7605,12 @@ function deschideZonaAngajatNou() {
                     } else if (
                         statusCorectieNormalizat.includes("EVENIMENT DEOSEBIT")
                     ) {
-                        minuteCorectie = 480;
+                        minuteCorectie = minuteNormaAngajat(angajat, pontaj.data);
                     }
 
                     if (statusCorectieNormalizat.includes("LIPSA CARD")) {
 
-                        const oreCorectie = calculeazaOreNeteAngajat(pontaj.ora_intrare_manual, pontaj.ora_iesire_manual, angajat);
+                        const oreCorectie = calculeazaOreNeteAngajat(pontaj.ora_intrare_manual, pontaj.ora_iesire_manual, angajat, pontaj.data);
 
                         if (oreCorectie) {
                             minuteCorectie = transformaOraMinute(oreCorectie.replace("-", ""));
@@ -7500,7 +7622,7 @@ function deschideZonaAngajatNou() {
 
                 } else if (pontaj) {
 
-                    const oreNete = calculeazaOreNeteAngajat(pontaj.ora_intrare, pontaj.ora_iesire, angajat);
+                    const oreNete = calculeazaOreNeteAngajat(pontaj.ora_intrare, pontaj.ora_iesire, angajat, pontaj.data);
 
                     if (oreNete) {
 
@@ -7518,7 +7640,7 @@ function deschideZonaAngajatNou() {
 
             }
 
-            const totalOreLucratoareMinute = totalZileLucratoare * minuteNormaAngajat(angajat);
+            const totalOreLucratoareMinute = normaCalculata;
             const diferentaMinute = totalMinuteLucrate - totalOreLucratoareMinute;
 
             const diferentaText =
@@ -8684,6 +8806,7 @@ function deschideZonaAngajatNou() {
 
             let totalMinuteLucrate = 0;
             let totalZileLucratoare = 0;
+                let normaCalculata = 0;
 
             const an = Number(anRaportDiferente2026Selectat || 2026);
             const zileLuna = new Date(an, luna, 0).getDate();
@@ -8707,6 +8830,7 @@ function deschideZonaAngajatNou() {
 
                 if (!weekend && !sarbatoare) {
                     totalZileLucratoare++;
+                    normaCalculata += minuteNormaAngajat(angajat, dataText);
                 }
 
                 const pontaj = pontajeLuna.find(function(p) {
@@ -8728,7 +8852,7 @@ function deschideZonaAngajatNou() {
                         statusCorectie.startsWith("C.O") ||
                         statusCorectie === "Lucru la distanță"
                     ) {
-                        minuteCorectie = 480;
+                        minuteCorectie = minuteNormaAngajat(angajat, pontaj.data);
                     }
 
                     if (
@@ -8740,12 +8864,12 @@ function deschideZonaAngajatNou() {
                     } else if (
                         statusCorectie === "Eveniment deosebit"
                     ) {
-                        minuteCorectie = 480;
+                        minuteCorectie = minuteNormaAngajat(angajat, pontaj.data);
                     }
 
                     if (statusCorectie === "Lipsă card") {
 
-                        const oreCorectie = calculeazaOreNeteAngajat(pontaj.ora_intrare_manual, pontaj.ora_iesire_manual, angajat);
+                        const oreCorectie = calculeazaOreNeteAngajat(pontaj.ora_intrare_manual, pontaj.ora_iesire_manual, angajat, pontaj.data);
 
                         if (oreCorectie) {
 
@@ -8772,7 +8896,7 @@ function deschideZonaAngajatNou() {
                     pontaj.ora_iesire
                 ) {
 
-                    const oreNete = calculeazaOreNeteAngajat(pontaj.ora_intrare, pontaj.ora_iesire, angajat);
+                    const oreNete = calculeazaOreNeteAngajat(pontaj.ora_intrare, pontaj.ora_iesire, angajat, pontaj.data);
 
                     if (oreNete) {
 
@@ -8790,7 +8914,7 @@ function deschideZonaAngajatNou() {
 
             }
 
-            const totalOreLucratoareMinute = totalZileLucratoare * minuteNormaAngajat(angajat);
+            const totalOreLucratoareMinute = normaCalculata;
 
             return totalMinuteLucrate - totalOreLucratoareMinute;
 
@@ -9026,19 +9150,19 @@ function deschideZonaAngajatNou() {
                 }
 
                 const totalZileCM = Number(
-                    totalCMDupaAngajat[normalizeazaTextGeneric(nume)] || 0
+                    totalCMDupaAngajat[normalizeazaTextGeneric(nume)]?.zile || 0
                 );
 
                 if (totalZileCM > 0) {
                     html += "<td class='year-diff-total-cell'>" + totalZileCM + "</td>";
-                    html += "<td class='year-diff-total-cell'>" + (totalZileCM * 8) + "</td>";
+                    html += "<td class='year-diff-total-cell'>" + (((totalCMDupaAngajat[normalizeazaTextGeneric(nume)]?.minute || 0) / 60)) + "</td>";
                 } else {
                     html += "<td class='year-diff-total-cell'></td>";
                     html += "<td class='year-diff-total-cell'></td>";
                 }
 
                 if (areCelPutinOLuna) {
-                    const totalGeneralMinute = totalAn + (totalZileCM * 8 * 60);
+                    const totalGeneralMinute = totalAn + ((totalCMDupaAngajat[normalizeazaTextGeneric(nume)]?.minute || 0));
                     const clasaTotalGeneral = totalGeneralMinute < 0
                         ? "year-diff-total-cell year-diff-negative"
                         : "year-diff-total-cell year-diff-positive";
@@ -9063,9 +9187,12 @@ function deschideZonaAngajatNou() {
         // ===== EXPORT EXCEL RAPORT DIFERENTE 2026 =====
         // ===== TOTAL ZILE C.M. PENTRU RAPORT DIFERENTE ANUAL =====
         async function citesteTotalZileCMRaportDiferente2026() {
+            await incarcaIstoricProgramCalcul();
 
             const anRaport = Number(anRaportDiferente2026Selectat || 2026);
             const totalCMDupaAngajat = {};
+            const {data: angajatiCM, error: eroareCM} = await supabaseClient.from("angajati").select("id,nume");
+            if (eroareCM) return {data:{},error:eroareCM};
             const marimeLot = 1000;
 
             const rezultatLuniInchise = await citesteLuniInchiseRaportDiferente2026();
@@ -9081,12 +9208,15 @@ function deschideZonaAngajatNou() {
                 return status === "C.M" || status === "CM";
             }
 
-            function adaugaZiCM(numeAngajat) {
+            function adaugaZiCM(numeAngajat, dataText) {
                 const nume = String(numeAngajat || "").trim();
                 if (!nume) return;
 
                 const cheie = normalizeazaTextGeneric(nume);
-                totalCMDupaAngajat[cheie] = Number(totalCMDupaAngajat[cheie] || 0) + 1;
+                const total = totalCMDupaAngajat[cheie] || {zile:0, minute:0};
+                total.zile++;
+                total.minute += minuteNormaAngajat((angajatiCM || []).find(a => normalizeazaTextGeneric(a.nume) === cheie), dataText);
+                totalCMDupaAngajat[cheie] = total;
             }
 
             // LUNI INCHISE: numai din raport_lunar_final
@@ -9096,7 +9226,7 @@ function deschideZonaAngajatNou() {
 
                 const { data, error } = await supabaseClient
                     .from("raport_lunar_final")
-                    .select("an,luna,nume_angajat,status_zi")
+                    .select("an,luna,nume_angajat,status_zi,data")
                     .eq("an", anRaport)
                     .range(startLot, startLot + marimeLot - 1);
 
@@ -9108,7 +9238,7 @@ function deschideZonaAngajatNou() {
                     const luna = String(Number(rand.luna || 0));
 
                     if (luniInchiseIndex[luna] && esteCM(rand.status_zi)) {
-                        adaugaZiCM(rand.nume_angajat);
+                        adaugaZiCM(rand.nume_angajat, rand.data);
                     }
                 });
 
@@ -9129,7 +9259,7 @@ function deschideZonaAngajatNou() {
 
             (rezultatPontaje.data || []).forEach(function(pontaj) {
                 if (esteCM(pontaj.status_corectie)) {
-                    adaugaZiCM(pontaj.nume);
+                    adaugaZiCM(pontaj.nume, pontaj.data);
                 }
             });
 
@@ -9276,12 +9406,12 @@ function deschideZonaAngajatNou() {
                 rand.push(formateazaDiferentaRaport2026(totalAn));
 
                 const totalZileCM = Number(
-                    totalCMDupaAngajat[normalizeazaTextGeneric(nume)] || 0
+                    totalCMDupaAngajat[normalizeazaTextGeneric(nume)]?.zile || 0
                 );
 
                 rand.push(totalZileCM > 0 ? totalZileCM : "");
-                rand.push(totalZileCM > 0 ? totalZileCM * 8 : "");
-                rand.push(formateazaDiferentaRaport2026(totalAn + (totalZileCM * 8 * 60)));
+                rand.push(totalZileCM > 0 ? ((totalCMDupaAngajat[normalizeazaTextGeneric(nume)]?.minute || 0) / 60) : "");
+                rand.push(formateazaDiferentaRaport2026(totalAn + ((totalCMDupaAngajat[normalizeazaTextGeneric(nume)]?.minute || 0))));
                 rand.push(rand[0]);
 
                 randuri.push(rand);
@@ -10422,7 +10552,7 @@ function deschideZonaAngajatNou() {
                 return null;
             }
 
-            const oreNete = calculeazaOreNeteAngajat(pontaj.ora_intrare, pontaj.ora_iesire, angajat);
+            const oreNete = calculeazaOreNeteAngajat(pontaj.ora_intrare, pontaj.ora_iesire, angajat, pontaj.data);
 
             if (!oreNete || oreNete.startsWith("-")) {
                 return null;
@@ -11106,13 +11236,38 @@ function deschideZonaAngajatNou() {
         const ZILE_SCURTE = ['Du','Lu','Ma','Mi','Jo','Vi','Sa'];
 
         // ===== PROGRAM INDIVIDUAL: NU AFECTEAZA ANGAJATII FARA BIFA =====
-        function minuteNormaAngajat(angajat) {
-            const ore = Number(angajat?.program_normal_ore || 8);
-            return [4, 6, 8].includes(ore) ? ore * 60 : 480;
+        let istoricProgramCalcul = new Map();
+        async function incarcaIstoricProgramCalcul() {
+            const index = new Map();
+            for (let start = 0; ; start += 1000) {
+                const {data, error} = await supabaseClient.from("angajati_istoric_program")
+                    .select("angajat_id,program_ore,valabil_de_la").order("angajat_id").order("valabil_de_la").range(start,start+999);
+                if (error) { showMessage("Eroare citire istoric program", "error"); throw error; }
+                for (const r of data || []) {
+                    if (!index.has(r.angajat_id)) index.set(r.angajat_id, []);
+                    index.get(r.angajat_id).push(r);
+                }
+                if (!data || data.length < 1000) break;
+            }
+            istoricProgramCalcul = index;
+        }
+        function minuteNormaAngajat(angajat, dataText) {
+            const istoric = istoricProgramCalcul.get(angajat?.id) || [];
+            const lunaData = String(dataText || "").slice(0,7);
+            let ore = 8;
+            for (const r of istoric) {
+                if (String(r.valabil_de_la).slice(0,7) <= lunaData) ore = Number(r.program_ore);
+            }
+            return [4,6,8].includes(ore) ? ore*60 : 480;
         }
 
-        function startPontaj12Ore(oraIntrare, oraIesire, angajat) {
+        function startPontaj12Ore(oraIntrare, oraIesire, angajat, dataPontaj) {
             if (!angajat?.program_12_ore || !angajat?.ora_start_12_ore || !oraIntrare || !oraIesire) return null;
+            // Fara data verificabila nu aplicam retroactiv regula speciala.
+            const dataActivare = angajat?.program_12_ore_valabil_de_la;
+            if (!dataPontaj || !/^\d{4}-\d{2}-\d{2}$/.test(String(dataPontaj)) ||
+                !dataActivare || !/^\d{4}-\d{2}-\d{2}$/.test(String(dataActivare)) ||
+                String(dataPontaj) < String(dataActivare)) return null;
             // Regula 12 ore nu se aplica personalului de paza.
             if (String(angajat.sectie || "").toLowerCase().includes("paza")) return null;
             const inceput = transformaOraMinute(String(angajat.ora_start_12_ore).slice(0, 5));
@@ -11120,14 +11275,13 @@ function deschideZonaAngajatNou() {
             const iesire = transformaOraMinute(oraIesire);
             const durata = (iesire < intrare ? iesire + 1440 : iesire) - intrare;
             if (durata < 540) return null;
-            // Toleranta de 30 minute este stabilita numai pentru programul 06:00.
-            if (inceput === 360 && intrare > 390) return null;
             // Pentru inceputul 07:00, sosirea la 07:10 ramane 07:10.
             return Math.max(intrare, inceput);
         }
 
-        function calculeazaOreNeteAngajat(oraIntrare, oraIesire, angajat) {
-            const start12 = startPontaj12Ore(oraIntrare, oraIesire, angajat);
+        function calculeazaOreNeteAngajat(oraIntrare, oraIesire, angajat, dataPontaj) {
+            if (angajat?.program_12_ore && angajat.program_12_ore_valabil_de_la && dataPontaj >= angajat.program_12_ore_valabil_de_la && !String(angajat.sectie || "").toLowerCase().includes("paza") && oraIntrare && oraIesire && transformaOraMinute(oraIesire) < transformaOraMinute(oraIntrare)) return calculeazaOreNete(oraIntrare, oraIesire, false, false, angajat.pauza_masa, angajat.pauza_minute);
+            const start12 = startPontaj12Ore(oraIntrare, oraIesire, angajat, dataPontaj);
             if (start12 === null) {
                 return calculeazaOreNete(oraIntrare, oraIesire,
                     angajat?.regula_start_0700, angajat?.regula_iesire_1530,
@@ -11139,8 +11293,9 @@ function deschideZonaAngajatNou() {
                 angajat?.pauza_masa, angajat?.pauza_minute);
         }
 
-        function calculeazaIntervalPontatAngajat(oraIntrare, oraIesire, angajat) {
-            const start12 = startPontaj12Ore(oraIntrare, oraIesire, angajat);
+        function calculeazaIntervalPontatAngajat(oraIntrare, oraIesire, angajat, dataPontaj) {
+            if (angajat?.program_12_ore && angajat.program_12_ore_valabil_de_la && dataPontaj >= angajat.program_12_ore_valabil_de_la && !String(angajat.sectie || "").toLowerCase().includes("paza") && oraIntrare && oraIesire && transformaOraMinute(oraIesire) < transformaOraMinute(oraIntrare)) return calculeazaIntervalPontat(oraIntrare, oraIesire, false, false);
+            const start12 = startPontaj12Ore(oraIntrare, oraIesire, angajat, dataPontaj);
             if (start12 === null) {
                 return calculeazaIntervalPontat(oraIntrare, oraIesire,
                     angajat?.regula_start_0700, angajat?.regula_iesire_1530);
@@ -11679,6 +11834,7 @@ function deschideZonaAngajatNou() {
         }
 
         async function exportaPontajRapoarteExcel() {
+            await incarcaIstoricProgramCalcul();
 
             const selectLuna = document.getElementById("report-export-month");
             const selectAn = document.getElementById("report-export-year");
@@ -11908,6 +12064,7 @@ function deschideZonaAngajatNou() {
 
                 let totalMinuteLucrateIndividual = 0;
                 let totalZileLucratoareIndividual = 0;
+                let normaCalculataIndividual = 0;
 
                 for (let zi = 1; zi <= zileLuna; zi++) {
 
@@ -11935,6 +12092,7 @@ function deschideZonaAngajatNou() {
 
                     if (!weekend && !sarbatoare) {
                         totalZileLucratoareIndividual++;
+                        normaCalculataIndividual += minuteNormaAngajat(angajat, dataText);
                     }
 
                     const cheiePontaj =
@@ -11963,7 +12121,7 @@ function deschideZonaAngajatNou() {
                                 " - " +
                                 String(pontaj.ora_iesire_manual || "");
 
-                            totalOre = calculeazaOreNeteAngajat(pontaj.ora_intrare_manual, pontaj.ora_iesire_manual, angajat);
+                            totalOre = calculeazaOreNeteAngajat(pontaj.ora_intrare_manual, pontaj.ora_iesire_manual, angajat, pontaj.data);
 
                             if (totalOre) {
 
@@ -11979,12 +12137,13 @@ function deschideZonaAngajatNou() {
 
                         } else if (
                             statusExport === "C.O" ||
-                            statusExport === "Lucru la distanță"
+                            statusExport === "Lucru la distanță" ||
+                            statusExport === "Eveniment deosebit"
                         ) {
 
                             interval = statusExport;
-                            totalOre = "08:00";
-                            totalMinuteLucrateIndividual += 480;
+                            totalOre = formateazaMinuteOra(minuteNormaAngajat(angajat, pontaj.data));
+                            totalMinuteLucrateIndividual += minuteNormaAngajat(angajat, pontaj.data);
 
                         } else {
 
@@ -11995,9 +12154,9 @@ function deschideZonaAngajatNou() {
 
                     } else if (pontaj && pontaj.ora_intrare && pontaj.ora_iesire) {
 
-                        interval = calculeazaIntervalPontatAngajat(pontaj.ora_intrare, pontaj.ora_iesire, angajat);
+                        interval = calculeazaIntervalPontatAngajat(pontaj.ora_intrare, pontaj.ora_iesire, angajat, pontaj.data);
 
-                        totalOre = calculeazaOreNeteAngajat(pontaj.ora_intrare, pontaj.ora_iesire, angajat);
+                        totalOre = calculeazaOreNeteAngajat(pontaj.ora_intrare, pontaj.ora_iesire, angajat, pontaj.data);
 
                         if (totalOre) {
 
@@ -12039,7 +12198,7 @@ function deschideZonaAngajatNou() {
 
                 }
 
-                const totalOreLucratoareIndividual = totalZileLucratoareIndividual * minuteNormaAngajat(angajat);
+                const totalOreLucratoareIndividual = normaCalculataIndividual;
                 const diferentaMinuteIndividual = totalMinuteLucrateIndividual - totalOreLucratoareIndividual;
                 const diferentaTextIndividual =
                     (diferentaMinuteIndividual < 0 ? "-" : "") +
@@ -12307,6 +12466,7 @@ function deschideZonaAngajatNou() {
 
                 let totalMinuteLucrate = 0;
                 let totalZileLucratoare = 0;
+                let normaCalculata = 0;
                 let arePontajInLuna = false;
 
                 const randExcel = [nume, String(angajat.sectie || ""), ""];
@@ -12336,6 +12496,7 @@ function deschideZonaAngajatNou() {
 
                     if (!weekend && !sarbatoare) {
                         totalZileLucratoare++;
+                    normaCalculata += minuteNormaAngajat(angajat, dataText);
                     }
 
                     const cheie =
@@ -12362,7 +12523,7 @@ function deschideZonaAngajatNou() {
 
                         if (statusExport === "Lipsă card") {
 
-                            valoareCelula = calculeazaOreNeteAngajat(pontaj.ora_intrare_manual, pontaj.ora_iesire_manual, angajat);
+                            valoareCelula = calculeazaOreNeteAngajat(pontaj.ora_intrare_manual, pontaj.ora_iesire_manual, angajat, pontaj.data);
 
                             if (valoareCelula) {
 
@@ -12384,9 +12545,10 @@ function deschideZonaAngajatNou() {
 
                             if (
                                 statusExport === "C.O" ||
-                                statusExport === "Lucru la distanță"
+                                statusExport === "Lucru la distanță" ||
+                            statusExport === "Eveniment deosebit"
                             ) {
-                                totalMinuteLucrate += 480;
+                                totalMinuteLucrate += minuteNormaAngajat(angajat, pontaj.data);
                             }
 
                             if (esteCOExport(pontaj.status_corectie)) {
@@ -12401,7 +12563,7 @@ function deschideZonaAngajatNou() {
 
                         arePontajInLuna = true;
 
-                        valoareCelula = calculeazaOreNeteAngajat(pontaj.ora_intrare, pontaj.ora_iesire, angajat);
+                        valoareCelula = calculeazaOreNeteAngajat(pontaj.ora_intrare, pontaj.ora_iesire, angajat, pontaj.data);
 
                         if (valoareCelula) {
 
@@ -12438,7 +12600,7 @@ function deschideZonaAngajatNou() {
 
                 }
 
-                const totalOreLucratoareMinute = totalZileLucratoare * minuteNormaAngajat(angajat);
+                const totalOreLucratoareMinute = normaCalculata;
                 const diferentaMinute = totalMinuteLucrate - totalOreLucratoareMinute;
 
                 const diferentaText =
@@ -12862,6 +13024,9 @@ function deschideZonaAngajatNou() {
         }
 
         async function afiseazaRaportLunarFinalAngajat(an, luna, numeAngajat, grid) {
+            await incarcaIstoricProgramCalcul();
+            const {data: angajat, error: eroareProgram} = await supabaseClient.from("angajati").select("id").eq("nume", numeAngajat).maybeSingle();
+            if (eroareProgram) { showMessage("Eroare citire program angajat", "error"); return false; }
 
             const rezultat = await citesteRaportLunarFinal(an, luna);
 
@@ -12911,6 +13076,7 @@ function deschideZonaAngajatNou() {
             let html = "";
             let totalMinuteLucrate = 0;
             let totalZileLucratoare = 0;
+                let normaCalculata = 0;
 
             randuriAngajat.forEach(function(rand) {
 
@@ -12927,6 +13093,7 @@ function deschideZonaAngajatNou() {
 
                 if (!esteWeekend && !esteSarbatoare) {
                     totalZileLucratoare++;
+                    normaCalculata += minuteNormaAngajat(angajat, dataText);
                 }
 
                 if (totalOre && !totalOre.startsWith("-")) {
@@ -12986,7 +13153,7 @@ function deschideZonaAngajatNou() {
 
             });
 
-            const totalOreLucratoareMinute = totalZileLucratoare * 8 * 60;
+            const totalOreLucratoareMinute = normaCalculata;
             const diferentaMinute = totalMinuteLucrate - totalOreLucratoareMinute;
 
             const diferentaText =
@@ -13363,6 +13530,7 @@ function deschideZonaAngajatNou() {
 
         // ===== DESCHIDE RAPORT LUNAR =====
         async function deschideRaportLunar(luna, numeLuna) {
+            await incarcaIstoricProgramCalcul();
 
             marcheazaLunaSelectata(luna);
 
@@ -13555,6 +13723,7 @@ function deschideZonaAngajatNou() {
 
             let totalMinuteLucrate = 0;
             let totalZileLucratoare = 0;
+                let normaCalculata = 0;
 
             for (let zi = 1; zi <= ultimaZiAfisata; zi++) {
 
@@ -13577,6 +13746,7 @@ function deschideZonaAngajatNou() {
 
                 if (!weekend && !sarbatoare) {
                     totalZileLucratoare++;
+                    normaCalculata += minuteNormaAngajat(angajat, dataText);
                 }
 
                 const pontaj = (pontaje || []).find(function(p) {
@@ -13609,8 +13779,8 @@ function deschideZonaAngajatNou() {
                         statusCorectie === "Lucru la distanță" ||
                         statusCorectie.startsWith("Lucru la distanță")
                     ) {
-                        oreCorectie = "08:00";
-                        minuteCorectie = 480;
+                        oreCorectie = formateazaMinuteOra(minuteNormaAngajat(angajat, pontaj.data));
+                        minuteCorectie = minuteNormaAngajat(angajat, pontaj.data);
                     }
 
                     if (
@@ -13625,8 +13795,8 @@ function deschideZonaAngajatNou() {
                         statusCorectie === "Eveniment deosebit" ||
                         statusCorectie.startsWith("Eveniment deosebit")
                     ) {
-                        oreCorectie = "08:00";
-                        minuteCorectie = 480;
+                        oreCorectie = formateazaMinuteOra(minuteNormaAngajat(angajat, pontaj.data));
+                        minuteCorectie = minuteNormaAngajat(angajat, pontaj.data);
                     }
 
                     if (statusCorectie === "Lipsă card" || statusCorectie.startsWith("Lipsă card")) {
@@ -13636,7 +13806,7 @@ function deschideZonaAngajatNou() {
                             " - " +
                             (pontaj.ora_iesire_manual || "");
 
-                        oreCorectie = calculeazaOreNeteAngajat(pontaj.ora_intrare_manual, pontaj.ora_iesire_manual, angajat);
+                        oreCorectie = calculeazaOreNeteAngajat(pontaj.ora_intrare_manual, pontaj.ora_iesire_manual, angajat, pontaj.data);
 
                         minuteCorectie = transformaOraMinute(oreCorectie.replace("-", ""));
 
@@ -13664,9 +13834,9 @@ function deschideZonaAngajatNou() {
 
                 } else if (pontaj) {
 
-                    const intervalPontat = calculeazaIntervalPontatAngajat(pontaj.ora_intrare, pontaj.ora_iesire, angajat);
+                    const intervalPontat = calculeazaIntervalPontatAngajat(pontaj.ora_intrare, pontaj.ora_iesire, angajat, pontaj.data);
 
-                    const oreNete = calculeazaOreNeteAngajat(pontaj.ora_intrare, pontaj.ora_iesire, angajat);
+                    const oreNete = calculeazaOreNeteAngajat(pontaj.ora_intrare, pontaj.ora_iesire, angajat, pontaj.data);
 
                     const minuteOreNete =
                         transformaOraMinute(oreNete.replace("-", ""));
@@ -13724,7 +13894,7 @@ function deschideZonaAngajatNou() {
 
             }
 
-            const totalOreLucratoareMinute = totalZileLucratoare * minuteNormaAngajat(angajat);
+            const totalOreLucratoareMinute = normaCalculata;
             const diferentaMinute =
                 totalMinuteLucrate - totalOreLucratoareMinute;
 
@@ -14189,21 +14359,21 @@ function deschideZonaAngajatNou() {
 
                 if (pontaj.status_corectie === "Eveniment deosebit") {
                     return {
-                        text: "08:00",
+                        text: formateazaMinuteOra(minuteNormaAngajat(angajat, dataText)),
                         rosu: true
                     };
                 }
 
                 if (pontaj.status_corectie === "Lucru la distanță") {
                     return {
-                        text: "08:00",
+                        text: formateazaMinuteOra(minuteNormaAngajat(angajat, dataText)),
                         rosu: false
                     };
                 }
 
                 if (pontaj.status_corectie === "Lipsă card") {
                     return {
-                        text: calculeazaOreNeteAngajat(pontaj.ora_intrare_manual, pontaj.ora_iesire_manual, angajat),
+                        text: calculeazaOreNeteAngajat(pontaj.ora_intrare_manual, pontaj.ora_iesire_manual, angajat, pontaj.data),
                         rosu: false
                     };
                 }
@@ -14213,7 +14383,7 @@ function deschideZonaAngajatNou() {
             if (pontaj && pontaj.ora_intrare && pontaj.ora_iesire) {
 
                 return {
-                    text: calculeazaOreNeteAngajat(pontaj.ora_intrare, pontaj.ora_iesire, angajat),
+                    text: calculeazaOreNeteAngajat(pontaj.ora_intrare, pontaj.ora_iesire, angajat, pontaj.data),
                     rosu: false
                 };
 
@@ -14257,6 +14427,7 @@ function deschideZonaAngajatNou() {
 
         // ===== DESCHIDE RAPORT LUNAR TOTI ANGAJATII =====
         async function deschideRaportLunarToti(luna, numeLuna) {
+            await incarcaIstoricProgramCalcul();
 
             document.getElementById("report-page").style.display = "none";
             document.getElementById("all-employees-report-page").style.display = "block";
@@ -14462,6 +14633,7 @@ function deschideZonaAngajatNou() {
 
                 let totalMinuteLucrate = 0;
                 let totalZileLucratoare = 0;
+                let normaCalculata = 0;
                 let arePontajInLuna = false;
 
                 html += "<tr>";
@@ -14492,6 +14664,7 @@ function deschideZonaAngajatNou() {
 
                     if (!weekend && !sarbatoare) {
                         totalZileLucratoare++;
+                    normaCalculata += minuteNormaAngajat(angajat, dataText);
                     }
 
                     const cheieCautare =
@@ -14516,7 +14689,7 @@ function deschideZonaAngajatNou() {
                                 statusCorectie === "Lucru la distanță" ||
                                 statusCorectie.startsWith("Lucru la distanță")
                             ) {
-                                minuteCorectie = 480;
+                                minuteCorectie = minuteNormaAngajat(angajat, pontaj.data);
                             }
 
                             if (
@@ -14530,12 +14703,12 @@ function deschideZonaAngajatNou() {
                                 statusCorectie === "Eveniment deosebit" ||
                                 statusCorectie.startsWith("Eveniment deosebit")
                             ) {
-                                minuteCorectie = 480;
+                                minuteCorectie = minuteNormaAngajat(angajat, pontaj.data);
                             }
 
                             if (statusCorectie === "Lipsă card" || statusCorectie.startsWith("Lipsă card")) {
 
-                                const oreCorectie = calculeazaOreNeteAngajat(pontaj.ora_intrare_manual, pontaj.ora_iesire_manual, angajat);
+                                const oreCorectie = calculeazaOreNeteAngajat(pontaj.ora_intrare_manual, pontaj.ora_iesire_manual, angajat, pontaj.data);
 
                                 if (oreCorectie) {
                                     minuteCorectie = transformaOraMinute(oreCorectie.replace("-", ""));
@@ -14550,7 +14723,7 @@ function deschideZonaAngajatNou() {
                             pontaj.ora_iesire
                         ) {
 
-                            const oreNete = calculeazaOreNeteAngajat(pontaj.ora_intrare, pontaj.ora_iesire, angajat);
+                            const oreNete = calculeazaOreNeteAngajat(pontaj.ora_intrare, pontaj.ora_iesire, angajat, pontaj.data);
 
                             if (oreNete) {
 
@@ -14592,7 +14765,7 @@ function deschideZonaAngajatNou() {
 
                 }
 
-                const totalOreLucratoareMinute = totalZileLucratoare * minuteNormaAngajat(angajat);
+                const totalOreLucratoareMinute = normaCalculata;
                 const diferentaMinute = totalMinuteLucrate - totalOreLucratoareMinute;
 
                 const diferentaText =
@@ -15402,6 +15575,7 @@ function deschideZonaAngajatNou() {
         }
 
         async function salveazaRapoarteFinalePentruLuna(an, luna) {
+            await incarcaIstoricProgramCalcul();
 
             const primaZi =
                 an +
@@ -15561,7 +15735,7 @@ function deschideZonaAngajatNou() {
                     let statusZi = "";
 
                     if (!esteWeekend && !esteSarbatoare) {
-                        totalNormaMinute += minuteNormaAngajat(angajat);
+                        totalNormaMinute += minuteNormaAngajat(angajat, dataText);
                     }
 
                     if (pontaj) {
@@ -15591,7 +15765,7 @@ function deschideZonaAngajatNou() {
                                     ? intrare + " - " + iesire
                                     : "";
 
-                            totalOre = calculeazaOreNeteAngajat(pontaj.ora_intrare, pontaj.ora_iesire, angajat) || "";
+                            totalOre = calculeazaOreNeteAngajat(pontaj.ora_intrare, pontaj.ora_iesire, angajat, pontaj.data) || "";
 
                             if (totalOre && !String(totalOre).startsWith("-")) {
                                 totalLucratMinute += transformaOraMinute(totalOre);
@@ -15740,7 +15914,7 @@ function deschideZonaAngajatNou() {
                 status === "CO" ||
                 status.includes("LUCRU LA DISTANTA")
             ) {
-                return 480;
+                return minuteNormaAngajat(angajat, pontaj.data);
             }
 
             if (
@@ -15754,12 +15928,12 @@ function deschideZonaAngajatNou() {
             if (
                 status.includes("EVENIMENT DEOSEBIT")
             ) {
-                return 480;
+                return minuteNormaAngajat(angajat, pontaj.data);
             }
 
             if (status.includes("LIPSA CARD")) {
 
-                const oreCorectie = calculeazaOreNeteAngajat(pontaj.ora_intrare_manual, pontaj.ora_iesire_manual, angajat);
+                const oreCorectie = calculeazaOreNeteAngajat(pontaj.ora_intrare_manual, pontaj.ora_iesire_manual, angajat, pontaj.data);
 
                 if (oreCorectie && !String(oreCorectie).startsWith("-")) {
                     return transformaOraMinute(oreCorectie);
