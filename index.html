@@ -4529,6 +4529,12 @@
 
         }
 
+        // ===== DREPT DE AUTENTIFICARE =====
+        function areDreptAutentificare(userData) {
+            const rol = String(userData?.rol || "").trim().toUpperCase();
+            return ["ADMIN", "MANAGEMENT", "SEF DEPARTAMENT"].includes(rol);
+        }
+
         // ===== VERIFICARE CONT BLOCAT =====
         function esteContBlocat(userData) {
 
@@ -4654,6 +4660,12 @@
 
         // ===== AFISARE MENIU PRINCIPAL =====
         async function showMainMenu(userData) {
+
+            if (!areDreptAutentificare(userData)) {
+                localStorage.removeItem("utilizatorLogat");
+                afiseazaContBlocat("Acces restrictionat");
+                return;
+            }
 
             if (esteContBlocat(userData)) {
                 afiseazaContBlocat(userData.mesaj_blocare);
@@ -4899,6 +4911,11 @@
                 ? conturi[0]
                 : null;
 
+            if (!areDreptAutentificare(data)) {
+                showMessage("Acces restrictionat", "error");
+                return;
+            }
+
             if (esteContBlocat(data)) {
                 afiseazaContBlocat(data.mesaj_blocare);
                 return;
@@ -5023,6 +5040,11 @@
             const data = conturi && conturi.length
                 ? conturi[0]
                 : null;
+
+            if (!areDreptAutentificare(data)) {
+                showMessage("Acces restrictionat", "error");
+                return;
+            }
 
             if (!data || !data.parola) {
 
@@ -5190,6 +5212,11 @@
             const contExistent = conturiGasite && conturiGasite.length
                 ? conturiGasite[0]
                 : null;
+
+            if (!areDreptAutentificare(contExistent)) {
+                showMessage("Acces restrictionat", "error");
+                return;
+            }
 
             if (esteContBlocat(contExistent)) {
                 afiseazaContBlocat(contExistent.mesaj_blocare);
